@@ -9,19 +9,39 @@ class TimestampMixin:
     updated_at = db.Column(db.DateTime, onupdate=func.now())
 
 class Package(db.Model,Entity,TimestampMixin):
-    id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     description = db.Column(db.String)
     price = db.Column(db.String)
     
-    def __init__(self, id, title, description, price):
-        self.id = id
-        self.title = title
-        self.description = description
-        self.price = price
-        
-class Organization(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
+
+class Location(db.Model,Entity,TimestampMixin):
+    title = db.Column(db.String)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    parent_id = db.Column(db.Integer)
+    city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
+    city = db.relationship('City', backref = db.backref('location', lazy='dynamic'))
+    
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
+
+class City(db.Model,Entity,TimestampMixin):
+    title = db.Column(db.String)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
+
+class Organization(db.Model,Entity,TimestampMixin):
     name = db.Column(db.String)
     phone = db.Column(db.String)
     email = db.Column(db.String)
@@ -30,14 +50,67 @@ class Organization(db.Model):
     logo_url = db.Column(db.String)
     package_id = db.Column(db.Integer, db.ForeignKey('package.id'))
     package = db.relationship('Package', backref = db.backref('organization', lazy='dynamic'))
+    city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
+    city = db.relationship('City', backref = db.backref('organization', lazy='dynamic'))
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    location = db.relationship('Location', backref = db.backref('organization', lazy='dynamic'))
+    
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
+        
+class Event(db.Model,Entity,TimestampMixin):
+    title = db.Column(db.String)
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    address = db.Column(db.String)
+    guests = db.Column(db.String)
+    images = db.Column(db.String)
+    videos = db.Column(db.String)
+    city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
+    city = db.relationship('City', backref = db.backref('event', lazy='dynamic'))
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    location = db.relationship('Location', backref = db.backref('event', lazy='dynamic'))
+    event_type_id = db.Column(db.Integer, db.ForeignKey('event_type.id'))
+    event_type = db.relationship('EventType', backref = db.backref('event', lazy='dynamic'))
+    
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
 
-    def __init__(self, id, name, phone, email, address, city_id, description, package_id, logo_url):
-        self.id = id
-        self.name = name
-        self.phone = phone
-        self.email = email
-        self.address = address
-        self.city_id = city_id
-        self.description = description
-        self.package_id = package_id
-        self.logo_url = logo_url
+class EventType(db.Model,Entity,TimestampMixin):
+    title = db.Column(db.String)
+    
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
+
+class EventComment(db.Model,Entity,TimestampMixin):
+    message = db.Column(db.String)
+    user_id = db.Column(db.Integer)
+    path = db.Column(db.String)
+    
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
+
+class User(db.Model,Entity,TimestampMixin):
+    name = db.Column(db.String)
+    username = db.Column(db.DateTime)
+    password = db.Column(db.DateTime)
+    email = db.Column(db.String)
+    phone = db.Column(db.String)
+    pic_url = db.Column(db.String)
+    city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
+    city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    location = db.relationship('Location', backref = db.backref('user', lazy='dynamic'))
+    
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
