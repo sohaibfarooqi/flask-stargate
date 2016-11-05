@@ -2,7 +2,7 @@ from .extentions import db
 from sqlalchemy import func
 
 class Entity:
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
 class TimestampMixin:
     created_at = db.Column(db.DateTime, default=func.now())
@@ -79,6 +79,9 @@ class Event(db.Model,Entity,TimestampMixin):
         self.__dict__.update(kwargs)
         for key in kwargs:
             self.key = kwargs[key]
+
+    def __iter__(self):
+        yield 
 
 class EventType(db.Model,Entity,TimestampMixin):
     title = db.Column(db.String)

@@ -1,13 +1,13 @@
-"""initial_db_schema
+"""empty message
 
-Revision ID: a344fb460497
+Revision ID: 1a04146d1373
 Revises: None
-Create Date: 2016-11-04 23:07:11.730798
+Create Date: 2016-11-05 22:59:04.585120
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'a344fb460497'
+revision = '1a04146d1373'
 down_revision = None
 
 from alembic import op
