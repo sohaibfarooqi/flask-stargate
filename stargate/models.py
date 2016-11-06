@@ -1,5 +1,7 @@
 from .extentions import db
 from sqlalchemy import func
+from sqlalchemy.ext.hybrid import hybrid_property
+import datetime
 
 class Entity:
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -103,8 +105,8 @@ class EventComment(db.Model,Entity,TimestampMixin):
 
 class User(db.Model,Entity,TimestampMixin):
     name = db.Column(db.String)
-    username = db.Column(db.DateTime)
-    password = db.Column(db.DateTime)
+    username = db.Column(db.String)
+    password = db.Column(db.String)
     email = db.Column(db.String)
     phone = db.Column(db.String)
     pic_url = db.Column(db.String)
@@ -117,3 +119,20 @@ class User(db.Model,Entity,TimestampMixin):
         self.__dict__.update(kwargs)
         for key in kwargs:
             self.key = kwargs[key]
+
+class Auth(db.Model,Entity,TimestampMixin):
+    auth_token = db.Column(db.String)
+    expires_at = db.Column(db.DateTime)
+    ip_address = db.Column(db.String)
+    user_agent = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', backref = db.backref('auth', lazy='dynamic'))
+    
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]
+
+    @hybrid_property
+    def remaining_time(self):
+        return (self.expires_at - datetime.datetime.now()).seconds  // 60 % 60
