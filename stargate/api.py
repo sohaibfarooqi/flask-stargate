@@ -9,14 +9,27 @@ from .auth import Authorization
 
 api_blueprint = Blueprint('api_blueprint', __name__)
 api = Api(api_blueprint)
+__custom_endpoints__ = ('login', 'signup')
 
 @api_blueprint.before_request
 def authorize():
-    if Authorization.authorize_request(request.headers):
+    endpoint = request.endpoint.split('.')
+    if endpoint[1] in __custom_endpoints__:
+       pass
+    elif Authorization.authorize_request(request.headers):
         pass
     else:
         return jsonify({"code":401, "message:":"Unauthorized Request"})
     
+
+@api.custom_route('/v1/login')
+def login():
+    request_date = request.get_json(silent=False)
+    user_info = Authorization.login_user(request_date['username'], request_date['password'], request.headers)
+    if user_info is None:
+        return jsonify({"message": "Invalid Credentials"})
+    else:
+        return jsonify({"message": "Logged In Sussessful", "code":200, "auth_token": user_info.auth_token})
 
 @api.route('/v1/events', 'event_id')
 class EventResource(Resource):

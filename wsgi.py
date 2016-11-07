@@ -6,6 +6,7 @@ app = create_app(ApplicationConfig)
 
 @app.after_request
 def log_response(response):
+	print('WSGI.py')
 	return response
 
 # @app.before_request

@@ -19,6 +19,13 @@ class Api:
             return resource
         return decorator
 
+    def custom_route(self, url):
+        def decorator(resource):
+            self.blueprint.add_url_rule(url, view_func=resource,
+                                        methods=['POST'])
+            return resource
+        return decorator
+
 
 class Resource(MethodView):
     pass
