@@ -136,3 +136,15 @@ class Auth(db.Model,Entity,TimestampMixin):
     @hybrid_property
     def remaining_time(self):
         return (self.expires_at - datetime.datetime.now()).seconds  // 60 % 60
+
+class ServerLog(db.Model,Entity,TimestampMixin):
+    headers = db.Column(db.String)
+    body_part = db.Column(db.String)
+    request_method = db.Column(db.String)
+    request_url = db.Column(db.String)
+    response = db.Column(db.String)
+    
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        for key in kwargs:
+            self.key = kwargs[key]

@@ -9,8 +9,8 @@ class Authorization():
 	
 	def authorize_request(headers):
 		
-		if 'Authorization' in headers:
-			auth_token = headers['Authorization']
+		if 'Auth-Token' in headers:
+			auth_token = headers['Auth-Token']
 			authorize = Auth.query.filter(Auth.auth_token == auth_token).first()
 			
 			if authorize is None:
@@ -40,7 +40,7 @@ class Authorization():
 		auth_object.ip_address = headers['Host']
 		auth_object.created_at = datetime.datetime.now()
 		auth_object.updated_at = auth_object.created_at
-		auth_object.expires_at = auth_object.created_at + datetime.timedelta(minutes=app.config['AUTH_EXPIRY'])
+		auth_object.expires_at = auth_object.created_at + datetime.timedelta(minutes=app.config['TOKEN_EXPIRATION'])
 		auth_object.user_id    = user.id
 
 		db.session.add(auth_object)
