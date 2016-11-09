@@ -119,12 +119,14 @@ class UserResource(Resource):
                 return jsonify({"message" : "Request Successful", "code": 200,'data': user_schema.dump(user).data})
         
     def post(self):
-        
-        users = user_schema.load(request.get_json(silent=False)).data
-        db.session.add(users)
-        db.session.commit()
-        return jsonify({"message": "Resource Created", "code": 201, "data": user_schema.dump(users).data})
-    
+        try:
+            users = user_schema.load(request.get_json(silent=False)).data
+            db.session.add(users)
+            db.session.commit()
+            return jsonify({"message": "Resource Created", "code": 201, "data": user_schema.dump(users).data})
+        except ValueError as err:
+            return jsonify({"message": "Bad Request", "code": 400, "error-details":err.args})
+
     def put(self, user_id):
         
         if user_id is None:

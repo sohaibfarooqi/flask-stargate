@@ -13,10 +13,10 @@ app = create_app(ApplicationConfig)
 @app.after_request
 def log_response(response):
 	
-	log_object = ServerLog.query.filter(ServerLog.id == g.log_id).first()
-	log_object.response = str(response.response)
-	db.session.add(log_object)
-	db.session.commit()
+	# log_object = ServerLog.query.filter(ServerLog.id == g.log_id).first()
+	# log_object.response = str(response.response)
+	# db.session.add(log_object)
+	# db.session.commit()
 	
 	return response
 
