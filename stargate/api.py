@@ -109,7 +109,7 @@ class UserResource(Resource):
 
         if user_id is None:
             users = User.query.all()
-            return jsonify({"message" : "Request Successful", "code": 200, "data": users_schema.dump(users).data})
+            return jsonify({"message" : "Request Successful", "code": 200},{users_schema.dump(users).data})
         
         else:
             user = User.query.get(user_id)
