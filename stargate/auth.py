@@ -17,7 +17,7 @@ class Authorization():
 				return False
 			
 			else:
-				if authorize.remaining_time >= 0:
+				if authorize.remaining_time > 0:
 					return True
 				
 				else:
