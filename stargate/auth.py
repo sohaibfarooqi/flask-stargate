@@ -2,7 +2,7 @@ from .models import Auth, User
 from flask import current_app as app
 from sqlalchemy import and_
 import datetime
-from .extentions import db
+from .models import db
 import hashlib
 
 class Authorization():

@@ -1,6 +1,7 @@
 from flask import Flask
 import os
-from .extentions import configure_extensions,db
+from .extentions import configure_extensions
+from .models import db
 from .api import api_blueprint
 
 def create_app(config):

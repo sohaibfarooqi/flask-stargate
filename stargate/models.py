@@ -1,7 +1,10 @@
-from .extentions import db
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
 import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+
+db = SQLAlchemy()
 
 class Entity:
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

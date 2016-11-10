@@ -3,7 +3,7 @@ from functools import wraps
 from .models import Event, User, ServerLog
 from .schemas import event_schema, events_schema, user_schema, users_schema
 from .route_handler import Api, Resource
-from .extentions import db
+from .models import db
 from .auth import Authorization
 
 
