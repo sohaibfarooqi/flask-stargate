@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request,g
 from functools import wraps
-from .models import Event, User, ServerLog
+from .models import Event, User, ServerLog, Entity
 from .schemas import event_schema, events_schema, user_schema, users_schema
 from .route_handler import Api, Resource
 from .models import db
@@ -70,7 +70,7 @@ class EventResource(Resource):
     def get(self, event_id):
 
         if event_id is None:
-            events = Event.query.all()
+            events = Entity.get_list(Entity, Entity)
             return jsonify({"message" : "Request Successful", "code": 200, "data": events_schema.dump(events).data})
         else:
             event = Event.query.get(event_id)
@@ -108,11 +108,11 @@ class UserResource(Resource):
     def get(self, user_id):
 
         if user_id is None:
-            users = User.query.all()
-            return jsonify({"message" : "Request Successful", "code": 200},{users_schema.dump(users).data})
+            users = Entity.get_list(User, User)
+            return jsonify({"message" : "Request Successful", "code": 200},users_schema.dump(users).data)
         
         else:
-            user = User.query.get(user_id)
+            user = Entity.get_instance(User,user_id)
             if user is None:
                 return jsonify({"message": "Resource Not Found", "code": 404})
             else:
@@ -133,9 +133,7 @@ class UserResource(Resource):
             return jsonify({"message": "Bad Request", "code": 400})
         
         else:
-            existing_user = User.query.filter_by(id=user_id).update(request.get_json(silent=False))
-            db.session.commit()
-            return jsonify({"message": "Resource Updated", "code": 201, "data": existing_user})
+            return jsonify({"message": "Resource Updated", "code": 201, "data": Entity.update_one(User,user_id,request.get_json(silent=False))})
 
     def delete(self, user_id):
         

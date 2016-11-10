@@ -4,7 +4,6 @@ from functools import wraps
 from flask import g
 from .stargate.extentions import db
 from .stargate.models import ServerLog
-from flask_login import LoginManager
 
 
 app = create_app(ApplicationConfig)
