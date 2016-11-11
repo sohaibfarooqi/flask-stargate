@@ -6,20 +6,35 @@ class BaseManager():
 	def _update_query():
 		pass
 	def _delete_query():
-	
-class EntityManager(BaseManager):
-	_model_classes_ = Entity.__subclass__
+		pass
+	def _select_query():
+		pass
 
-	def get(Model, **kwargs):
+
+class EntityManager(BaseManager):
+	
+	_all_model_classes_ = Entity.__subclass__
+	
+	_all_methods = ('get', 'create', 'update', 'delete')
+
+	def get(Model, pk_id = None, **kwargs):
 		
+		filters,sort_order,fields,offset,limit = None
+
 		if Model in _model_classes_:
 			
-			filters = kwargs['filter'] if kwargs['filter'] else Model.__default_filters__
+			if pk_id is None and kwargs['filters'] is None:
+				pass
+			else:
+				filters = FilterFactory.create_filter(Model, pk_id, kwargs['filters'])
 			sort_order = kwargs['sort_order'] if kwargs['sort_order'] else Model.__default_sort_order__
+			fields = kwargs['fields'] if kwargs['fields'] else Model.__default_fields__
 			offset = kwargs['offset'] if kwargs['offset'] else Model.__default_offset__
 			limit= kwargs['limit'] if kwargs['limit'] else Model.__default_limit__
-
-        	result_set = Entity._list(query)
+			
+			query = BaseManager.initilize_query(filters, sort_order, offset, limit)
+			result_set = BaseManager.execute_query(query)
+        	
         	return result_set
        
         else:
