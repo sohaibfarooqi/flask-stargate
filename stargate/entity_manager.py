@@ -1,53 +1,49 @@
 from .models import Entity
-class BaseManager():
+from .query_utils import QueryUtils
 
-	def _create_query():
-		pass
-	def _update_query():
-		pass
-	def _delete_query():
-		pass
-	def _select_query():
-		pass
+class BaseManager():
+	
+	def initilize_query(Model, filters):
+		return Model.query.filter(filters)
+	
+	def execute_query(query, many = False):
+		
+		if many:
+			return BaseManager._select_list(query)
+		else:
+			return BaseManager._select_one(query)
+
+	def _select_one(query):
+		return query.first()
+	
+	def _select_list(query):
+		return query.all()
 
 
 class EntityManager(BaseManager):
-	
-	_all_model_classes_ = Entity.__subclass__
-	
-	_all_methods = ('get', 'create', 'update', 'delete')
+
+	_all_model_classes_ = Entity.__subclasses__()
+
+	_all_methods_ = ('get', 'create', 'update', 'delete')
 
 	def get(Model, pk_id = None, **kwargs):
-		
-		filters,sort_order,fields,offset,limit = None
 
-		if Model in _model_classes_:
-			
-			if pk_id is None and kwargs['filters'] is None:
-				pass
-			else:
-				filters = FilterFactory.create_filter(Model, pk_id, kwargs['filters'])
-			sort_order = kwargs['sort_order'] if kwargs['sort_order'] else Model.__default_sort_order__
-			fields = kwargs['fields'] if kwargs['fields'] else Model.__default_fields__
-			offset = kwargs['offset'] if kwargs['offset'] else Model.__default_offset__
-			limit= kwargs['limit'] if kwargs['limit'] else Model.__default_limit__
-			
-			query = BaseManager.initilize_query(filters, sort_order, offset, limit)
+		filters = None
+
+		if Model in EntityManager._all_model_classes_:
+
+			if pk_id is not None:
+				filters = QueryUtils.get_pk_filter(Model, pk_id)
+
+			elif kwargs['filters'] is not None:
+				filters = FilterFactory.create_filter(Model, kwargs['filters'])
+
+			else: 
+				print('Filter not set')
+
+			query = BaseManager.initilize_query(Model, filters)
 			result_set = BaseManager.execute_query(query)
-        	
-        	return result_set
-       
-        else:
-        	return None
+			return result_set
 
-    def create(Model, filters = None):
-        result = Model.query.get(filters)
-        return result
-
-    def update(data):
-        db.session.add(data)
-        db.session.commit
-        return data.id
-   
-    def delete(Model,id):
-        return  Model.query.filter(Model.id == id).delete()
+		else:
+			return None

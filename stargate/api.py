@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request,g
 from functools import wraps
 from .models import Event, User, ServerLog, Entity
+from .entity_manager import EntityManager
 from .schemas import event_schema, events_schema, user_schema, users_schema
 from .route_handler import Api, Resource
 from .models import db
@@ -108,11 +109,11 @@ class UserResource(Resource):
     def get(self, user_id):
 
         if user_id is None:
-            users = Entity.get_list(User, User)
+            users = Entity.get_list(User,user_id)
             return jsonify({"message" : "Request Successful", "code": 200},users_schema.dump(users).data)
         
         else:
-            user = Entity.get_instance(User,user_id)
+            user = EntityManager.get(User,user_id)
             if user is None:
                 return jsonify({"message": "Resource Not Found", "code": 404})
             else:
