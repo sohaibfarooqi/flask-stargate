@@ -1,15 +1,51 @@
 from sqlalchemy import and_, or_
 
-class QueryUtils():
+class QueryFilters():
 	
 
-	def get_pk_filter(Model, id):
-		
+	def get_pk_filter(model, id):
+
 		if type(id) == list:
-			return Mode.id.in_(id)
+			return model.id.in_(id)
 		
 		elif type(id) == int:
-			return Model.id == id
+			return model.id == id
 		
 		else:
 			return "No Matching type found"
+
+class Operators(Object):
+	pass
+
+class LogicalOperators(Operators):
+	
+	_operators = {
+					"AND": and_,
+					"OR": or_
+
+				 }
+
+class ComparisonOperators(Operators):
+	_operators = {
+					"gt" :  '>',
+					"gte": '>=',
+					"lte": '<=',
+					"lt" :   '<',
+					"between" :   'BETWEEN'
+
+				 }
+
+class IdentityOperators(Operators):
+	_operators = {
+					"in" :  in_,
+					"nin":  'not in',
+					"eq": '==',
+					"neq" :   '!='
+
+				 }
+
+class BooleanOperators(Operators):
+	_operators = {
+					"eqf" :  '== Falas',
+					"eqt": '== True'
+				 }
