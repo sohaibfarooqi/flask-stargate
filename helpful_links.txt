@@ -1,0 +1,10 @@
+http://stackoverflow.com/questions/5020704/how-to-design-restful-search-filtering
+http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
+http://blog.mwaysolutions.com/2014/06/05/10-best-practices-for-better-restful-api/
+https://saipraveenblog.wordpress.com/2014/09/29/rest-api-best-practices/
+https://github.com/Microsoft/api-guidelines/blob/master/Guidelines.md
+https://github.com/RestCheatSheet/api-cheat-sheet
+https://github.com/noirbizarre/flask-restplus
+https://github.com/jfinkels/flask-restless
+https://github.com/mattupstate/overholt
+https://github.com/Robpol86/Flask-Large-Application-Example
