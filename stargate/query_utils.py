@@ -1,51 +1,55 @@
-from sqlalchemy import and_, or_
+# from sqlalchemy import and_, or_
 
-class QueryFilters():
+# class QueryUtils():
 	
 
-	def get_pk_filter(model, id):
+# 	def create_sql_filter(model, filters):
+# 		logical_operators = LogicalOperators.get_operator_list()
 
-		if type(id) == list:
-			return model.id.in_(id)
-		
-		elif type(id) == int:
-			return model.id == id
-		
-		else:
-			return "No Matching type found"
+# 	def create_sort_order(sort):
+# 		pass
 
-class Operators(Object):
-	pass
+# 	def create_pagination(offset,limit):
+# 		pass
 
-class LogicalOperators(Operators):
+# class Operators(Object):
 	
-	_operators = {
-					"AND": and_,
-					"OR": or_
+# 	def get_operator_list(self):
+# 		return self._operators.keys()
 
-				 }
+# 	def get_matching_operator(self, op):
+# 		return self._operators[op]
 
-class ComparisonOperators(Operators):
-	_operators = {
-					"gt" :  '>',
-					"gte": '>=',
-					"lte": '<=',
-					"lt" :   '<',
-					"between" :   'BETWEEN'
+# class LogicalOperators(Operators):
+	
+# 	_operators = {
+# 					"and": and_,
+# 					"or" : or_
 
-				 }
+# 				 }
+	
+	
+# class ComparisonOperators(Operators):
+# 	_operators = {
+# 					"gt" :  '>',
+# 					"gte":  '>=',
+# 					"lte":  '<=',
+# 					"lt" :  '<',
+# 					"between" : 'BETWEEN'
 
-class IdentityOperators(Operators):
-	_operators = {
-					"in" :  in_,
-					"nin":  'not in',
-					"eq": '==',
-					"neq" :   '!='
+# 				 }
 
-				 }
+# class IdentityOperators(Operators):
+# 	_operators = {
+# 					"in" :  in_,
+# 					"nin":  'not in',
+# 					"eq": '==',
+# 					"neq" :   '!='
 
-class BooleanOperators(Operators):
-	_operators = {
-					"eqf" :  '== Falas',
-					"eqt": '== True'
-				 }
+# 				 }
+
+# class BooleanOperators(Operators):
+# 	_operators = {
+# 					"eqf" :  '== False',
+# 					"eqt":   '== True'
+# 				 }

@@ -18,15 +18,15 @@ __custom_endpoints__ = ('login', 'signup')
 def authorize():
 
     #Log Request Data
-    server_log = ServerLog()
-    server_log.headers = request.headers.__repr__()
-    server_log.request_method = request.environ['REQUEST_METHOD']
-    request_data = request.get_json(silent= True)
-    server_log.body_part = str(request_data)
-    server_log.request_url = request.url
-    db.session.add(server_log)
-    db.session.commit()
-    g.log_id = server_log.id
+    # server_log = ServerLog()
+    # server_log.headers = request.headers.__repr__()
+    # server_log.request_method = request.environ['REQUEST_METHOD']
+    # request_data = request.get_json(silent= True)
+    # server_log.body_part = str(request_data)
+    # server_log.request_url = request.url
+    # db.session.add(server_log)
+    # db.session.commit()
+    # g.log_id = server_log.id
     
     #Authorize Request
     endpoint = request.endpoint.split('.')
@@ -109,7 +109,8 @@ class UserResource(Resource):
     def get(self, user_id):
 
         if user_id is None:
-            users = Entity.get_list(User,user_id)
+            filter = request.environ['QUERY_STRING']
+            users = EntityManager.get(User, user_id, filters = filter)
             return jsonify({"message" : "Request Successful", "code": 200},users_schema.dump(users).data)
         
         else:

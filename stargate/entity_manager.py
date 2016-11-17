@@ -1,39 +1,39 @@
 from .models import Entity
-from .query_utils import QueryUtils
+import re
+from urllib import parse
+# class QueryInterface():
 
-class QueryInterface():
-
-	LIST= 'list'
-	INSTANCE = 'instance'
+# 	LIST= 'list'
+# 	INSTANCE = 'instance'
 	
-	_all_types_ = (LIST, INSTANCE)
+# 	_all_types_ = (LIST, INSTANCE)
 
-	def create_query(model, filters):
-		return model.query.filter(filters)
+# 	def create_query(model, filters):
+# 		return model.query.filter(filters)
 	
-	def execute_query(query, type):
+# 	def execute_query(query, type):
 				
-		if type == QueryInterface.LIST:
-			return ListQueryInterface._select_list(query)
+# 		if type == QueryInterface.LIST:
+# 			return ListQueryInterface._select_list(query)
 		
-		elif type == QueryInterface.INSTANCE:
-			return InstanceQueryInterface._select_one(query)
+# 		elif type == QueryInterface.INSTANCE:
+# 			return InstanceQueryInterface._select_one(query)
 		
-		else:
-			print("Resource Type Not Found")
-			return None
+# 		else:
+# 			print("Resource Type Not Found")
+# 			return None
 
 
 
-class InstanceQueryInterface(QueryInterface):
+# class InstanceQueryInterface(QueryInterface):
 	
-	def _select_one(query):
-		return query.first()
+# 	def _select_one(query):
+# 		return query.first()
 
-class ListQueryInterface(QueryInterface):
+# class ListQueryInterface(QueryInterface):
 	
-	def _select_list(query):
-		return query.all()
+# 	def _select_list(query):
+# 		return query.all()
 
 class EntityManager():
 
@@ -41,20 +41,28 @@ class EntityManager():
 
 	_all_methods_ = ('get', 'create', 'update', 'delete')
 
-	def get(model, pk_id = None, **kwargs):
-
-		filters = None
+	def get(model, pk_id, **kwargs):
 
 		if model in EntityManager._all_model_classes_:
+			
+			if pk_id is None:
+				
+				if 'filters' in kwargs:
 
-			if pk_id is not None:
-				filters = QueryUtils.get_pk_filter(model, pk_id)
+					filter_string = parse.unquote(kwargs['filters'])
+					filter_string = filter_string.replace('filters','')
+					filter_string = re.sub(r'\s+', '', filter_string)
+					filter_string = filter_string.split('and')
+					
+					for filter in filter_string:
+						if filter is not None:
+							filter = filter.replace('(','')
+							filter = filter.replace(')','')
+							print('Filter' + filter)
 
-			elif kwargs['filters'] is not None:
+			else:
 				filters = FilterFactory.create_filter(model, kwargs['filters'])
 
-			else: 
-				print('Filter not set')
 
 			query = QueryInterface.create_query(model, filters)
 			result_set = QueryInterface.execute_query(query, QueryInterface.INSTANCE)
