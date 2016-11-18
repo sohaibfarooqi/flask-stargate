@@ -1,6 +1,6 @@
 from .models import Entity
 import re
-from urllib import parse
+import urllib.parse as urlparse
 # class QueryInterface():
 
 # 	LIST= 'list'
@@ -48,17 +48,18 @@ class EntityManager():
 			if pk_id is None:
 				
 				if 'filters' in kwargs:
-
-					filter_string = parse.unquote(kwargs['filters'])
-					filter_string = filter_string.replace('filters','')
-					filter_string = re.sub(r'\s+', '', filter_string)
-					filter_string = filter_string.split('and')
+					filter_dict = dict(urlparse.parse_qsl(kwargs['filters'], encoding='utf-8'))
+					filter_string = re.sub(r'\s+', '', filter_dict['filters'])
+					print(filter_string)
+					# filter_string = filter_string.replace('filters','')
+					# filter_string = re.sub(r'\s+', '', filter_string)
+					# filter_string = filter_string.split('and')
 					
-					for filter in filter_string:
-						if filter is not None:
-							filter = filter.replace('(','')
-							filter = filter.replace(')','')
-							print('Filter' + filter)
+					# for filter in filter_string:
+					# 	if filter is not None:
+					# 		filter = filter.replace('(','')
+					# 		filter = filter.replace(')','')
+					# 		print('Filter' + filter)
 
 			else:
 				filters = FilterFactory.create_filter(model, kwargs['filters'])
