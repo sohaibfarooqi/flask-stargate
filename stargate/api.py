@@ -31,14 +31,14 @@ def authorize():
     #Authorize Request
     endpoint = request.endpoint.split('.')
     
-    if endpoint[1] in __custom_endpoints__:
-       pass
+    # if endpoint[1] in __custom_endpoints__:
+    #    pass
     
-    elif Authorization.authorize_request(request.headers):
-        pass
+    # elif Authorization.authorize_request(request.headers):
+    #     pass
     
-    else:
-        return jsonify({"code":401, "message:":"Unauthorized Request"})
+    # else:
+    #     return jsonify({"code":401, "message:":"Unauthorized Request"})
     
 
 @api.custom_route('/v1/login')
@@ -110,7 +110,7 @@ class UserResource(Resource):
 
         if user_id is None:
             filter = request.environ['QUERY_STRING']
-            users = EntityManager.get(User, user_id, filters = filter)
+            users = EntityManager.get(User, user_id, filter)
             return jsonify({"message" : "Request Successful", "code": 200},users_schema.dump(users).data)
         
         else:
