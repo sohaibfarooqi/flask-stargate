@@ -97,16 +97,14 @@ class QueryFilters():
 		
 			
 		for match in iterator:
-			print (match.span(),match.group(),match.group(2))
-			span = match.span()
-			print(span[0], span[1])
-			node = FilterNode(
+			# print (match.span(),match.group(),match.group(2))
+			node = FilterNode()
+			node.create_node(
 								range = match.span(), 
 								operator = match.group(2), 
 								matched_operator = match.group(),
 								level = match.group().count(')'),
-								split_result = query_string_dict[span[0]:span[1]]
-
+								query_string = query_string_dict
 							  )
 			self.filters.append(node)
 		self.filters.sort(key = lambda filter: filter.level, reverse = True)
@@ -115,13 +113,22 @@ class QueryFilters():
 
 class FilterNode():
 	
-	range = []
-	operator = None
-	matched_operator = None
-	level =  None
-	split_result = None
-
 	def __init__(self, **kwargs):
-		self.__dict__.update(kwargs)
-		for key in kwargs:
-			self.key = kwargs[key]
+		self.range = list()
+		self.operator = None
+		self.matched_operator = None
+		self.level =  None
+		self.split_result = None
+
+	def create_node(self, **kwargs):
+		self.range = kwargs['range']
+		self.operator = kwargs['operator']
+		self.matched_operator = kwargs['matched_operator']
+		self.level = kwargs['level']
+		self.split_result = self._split_filter(self.range, kwargs['query_string'])
+
+	def _split_filter(self, range, query_string):
+		init_range = range[0] + 1
+		end_range = range[1] - 1
+		length = len(query_string)
+		return query_string[0:init_range], query_string[end_range:length]
