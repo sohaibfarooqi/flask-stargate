@@ -1,7 +1,7 @@
 from .models import Entity
 import re
 import urllib.parse as urlparse
-
+from sqlalchemy import or_
 # class QueryInterface():
 
 # 	LIST= 'list'
@@ -55,11 +55,32 @@ class EntityManager():
 					filters = query_filters.group_logical_operators(query_string_dict['filters'])
 					
 					for key in filters:
-						print(key.operator)
-						print(key.matched_operator)
-						print(key.range)
-						print(key.level)
-						print(key.split_result)
+						pass
+						# print(key.operator)
+						# print(key.matched_operator)
+						# print(key.range)
+						# print(key.level)
+						# print(key.split_result[0])
+						# print(key.split_result[1])
+					
+					base_filters = filters[0].split_result[0].split('or')
+					column, value = base_filters[0].split('eq')
+					column1, value1 = base_filters[1].split('gte')
+
+					print(column, value, column1, value1)
+					#TODO: check if column exist and conform value received in request
+					column = column.replace('(','')
+					column = column.replace(')','')
+					column = column.replace(' ','')
+
+					column1 = column1.replace('(','')
+					column1 = column1.replace(')','')
+					column1 = column1.replace(' ','')
+
+					attr = getattr(model, column)
+					attr1 = getattr(model, column1)
+					query = or_(attr == value, attr1 >= value1)
+					print(query)
 					# print(query_string_dict)
 					# filter_string = re.sub(r'\s+', '', query_string_dict['filters'])
 					
@@ -87,12 +108,14 @@ class EntityManager():
 
 class QueryFilters():
 	
+	_REGEX_LOGICAL_GROUPS = r'(\)+\s+\b(and|or)\b\s+\(?)'
+
 	def __init__(self):
 		self.filters = list()
 	
 	def group_logical_operators(self, query_string_dict):
 		
-		r = re.compile(r'(\)+\s+\b(and|or)\b\s+\(+)', flags = re.I | re.X)
+		r = re.compile(self._REGEX_LOGICAL_GROUPS, flags = re.I | re.X)
 		iterator = r.finditer(query_string_dict)
 		
 			
