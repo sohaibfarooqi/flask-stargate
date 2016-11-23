@@ -54,8 +54,7 @@ class EntityManager():
 					query_filters = QueryFilters()
 					filters = query_filters.group_logical_operators(query_string_dict['filters'])
 					
-					for key in filters:
-						pass
+					for idx, key in enumerate(filters):
 						# print(key.operator)
 						# print(key.matched_operator)
 						# print(key.range)
@@ -63,23 +62,18 @@ class EntityManager():
 						# print(key.split_result[0])
 						# print(key.split_result[1])
 					
-					base_filters = filters[0].split_result[0].split('or')
-					column, value = base_filters[0].split('eq')
-					column1, value1 = base_filters[1].split('gte')
+						base_filters = key.split_result[idx].split('or')
+						filter_group = ''
+						for count, value in enumerate(base_filters):
+							column, value = base_filters[count].split('eq')
+							#TODO: check if column exist and conform value received in request
+							column = column.replace('(','')
+							column = column.replace(')','')
+							column = column.replace(' ','')
 
-					print(column, value, column1, value1)
-					#TODO: check if column exist and conform value received in request
-					column = column.replace('(','')
-					column = column.replace(')','')
-					column = column.replace(' ','')
-
-					column1 = column1.replace('(','')
-					column1 = column1.replace(')','')
-					column1 = column1.replace(' ','')
-
-					attr = getattr(model, column)
-					attr1 = getattr(model, column1)
-					query = or_(attr == value, attr1 >= value1)
+							attr = getattr(model, column)
+							filter_group = filter_group + 'attr == value'
+						query = or_(filter_group)
 					print(query)
 					# print(query_string_dict)
 					# filter_string = re.sub(r'\s+', '', query_string_dict['filters'])
