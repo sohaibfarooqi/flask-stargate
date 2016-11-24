@@ -71,11 +71,12 @@ class EntityManager():
 							column = column.replace(' ','')
 							op = 'eq'
 							field = getattr(model, column, None)
-							attr = filter(
+							attr = list(filter(
 											lambda e: hasattr(field, e % op), 
-											['%s', '%s_', '__%s__']
-										  )[0] % op
-							filtr = getattr(column, attr)(value)
+											['%s','%s_','__%s__']
+										  ))[0] % op
+							filtr = getattr(field, attr)(value)
+							print(filtr)
 						print(model.query.filter(filtr))
 					# print(query_string_dict)
 					# filter_string = re.sub(r'\s+', '', query_string_dict['filters'])
