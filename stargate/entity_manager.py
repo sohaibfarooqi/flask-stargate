@@ -63,18 +63,20 @@ class EntityManager():
 						# print(key.split_result[1])
 					
 						base_filters = key.split_result[idx].split('or')
-						filter_group = ''
 						for count, value in enumerate(base_filters):
 							column, value = base_filters[count].split('eq')
 							#TODO: check if column exist and conform value received in request
 							column = column.replace('(','')
 							column = column.replace(')','')
 							column = column.replace(' ','')
-
-							attr = getattr(model, column)
-							filter_group = filter_group + 'attr == value'
-						query = or_(filter_group)
-					print(query)
+							op = 'eq'
+							field = getattr(model, column, None)
+							attr = filter(
+											lambda e: hasattr(field, e % op), 
+											['%s', '%s_', '__%s__']
+										  )[0] % op
+							filtr = getattr(column, attr)(value)
+						print(model.query.filter(filtr))
 					# print(query_string_dict)
 					# filter_string = re.sub(r'\s+', '', query_string_dict['filters'])
 					
@@ -102,14 +104,14 @@ class EntityManager():
 
 class QueryFilters():
 	
-	_REGEX_LOGICAL_GROUPS = r'(\)+\s+\b(and|or)\b\s+\(?)'
+	REGEX_LOGICAL_GROUPS = r'(\)+\s+\b(and|or)\b\s+\(?)'
 
 	def __init__(self):
 		self.filters = list()
 	
 	def group_logical_operators(self, query_string_dict):
 		
-		r = re.compile(self._REGEX_LOGICAL_GROUPS, flags = re.I | re.X)
+		r = re.compile(self.REGEX_LOGICAL_GROUPS, flags = re.I | re.X)
 		iterator = r.finditer(query_string_dict)
 		
 			
