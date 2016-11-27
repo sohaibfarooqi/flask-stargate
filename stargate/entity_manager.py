@@ -21,33 +21,31 @@ class EntityManager():
 					query_filters = QueryFilters()
 					
 					filters = query_filters.group_logical_operators(query_string_dict['filters'])
-					filtr = list()
+					
 					query = model.query
 					
 					for key in filters:
 						
 						for split_filter in key.split_result:
 							logical_op = query_filters.get_logical_operator(split_filter)
-
-							if logical_op is not None:
-								base_filters = split_filter.split(logical_op)
+							filtr = list()
+							if logical_op is None:
 								
-								for filter_exp in base_filters:
-									
-									filter_exp = filter_exp.strip()
-									op = query_filters.get_column_operator(filter_exp)
-									column, value = filter_exp.split(op)
-									filtr.append(query_filters.get_filter_expression(filter_exp, op, model))
-
-								query = query_filters.create_query(query, logical_op, filtr)
-							
-							else:
-							
 								split_filter = split_filter.strip()
 								op = query_filters.get_column_operator(split_filter)
 								filter_expression = query_filters.get_filter_expression(split_filter, op, model)
-
 								query = query_filters.append_query(query, key.operator, filter_expression)	
+
+							else:
+								base_filters = split_filter.split(logical_op)
+								
+								for filter_exp in base_filters:
+									filter_exp = filter_exp.strip()
+									op = query_filters.get_column_operator(filter_exp)
+									filtr.append(query_filters.get_filter_expression(filter_exp, op, model))
+
+								query = query_filters.create_query(query, logical_op, filtr)
+								
 					print(query)
 			else:
 				query = model.query.get(pk_id)
@@ -73,7 +71,6 @@ class QueryFilters():
 		
 			
 		for match in iterator:
-			# print (match.span(),match.group(),match.group(2))
 			node = FilterNode()
 			node.create_node(	range = match.span(), 
 								operator = match.group(2), 
@@ -117,6 +114,7 @@ class QueryFilters():
 		return getattr(field, attr)(value)
 
 	def create_query(self, query, op, filters):
+
 		if op == 'and':
 			return query.filter(and_(*filters))
 
@@ -124,9 +122,10 @@ class QueryFilters():
 			return query.filter(or_(*filters))
 
 		else:
-			print("No Operator Found %s" %logical_op)
+			print("No Operator Found %s" %op)
 
-	def append_query (self, query, op, filters):
+	def append_query(self, query, op, filters):
+
 		if op == 'and':
 			return query.filter(and_(filters))
 
@@ -134,7 +133,8 @@ class QueryFilters():
 			return query.filter(or_(filters))
 
 		else:
-			print("No Operator Found %s" %logical_op)
+			print("No Operator Found %s" %op)
+
 
 class FilterNode():
 	
