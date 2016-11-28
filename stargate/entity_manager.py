@@ -91,8 +91,7 @@ class QueryFilters():
 
 	def get_column_operator(self, exp):
 		exp = exp.strip()
-		op = re.search(self.REGEX_COLUMN_OPERATORS, exp, flags = re.I).group()
-		op = op.replace(' ','')
+		op = re.search(self.REGEX_COLUMN_OPERATORS, exp, flags = re.I).group().strip()
 		return op
 							
 	def get_filter_expression(self, expression, op, model):
