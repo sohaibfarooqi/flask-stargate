@@ -59,7 +59,7 @@ class QueryFilters():
 	REGEX_LOGICAL_GROUPS = r'(\)+\s+\b(and|or)\b\s+\(?)'
 	REGEX_LOGICAL_OPERATORS = r'\s+\b(and|or)\b\s+'
 	REGEX_COLUMN_OPERATORS = r'\s+(\w+)\s+'
-
+	GROUP_DELIMITER = ')'
 
 	def __init__(self):
 		self.filters = list()
@@ -70,17 +70,37 @@ class QueryFilters():
 		iterator = r.finditer(query_string_dict)
 		
 			
+		root_node = None
 		for match in iterator:
-			node = FilterNode()
-			node.create_node(	range = match.span(), 
-								operator = match.group(2), 
-								matched_operator = match.group(),
-								level = match.group().count(')'),
-								query_string = query_string_dict
-							  )
-			self.filters.append(node)
+			
+			if root_node is None:
+				root_node = match
+			
+			elif root_node.group().count(self.GROUP_DELIMITER) > match.group().count(self.GROUP_DELIMITER):
+				root_node = match
+
+
+		node = FilterNode()
+		node.create_node(	range = root_node.span(), 
+							operator = root_node.group(2), 
+							matched_operator = root_node.group(),
+							level = root_node.group().count(self.GROUP_DELIMITER),
+							query_string = query_string_dict
+						  )
+		
+		self.filters.append(node)
+		self.internal_logical_groups(node.split_result)
 		self.filters.sort(key = lambda filter: filter.level, reverse = True)
+		
 		return self.filters
+
+	def internal_logical_groups(self, expr):
+		r = re.compile(self.REGEX_LOGICAL_GROUPS, flags = re.I | re.X)
+		for key in expr:
+			iterator = r.finditer(key)
+			for match in iterator:
+				
+
 
 	def get_logical_operator(self, str):
 		r = re.search(self.REGEX_LOGICAL_OPERATORS, str, flags = re.I)
