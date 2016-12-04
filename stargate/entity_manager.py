@@ -7,7 +7,7 @@ class EntityManager():
 
 	_all_model_classes_ = Entity.__subclasses__()
 
-	_all_methods_ = ('get', 'create', 'update', 'delete')
+	_all_methods_ = ('get', 'post', 'put', 'delete')
 
 	def get(model, pk_id, query_string):
 
@@ -20,32 +20,34 @@ class EntityManager():
 					query_string_dict = dict(urlparse.parse_qsl(query_string, encoding = 'utf-8'))
 					query_filters = QueryFilters()
 					
-					filters = query_filters.group_logical_operators(query_string_dict['filters'])
-					
+					filters,operator = query_filters.group_logical_operators(query_string_dict['filters'])
 					query = model.query
-					
+					filtr = list()
+
 					for key in filters:
+
+						logical_op = query_filters.get_logical_operator(key)
 						
-						for split_filter in key.split_result:
-							logical_op = query_filters.get_logical_operator(split_filter)
-							filtr = list()
-							if logical_op is None:
-								
-								split_filter = split_filter.strip()
-								op = query_filters.get_column_operator(split_filter)
-								filter_expression = query_filters.get_filter_expression(split_filter, op, model)
-								query = query_filters.append_query(query, key.operator, filter_expression)	
+						split_filter = key.strip()
 
-							else:
-								base_filters = split_filter.split(logical_op)
-								
-								for filter_exp in base_filters:
-									filter_exp = filter_exp.strip()
-									op = query_filters.get_column_operator(filter_exp)
-									filtr.append(query_filters.get_filter_expression(filter_exp, op, model))
+						if logical_op is None:
+							temp = dict()
+							temp = {'expr': query_filters.get_filter_expression(split_filter, op, model), 'op': None}
+							op = query_filters.get_column_operator(split_filter)
+							filtr.append(temp)
+						
+						else:
 
-								query = query_filters.create_query(query, logical_op, filtr)
-								
+							base_filters = split_filter.split(logical_op)
+							temp1 = list()
+							for filter_exp in base_filters:
+
+								filter_exp = filter_exp.strip()
+								op = query_filters.get_column_operator(filter_exp)
+								temp1.append(query_filters.get_filter_expression(filter_exp, op, model))
+							
+							filtr.append({'expr': temp1, 'op': logical_op})	
+					query = query.filter((query_filters.get_sql_operator(operator)(*[query_filters.get_sql_operator(filter['op'])(*filter['expr']) for filter in filtr ])))		
 					print(query)
 			else:
 				query = model.query.get(pk_id)
@@ -57,48 +59,96 @@ class EntityManager():
 class QueryFilters():
 	
 	REGEX_LOGICAL_GROUPS = r'(\)+\s+\b(and|or)\b\s+\(?)'
+	REGEX_FILTER_GROUPS = r'\((.*?)\)'
 	REGEX_LOGICAL_OPERATORS = r'\s+\b(and|or)\b\s+'
 	REGEX_COLUMN_OPERATORS = r'\s+(\w+)\s+'
 	GROUP_DELIMITER = ')'
 
 	def __init__(self):
 		self.filters = list()
-	
+		self.op = None
+		self.span_array = list()
+
 	def group_logical_operators(self, query_string_dict):
 		
-		r = re.compile(self.REGEX_LOGICAL_GROUPS, flags = re.I | re.X)
+		r = re.compile(self.REGEX_FILTER_GROUPS)
 		iterator = r.finditer(query_string_dict)
 		
-			
-		root_node = None
-		for match in iterator:
-			
-			if root_node is None:
-				root_node = match
-			
-			elif root_node.group().count(self.GROUP_DELIMITER) > match.group().count(self.GROUP_DELIMITER):
-				root_node = match
-
-
-		node = FilterNode()
-		node.create_node(	range = root_node.span(), 
-							operator = root_node.group(2), 
-							matched_operator = root_node.group(),
-							level = root_node.group().count(self.GROUP_DELIMITER),
-							query_string = query_string_dict
-						  )
 		
-		self.filters.append(node)
-		self.internal_logical_groups(node.split_result)
-		self.filters.sort(key = lambda filter: filter.level, reverse = True)
+		group_boundries = list()
 		
-		return self.filters
+		self.filters, group_boundries = zip(*[(match.group(1), match.span()) for match in iterator])
+		
+		remaining_str = query_string_dict
+		length, curr_length = 0,0
 
+		for count, key in enumerate(group_boundries):
+			remaining_str = remaining_str[0:key[0]-length] + remaining_str[key[1]-curr_length:len(remaining_str)-1]
+			length = group_boundries[count-1][1] - group_boundries[count-1][0] 
+			curr_length = group_boundries[count][1] - group_boundries[count][0] 
+			# print(length)
+			# print(curr_length)
+			# print(key[0]-length)
+			# print(key[1]-length-curr_length, len(remaining_str))
+		remaining_str = remaining_str.lstrip().rstrip()
+		print(remaining_str) 
+		# for match in iterator:
+
+		# 	self.filters.append(match.group(1))
+		# 	temp = match.span()
+
+		# 	if not span_element:
+		# 		span_element.insert(0,temp[1])
+			
+		# 	else:
+		# 		span_element.insert(1, temp[0])
+
+		# 	if len(span_element) == 2:
+		# 		self.span_array.append(span_element)
+		# 		span_element = list()
+
+		print(self.filters, group_boundries)
+
+		for key in self.span_array:
+			op = query_string_dict[key[0]:key[1]].replace(' ','')
+			
+			if self.op is None:
+				self.op = op
+			
+			else:
+				if op != self.op:
+					print("Multiple different logical operators found at same level")
+		return self.filters, self.op
+
+	def get_sql_operator(self, op):
+		
+		if op == 'and':
+			return and_
+		
+		elif op == 'or':
+			return or_
+		
+		else:
+			return None
+
+		
 	def internal_logical_groups(self, expr):
 		r = re.compile(self.REGEX_LOGICAL_GROUPS, flags = re.I | re.X)
+
 		for key in expr:
 			iterator = r.finditer(key)
+			
 			for match in iterator:
+				print(match)
+				node = FilterNode()
+				node.create_node(	range = match.span(), 
+							operator = match.group(2), 
+							matched_operator = match.group(),
+							level = match.group().count(self.GROUP_DELIMITER),
+							query_string = key
+						  )
+				self.filters.append(node)
+		
 				
 
 
