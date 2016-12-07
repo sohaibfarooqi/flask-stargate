@@ -77,21 +77,25 @@ class QueryFilters():
 		
 		group_boundries = list()
 		
-		self.filters, group_boundries = zip(*[(match.group(1), match.span()) for match in iterator])
-		
+		filters, group_boundries, match_filters = zip(*[(match.group(1), match.span(), match.group()) for match in iterator])
+		print(filters, group_boundries, match_filters)
 		remaining_str = query_string_dict
 		length, curr_length = 0,0
 
+		for key in match_filters:
+			regex = '' .join(['(?:(and|or)\s+)*', '(\\',key, '\)', '(?:\s+(and|or))*'])
+			
 		for count, key in enumerate(group_boundries):
 			remaining_str = remaining_str[0:key[0]-length] + remaining_str[key[1]-curr_length:len(remaining_str)-1]
 			length = group_boundries[count-1][1] - group_boundries[count-1][0] 
 			curr_length = group_boundries[count][1] - group_boundries[count][0] 
+			# print(remaining_str) 
 			# print(length)
 			# print(curr_length)
 			# print(key[0]-length)
 			# print(key[1]-length-curr_length, len(remaining_str))
 		remaining_str = remaining_str.lstrip().rstrip()
-		print(remaining_str) 
+		# print(remaining_str) 
 		# for match in iterator:
 
 		# 	self.filters.append(match.group(1))
