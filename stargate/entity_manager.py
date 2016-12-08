@@ -78,12 +78,18 @@ class QueryFilters():
 		group_boundries = list()
 		
 		filters, group_boundries, match_filters = zip(*[(match.group(1), match.span(), match.group()) for match in iterator])
-		print(filters, group_boundries, match_filters)
+		# print(filters, group_boundries)
 		remaining_str = query_string_dict
 		length, curr_length = 0,0
 
-		for key in match_filters:
-			regex = '' .join(['(?:(and|or)\s+)*', '(\\',key, '\)', '(?:\s+(and|or))*'])
+		for count, key in enumerate(filters):
+			match = re.findall(r'(?:(and|or)\s+)*(\(%s\))(?:\s+(and|or))*' % key, query_string_dict)
+			if match:
+				match_list = match[0]
+				print(match_list)
+				print(group_boundries[count])
+
+
 			
 		for count, key in enumerate(group_boundries):
 			remaining_str = remaining_str[0:key[0]-length] + remaining_str[key[1]-curr_length:len(remaining_str)-1]
@@ -110,8 +116,6 @@ class QueryFilters():
 		# 	if len(span_element) == 2:
 		# 		self.span_array.append(span_element)
 		# 		span_element = list()
-
-		print(self.filters, group_boundries)
 
 		for key in self.span_array:
 			op = query_string_dict[key[0]:key[1]].replace(' ','')
