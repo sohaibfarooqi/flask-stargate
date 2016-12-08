@@ -76,19 +76,14 @@ class QueryFilters():
 		
 		
 		group_boundries = list()
-		
-		filters, group_boundries, match_filters = zip(*[(match.group(1), match.span(), match.group()) for match in iterator])
-		# print(filters, group_boundries)
+		match_filters = ''
+		filters, group_boundries = zip(*[(match.group(1), match.span()) for match in iterator])
 		remaining_str = query_string_dict
-		length, curr_length = 0,0
-
-		for count, key in enumerate(filters):
-			match = re.findall(r'(?:(and|or)\s+)*(\(%s\))(?:\s+(and|or))*' % key, query_string_dict)
-			if match:
-				match_list = match[0]
-				print(match_list)
-				print(group_boundries[count])
-
+		for key in filters:
+			# remaining_str = re.split(r'(?:(and|or)\s+)*(\(%s\))(?:\s+(and|or))*' % key, query_string_dict)
+			remaining_str = re.split(r'and|or\s+%s\s+and|or' % key, query_string_dict)
+			print(remaining_str)
+		
 
 			
 		for count, key in enumerate(group_boundries):
