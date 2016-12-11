@@ -1,10 +1,10 @@
 from flask import Blueprint, jsonify, request,g
 from functools import wraps
-from .models import Event, User, ServerLog, Entity
+from .entity_manager.models import Event, User, ServerLog, Entity
 from .entity_manager import EntityManager
 from .schemas import event_schema, events_schema, user_schema, users_schema
 from .route_handler import Api, Resource
-from .models import db
+from .entity_manager.models import db
 from .auth import Authorization
 
 

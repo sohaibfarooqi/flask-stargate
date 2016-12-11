@@ -1,5 +1,5 @@
 from marshmallow import Schema, post_load, pre_load, post_dump, post_load, fields,validate,validates_schema, ValidationError
-from .models import Event, User
+from .entity_manager.models import Event, User
 
 class BaseSchema(Schema):
     id = fields.Int(dump_only = True, required = True)

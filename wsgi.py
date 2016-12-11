@@ -3,7 +3,7 @@ from .config import ApplicationConfig
 from functools import wraps
 from flask import g
 from .stargate.extentions import db
-from .stargate.models import ServerLog
+from .stargate.entity_manager.models import ServerLog
 
 
 app = create_app(ApplicationConfig)

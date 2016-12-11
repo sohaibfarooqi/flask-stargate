@@ -1,8 +1,8 @@
-from .models import Auth, User
+from .entity_manager.models import Auth, User
 from flask import current_app as app
 from sqlalchemy import and_
 import datetime
-from .models import db
+from .entity_manager.models import db
 import hashlib
 
 class Authorization():

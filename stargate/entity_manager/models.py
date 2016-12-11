@@ -1,8 +1,9 @@
+import datetime
 from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
-import datetime
 from flask_sqlalchemy import SQLAlchemy
-
+from sqlalchemy.dialects import postgresql
+import sqlalchemy.orm
 
 db = SQLAlchemy()
 
@@ -14,6 +15,14 @@ class Entity:
          for key in kwargs:
             self.key = kwargs[key]
 
+    def get_collection(model, filters):
+        query = model.query.filter(filters)
+        print(Entity.print_query(query))
+        return  model.query.filter(filters).all()
+
+    def print_query(query):
+        if isinstance(query, sqlalchemy.orm.Query):
+            return str(query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))
 
 class TimestampMixin:
     created_at = db.Column(db.DateTime, default=func.now())
@@ -83,6 +92,7 @@ class User(db.Model,Entity,TimestampMixin):
     phone = db.Column(db.String)
     pic_url = db.Column(db.String)
     city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
+    age = db.Column(db.Integer)
     city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location', backref = db.backref('user', lazy='dynamic'))
