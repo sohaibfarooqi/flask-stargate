@@ -1,5 +1,5 @@
 import re
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, desc
 
 class QueryFilter():
 	
@@ -73,9 +73,45 @@ class QueryFilter():
 		value = value.replace('(','')
 		value = value.replace(')','')
 		value = value.replace(' ','')
+		
 		field = getattr(model, column, None)
 		attr = list(filter(
 						lambda e: hasattr(field, e % op), 
 						['%s','%s_','__%s__']
 					  ))[0] % op
 		return getattr(field, attr)(value)
+
+class QueryFields:
+
+	def get_field_list(str, model):
+		
+		fields = str.split(',')
+		field_list = list()
+		
+		for field in fields:
+			field_list.append(getattr(model, field))
+		return field_list
+
+class QueryOrder:
+
+	def get_order_by_list(str, model):
+
+		sort_order_fields = str.split(',')
+		sort_order_list = list()
+		print(sort_order_fields)
+
+		for key in sort_order_fields:
+			
+			key = key.strip()
+
+			if key.endswith('-'):
+
+				key = key.replace('-', '')
+				field = getattr(model, key)
+				sort_order_list.append(field.desc())	
+			
+			else:
+				field = getattr(model, key)
+				sort_order_list.append(field)
+			
+		return sort_order_list

@@ -1,36 +1,36 @@
 from .models import Entity
 import urllib.parse as urlparse
-from .query_filter import QueryFilter
+from .query_filter import QueryFilter, QueryFields, QueryOrder
 from .parser import Parser
 
 class EntityManager():
 
-	_all_model_classes_ = Entity.__subclasses__()
-
-	_all_methods_ = ('get', 'post', 'put', 'delete')
-
 	def get(model, pk_id, query_string):
-
-		if model in EntityManager._all_model_classes_:
+	
+		if pk_id is None:
 			
-			if pk_id is None:
-				
-				if query_string is None:
-					
-					#Default collection critera
-					return None
-				else:
-				
-					query_string_dict = dict(urlparse.parse_qsl(query_string, encoding = 'utf-8'))
-					group_filters, simple_filters = Parser.parse_filters(query_string_dict['filters'])
-					query_filters = QueryFilter.create_filters({'priority_filters': group_filters, 'simple_filters': simple_filters}, model)
-				
-					return Entity.get_collection(model, query_filters)
+			query_string_dict = dict(urlparse.parse_qs(query_string, encoding = 'utf-8'))
+			
+			if 'filters' in query_string_dict:
+				filter_str = query_string_dict['filters'][0]
+			
+			if 'sort' in query_string_dict:
+				sort_str = query_string_dict['sort'][0]
+			
+			if 'fields' in query_string_dict:
+				fields = query_string_dict['fields'][0]
+
+			group_filters, simple_filters = Parser.parse_filters(filter_str)
+			query_filters = QueryFilter.create_filters({'priority_filters': group_filters, 'simple_filters': simple_filters}, model)
+			
+			query_fields = QueryFields.get_field_list(fields, model)
+
+			query_order = QueryOrder.get_order_by_list(sort_str, model)
+
+			return Entity.get_collection(model, query_filters, query_fields, query_order)
 
 		else:
-			query = model.query.get(pk_id)
-			return None
-
+			return Entity.get_one(model, pk_id)
 
 
 	

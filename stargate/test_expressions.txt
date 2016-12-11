@@ -1,19 +1,2 @@
-Test Query Expressions:
-
-- 	filters=(name like 'Milk' and name eq 'Eggs') and age ge 2.55 (TESTED)
-
-- 	filters=(name like 'Milk' and name eq 'Eggs') and (name ge 2.55 or name ge 2.55) (TESTED)
-
-- 	filters=(name like 'Milk' and name eq 'Eggs' and name eq 'Eggs') and (name ge 2.55 or name ge 2.55) 
-	(TO BE TESTED)
-
-- 	
-(name like 'Milk' and name eq 'Eggs') and (name ge 2.55 or name ge 2.55) and (name ge 2.55 or name ge 2.55) (TO BE TESTED)
-
-filters=(name like 'Milk' and name eq 'Eggs') and (name ge 2.55 or name ge 2.55) and (name ge 2.55 or name ge 2.55)  and (name ge 2.55 or name ge 2.55)
-
-precedence group ( '()' )
----------------------------------------------------------------------------------------------------
-filters=(name like 'Milk' and name eq 'mil') and age ge 2.55 (name like 'Milk' and name eq 'Eggs')
-filters=(name like 'Milk' and name eq 'mil') and age ge 2.55 and age ge 2.55 and  (name like 'Milk' and name eq 'Eggs')
---------------------------------------------------------------------------------------------------------
+filters=(name like Milk or name eq mil) and age ge 2 and age ge 2 and  (name like Milk or name eq Eggs) and age ge  2 
+filters=(name like Milk or name eq mil) and (name like Milk or name eq Eggs) 

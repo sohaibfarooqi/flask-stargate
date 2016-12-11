@@ -15,14 +15,20 @@ class Entity:
          for key in kwargs:
             self.key = kwargs[key]
 
-    def get_collection(model, filters):
-        query = model.query.filter(filters)
+    def get_collection(model, filters, fields, sort_order):
+
+        query = model.query.with_entities(*fields).filter(filters).order_by(*sort_order)
         print(Entity.print_query(query))
         return  model.query.filter(filters).all()
 
+    def get_one(model, pk_id):
+        return model.query.get(pk_id).first()
+
     def print_query(query):
         if isinstance(query, sqlalchemy.orm.Query):
-            return str(query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))
+            return str(query.statement.compile( dialect=postgresql.dialect(), 
+                                                compile_kwargs={"literal_binds": True}
+                                                ))
 
 class TimestampMixin:
     created_at = db.Column(db.DateTime, default=func.now())
