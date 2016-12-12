@@ -15,12 +15,20 @@ class Entity:
          for key in kwargs:
             self.key = kwargs[key]
 
-    def get_collection(model, filters, fields, sort_order):
+    def get_collection(model, filters = list(), fields = list(), sort_order = list()):
         
-        if isinstance(filters, list):
-            query = model.query.with_entities(*fields).filter(*filters).order_by(*sort_order)
-        else:    
-            query = model.query.with_entities(*fields).filter(filters).order_by(*sort_order)
+        if len(fields) > 0:
+            query = model.query.with_entities(*fields)
+        
+        if len(filters) > 0:
+            
+            if isinstance(filters, list):
+                query = model.query.filter(*filters).order_by(*sort_order)
+            else:    
+                query = model.query.filter(filters)
+        
+        if len(sort_order) > 0:
+            query = model.query.order_by(*sort_order)
         
         print(Entity.print_query(query))
         
