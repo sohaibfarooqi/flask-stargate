@@ -16,10 +16,15 @@ class Entity:
             self.key = kwargs[key]
 
     def get_collection(model, filters, fields, sort_order):
-
-        query = model.query.with_entities(*fields).filter(filters).order_by(*sort_order)
+        
+        if isinstance(filters, list):
+            query = model.query.with_entities(*fields).filter(*filters).order_by(*sort_order)
+        else:    
+            query = model.query.with_entities(*fields).filter(filters).order_by(*sort_order)
+        
         print(Entity.print_query(query))
-        return  model.query.filter(filters).all()
+        
+        return  query.all()
 
     def get_one(model, pk_id):
         return model.query.get(pk_id).first()

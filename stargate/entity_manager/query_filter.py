@@ -1,38 +1,52 @@
 import re
-from sqlalchemy import or_, and_, desc
+from sqlalchemy import or_, and_
 
 class QueryFilter():
 	
 	REGEX_COLUMN_OPERATORS = r'\s+(\w+)\s+'
 
-	def create_filters(expr_dict, model, validate_fields = 0, validate_values = 0):
+	def create_filters(expr_dict, model, validate_values = 0):
 		
 		sql_filter_set = list()
 
 		try:
 			
-			for key in expr_dict['priority_filters']:
+			if expr_dict['priority_filters'] is not None:
 				
-				expr_list = key['expr']
-				op = QueryFilter.get_sql_operator(key['op'])
-				sql_filter = list()
+				for key in expr_dict['priority_filters']:
+				
+					expr_list = key['expr']
+					op = QueryFilter.get_sql_operator(key['op'])
+					sql_filter = list()
 
-				for expr in expr_list:
+					for expr in expr_list:
 					
-					column_operator = QueryFilter.parse_column_operator(expr)
-					sql_filter.append(QueryFilter.get_filter_expression(expr.strip(), column_operator, model))
-				sql_filter_set.append(op(*sql_filter))
+						column_operator = QueryFilter.parse_column_operator(expr)
+						sql_filter.append(QueryFilter.get_filter_expression(expr.strip(), column_operator, model))
+					sql_filter_set.append(op(*sql_filter))
 			
 			sql_filter = list()
 			
-			op = QueryFilter.get_sql_operator(expr_dict['simple_filters']['op'])
-
-			for key in expr_dict['simple_filters']['expr']:
-				
-				column_operator = QueryFilter.parse_column_operator(key)
-				sql_filter.append(QueryFilter.get_filter_expression(key.strip(), column_operator, model))	
+			op = None
 			
-			return (op(*sql_filter_set,*sql_filter))
+			if expr_dict['simple_filters']['op'] is not None:
+				op = QueryFilter.get_sql_operator(expr_dict['simple_filters']['op'])
+				
+			
+			if expr_dict['simple_filters']['expr'] is None:
+				return op(*sql_filter_set)
+			
+			else:
+
+				for key in expr_dict['simple_filters']['expr']:
+				
+					column_operator = QueryFilter.parse_column_operator(key)
+					sql_filter.append(QueryFilter.get_filter_expression(key.strip(), column_operator, model))	
+				
+				if op is None:
+					return sql_filter
+				else:
+					return (op(*sql_filter_set,*sql_filter))
 				
 
 		except KeyError:

@@ -1,2 +1,14 @@
-filters=(name like Milk or name eq mil) and age ge 2 and age ge 2 and  (name like Milk or name eq Eggs) and age ge  2 
-filters=(name like Milk or name eq mil) and (name like Milk or name eq Eggs) 
+
+---------------------------------------------------------------------------------------------------
+								TEST FILTER,SORT,FIELDS EXPRESSIONS
+---------------------------------------------------------------------------------------------------
+
+- filters = (name like Milk or name eq mil) and age ge 2 and age ge 2 and (name like Milk or name eq 				Eggs) and age ge  2 
+
+- filters = (name like Milk or name eq mil) and (name like Milk or name eq Eggs) 
+
+- filters = (name like Milk or name eq mil) and (name like Milk or name eq Eggs) and age ge 2
+
+- filters = (name like Milk or name eq mil) and age ge 2 and (name like Milk or name eq Eggs)
+
+- filters=name like Milk
