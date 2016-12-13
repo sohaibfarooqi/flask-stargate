@@ -8,27 +8,38 @@ import sqlalchemy.orm
 db = SQLAlchemy()
 
 class Entity:
+    
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     def __init__(self, **kwargs):
+         
          self.__dict__.update(kwargs)
+         
          for key in kwargs:
             self.key = kwargs[key]
 
-    def get_collection(model, filters = list(), fields = list(), sort_order = list()):
+    def get_collection(model, embed = list(), embed_inner = list(), filters = list(), fields = list(), sort_order = list()):
         
+        query = model.query
+
         if len(fields) > 0:
-            query = model.query.with_entities(*fields)
+            query = query.with_entities(*fields)
+
+        if len(embed) > 0:
+            query = query.outerjoin(*embed)
+
+        if len(embed_inner) > 0:
+            query = query.join(*embed_inner)            
         
         if len(filters) > 0:
             
             if isinstance(filters, list):
-                query = model.query.filter(*filters).order_by(*sort_order)
+                query = query.filter(*filters).order_by(*sort_order)
             else:    
-                query = model.query.filter(filters)
+                query = query.filter(filters)
         
         if len(sort_order) > 0:
-            query = model.query.order_by(*sort_order)
+            query = query.order_by(*sort_order)
         
         print(Entity.print_query(query))
         
@@ -114,7 +125,7 @@ class User(db.Model,Entity,TimestampMixin):
     age = db.Column(db.Integer)
     city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship('Location', backref = db.backref('user', lazy='dynamic'))
+    location = db.relationship('Location', backref = db.backref('user', lazy='subquery'))
 
 class Auth(db.Model,Entity,TimestampMixin):
     auth_token = db.Column(db.String)

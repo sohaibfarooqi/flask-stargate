@@ -1,5 +1,6 @@
 import re
 from sqlalchemy import or_, and_
+from .models import Entity
 
 class QueryFilter():
 	
@@ -95,37 +96,25 @@ class QueryFilter():
 					  ))[0] % op
 		return getattr(field, attr)(value)
 
-class QueryFields:
+class QueryUtils:
 
-	def get_field_list(str, model):
-		
-		fields = str.split(',')
-		field_list = list()
-		
-		for field in fields:
-			field_list.append(getattr(model, field))
-		return field_list
+	def get_query_element_list(model, str, element_type):
 
-class QueryOrder:
+		str = str.rstrip(',').strip()
+		elements = str.split(',')
+		print(elements)
+		element_list = list()
 
-	def get_order_by_list(str, model):
-
-		sort_order_fields = str.split(',')
-		sort_order_list = list()
-		print(sort_order_fields)
-
-		for key in sort_order_fields:
+		for element in elements:
 			
-			key = key.strip()
+			if element_type == 'sort':
+				element = element.strip()
 
-			if key.endswith('-'):
+			if element.endswith('-'):
 
-				key = key.replace('-', '')
-				field = getattr(model, key)
-				sort_order_list.append(field.desc())	
+				element = element.replace('-', '')
 			
-			else:
-				field = getattr(model, key)
-				sort_order_list.append(field)
-			
-		return sort_order_list
+			field = getattr(model, element)
+			element_list.append(field)
+
+		return element_list

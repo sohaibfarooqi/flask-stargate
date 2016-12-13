@@ -87,6 +87,7 @@ class Parser():
 		   	- query_string_dict (str): Filter string received in request URL.
 		   	- filters (list): list of precedence filters.
 		   	- group_boundries (list of tuples): start-end range of each precedence filters.
+		   
 		   Returns:
 		   	- str, str: first value is str representation of simple filters, second is  logical operator in between   
 		"""
