@@ -1,6 +1,7 @@
 import re
 
-"""Dated: 13-12-2016, Parsing utility for EntityManager. Defines set of rules to parse filters string received in GET request URL.
+"""Dated: 13-12-2016
+Parsing utility for EntityManager. Defines set of rules to parse filters string received in GET request URL.
 """
 
 class Parser():
