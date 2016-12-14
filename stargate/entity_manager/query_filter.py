@@ -102,7 +102,6 @@ class QueryUtils:
 
 		str = str.rstrip(',').strip()
 		elements = str.split(',')
-		print(elements)
 		element_list = list()
 
 		for element in elements:

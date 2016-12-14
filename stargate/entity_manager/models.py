@@ -18,37 +18,61 @@ class Entity:
          for key in kwargs:
             self.key = kwargs[key]
 
-    def get_collection(model, embed = list(), embed_inner = list(), filters = list(), fields = list(), sort_order = list()):
+    def get_collection(model, print_query, **kwargs):
         
         query = model.query
+        offset, page_size = 0,10
 
-        if len(fields) > 0:
-            query = query.with_entities(*fields)
-
-        if len(embed) > 0:
-            query = query.outerjoin(*embed)
-
-        if len(embed_inner) > 0:
-            query = query.join(*embed_inner)            
-        
-        if len(filters) > 0:
+        if 'fields' in kwargs and isinstance(kwargs['fields'], list) and len(kwargs['fields']) > 0:
             
-            if isinstance(filters, list):
-                query = query.filter(*filters).order_by(*sort_order)
+            query = query.with_entities(*kwargs['fields'])
+
+        if 'embed' in kwargs and isinstance(kwargs['embed'], list) and len(kwargs['embed']) > 0:
+            
+            query = query.outerjoin(*kwargs['embed'])
+        
+        if 'embed_inner' in kwargs and isinstance(kwargs['embed_inner'], list) and len(kwargs['embed_inner']) > 0:
+            
+            query = query.join(*kwargs['embed_inner'])            
+        
+        if 'filters' in kwargs and len(kwargs['filters']) > 0:
+            
+            if isinstance(kwargs['filters'], list):
+                query = query.filter(*kwargs['filters'])
             else:    
-                query = query.filter(filters)
+                query = query.filter(kwargs['filters'])
         
-        if len(sort_order) > 0:
-            query = query.order_by(*sort_order)
+        if 'sort_order' in kwargs and isinstance(kwargs['sort_order'], list) and len(kwargs['sort_order']) > 0:
+
+            query = query.order_by(*kwargs['sort_order'])
         
-        print(Entity.print_query(query))
+        query = query.offset(offset).limit(page_size)
+        
+        if print_query : 
+            print(Entity.query_str_repr(query))
         
         return  query.all()
 
-    def get_one(model, pk_id):
-        return model.query.get(pk_id).first()
+    def get_one(model, pk_id, print_query, **kwargs):
+        
+        query = model.query
 
-    def print_query(query):
+        if 'embed' in kwargs and isinstance(kwargs['embed'], list) and len(kwargs['embed']) > 0:
+            
+            query = query.outerjoin(*kwargs['embed'])
+        
+        if 'embed_inner' in kwargs and isinstance(kwargs['embed_inner'], list) and len(kwargs['embed_inner']) > 0:
+            
+            query = query.join(*kwargs['embed_inner'])
+
+        query = query.filter(model.id == pk_id)
+        
+        if print_query : 
+            print(Entity.query_str_repr(query))
+
+        return query.first()
+
+    def query_str_repr(query):
         if isinstance(query, sqlalchemy.orm.Query):
             return str(query.statement.compile( dialect=postgresql.dialect(), 
                                                 compile_kwargs={"literal_binds": True}
@@ -125,7 +149,7 @@ class User(db.Model,Entity,TimestampMixin):
     age = db.Column(db.Integer)
     city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship('Location', backref = db.backref('user', lazy='subquery'))
+    location = db.relationship('Location', backref = db.backref('user', lazy='dynamic'))
 
 class Auth(db.Model,Entity,TimestampMixin):
     auth_token = db.Column(db.String)
