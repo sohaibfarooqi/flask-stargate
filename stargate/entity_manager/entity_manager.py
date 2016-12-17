@@ -2,6 +2,8 @@ from .models import Entity
 import urllib.parse as urlparse
 from .query_filter import QueryFilter, QueryUtils
 from .parser import Parser
+import timeit
+from functools import partial
 
 class EntityManager():
 
@@ -10,9 +12,9 @@ class EntityManager():
 		query_embed,query_embed_inner,query_fields = list(), list(), list()
 		
 		if query_string is not None:
-			
-			query_string_dict = urlparse.parse_qs(query_string, encoding = 'utf-8')
-			
+
+			query_string = query_string.strip()
+			query_string_dict = dict(urlparse.parse_qs(query_string, encoding = 'utf-8'))
 			query_filters, query_order = list(), list()
 			offset,page_size = 0,10
 
@@ -30,6 +32,8 @@ class EntityManager():
 
 			if 'filters' in query_string_dict:
 				filter_str = query_string_dict['filters'][0]
+				# times = timeit.Timer(partial(Parser.parse_filters, filter_str)).repeat(3, 100)
+				# print (min(times)/1000)
 				group_filters, simple_filters = Parser.parse_filters(filter_str)
 				query_filters = QueryFilter.create_filters({'priority_filters': group_filters, 'simple_filters': simple_filters}, model)
 

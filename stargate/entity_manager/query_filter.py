@@ -1,6 +1,8 @@
 import re
 from sqlalchemy import or_, and_
 from .models import Entity
+from .exceptions import ColumnNotFoundException, ColumnOperatorNotFoundException
+from sqlalchemy import exc
 
 class QueryFilter():
 	
@@ -80,7 +82,7 @@ class QueryFilter():
 	def get_filter_expression(expression, op, model):
 
 		column, value = re.split(r'\s%s\s' % op, expression)
-		#TODO: check if column exist and conform value received in request
+		
 		column = column.replace('(','')
 		column = column.replace(')','')
 		column = column.replace(' ','')
@@ -89,11 +91,22 @@ class QueryFilter():
 		value = value.replace(')','')
 		value = value.replace(' ','')
 		
+		
 		field = getattr(model, column, None)
+
+		if field is None:
+			raise ColumnNotFoundException(column)
+		
+		
 		attr = list(filter(
 						lambda e: hasattr(field, e % op), 
 						['%s','%s_','__%s__']
-					  ))[0] % op
+					  ))
+		
+		if not attr:
+			raise OperatorNotFoundException(op)
+		
+		attr = attr[0] %op
 		return getattr(field, attr)(value)
 
 class QueryUtils:

@@ -7,11 +7,11 @@ from .route_handler import Api, Resource
 from .entity_manager.models import db
 from .auth import Authorization
 
-
 api_blueprint = Blueprint('api_blueprint', __name__)
 api = Api(api_blueprint)
 
 __custom_endpoints__ = ('login', 'signup')
+
 
 
 @api_blueprint.before_request
@@ -107,18 +107,16 @@ class EventResource(Resource):
 class UserResource(Resource):
 
     def get(self, user_id):
-
+        query_str = request.environ['QUERY_STRING']
+        
         if user_id is None:
-            filter = request.environ['QUERY_STRING']
-            users = EntityManager.get(User, user_id, filter)
+            query_str = request.environ['QUERY_STRING']
+            users = EntityManager.get(User, user_id, query_str)
             return jsonify({"message" : "Request Successful", "code": 200},users_schema.dump(users).data)
         
         else:
-            user = EntityManager.get(User,user_id)
-            if user is None:
-                return jsonify({"message": "Resource Not Found", "code": 404})
-            else:
-                return jsonify({"message" : "Request Successful", "code": 200,'data': user_schema.dump(user).data})
+            user = EntityManager.get(User,user_id, query_str)
+            return jsonify({"message" : "Request Successful", "code": 200,'data': user_schema.dump(user).data})
         
     def post(self):
         try:

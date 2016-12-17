@@ -1,4 +1,5 @@
 import re
+from .exceptions import LogicalOperatorNotFound, ParseException,AmbiguousExpressionException
 
 """Dated: 13-12-2016
 Parsing utility for EntityManager. Defines set of rules to parse filters string received in GET request URL.
@@ -22,7 +23,7 @@ class Parser():
 	"""
 
 	REGEX_FILTER_GROUPS = r'\((.*?)\)'
-	REGEX_EXPRESSION_PARSER = r'(((?:(and|or)\s+)*\((%s)\))(?:\s+(and|or))*)'
+	REGEX_EXPRESSION_PARSER = r'(((?:\s+(and|or)\s+)?\((%s)\))(?:\s+(and|or)\s+)?)'
 	REGEX_LOGICAL_OPERATORS = r'\s+(and|or)\s+'
 
 	def parse_filters(filter_str):
@@ -75,7 +76,7 @@ class Parser():
 		   Returns:
 		   	- list, list(tuple(),): first list are actual precedence filters, second is start, end ranges of each filter.
 		"""
-		filters, group_boundries, group_filters, operators = list(), list(), list(), set()
+		filters, group_boundries = list(), list()
 		priority_filters, filter_boundaries = zip(*[(match.group(1), match.span()) for match in match_list])
 		return priority_filters, filter_boundaries
 
@@ -93,11 +94,11 @@ class Parser():
 		"""
 		remaining_filters, logical_operator = '', ''
 		remaining_str = query_string_dict
+		operators = set()
 
 		for count, key in enumerate(filters):
-			operators = set()
 			match_string = list()
-
+			
 			match_string = re.search(Parser.REGEX_EXPRESSION_PARSER % key, query_string_dict, flags = re.I).groups()
 
 			expr_with_both_operator = match_string[0]
@@ -105,8 +106,11 @@ class Parser():
 			pre_operator = match_string[2]
 			post_operator = match_string[4]
 			
-			logical_operator = pre_operator
+			if pre_operator is None and post_operator is None:
+				raise ParseException(expr_with_both_operator)
 
+			logical_operator = pre_operator
+			
 			if group_boundries[count][1] <= len(query_string_dict) and group_boundries[count][0] != 0:
 				string_to_match = expr_with_pre_operator
 			else:
@@ -121,12 +125,15 @@ class Parser():
 				print("Group At End")
 			else:
 				operators.add(post_operator)
-			
+
+			if len(operators) > 1:
+				raise AmbiguousExpressionException(expr_with_both_operator.strip())
+
 			remaining_str =  remaining_str.replace(string_to_match,'')
-			
+		
+		
 		remaining_str = re.sub(r'\s+', ' ', remaining_str)
 		remaining_str = remaining_str.strip()
-
 		return remaining_str, logical_operator
 	
 	def parse_filter_statement_list(expr):
@@ -163,6 +170,9 @@ class Parser():
 		operator,base_filters = set(),list()
 		operator = set([op for op in Parser.parse_logical_operator(expr)])
 		
+		if len(operator) > 1:
+				raise AmbiguousExpressionException(expr.strip())
+
 		if bool(operator):
 
 			bool_operator = next(iter(operator))
@@ -189,4 +199,8 @@ class Parser():
 		"""
 		op_list = list()
 		op_list = re.findall(Parser.REGEX_LOGICAL_OPERATORS, str, flags = re.I)
+
+		if not op_list:
+			raise LogicalOperatorNotFound(str)
+		
 		return op_list

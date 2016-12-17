@@ -4,10 +4,14 @@ from functools import wraps
 from flask import g
 from .stargate.extentions import db
 from .stargate.entity_manager.models import ServerLog
-
-
+from .stargate.entity_manager.exceptions import ApplicationError
+ 
 app = create_app(ApplicationConfig)
 
+@app.errorhandler(ApplicationError)
+def application_error(error):
+
+	return error.message, 500
 
 @app.after_request
 def log_response(response):
