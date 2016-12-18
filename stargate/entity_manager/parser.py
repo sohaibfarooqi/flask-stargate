@@ -25,6 +25,7 @@ class Parser():
 	REGEX_FILTER_GROUPS = r'\((.*?)\)'
 	REGEX_EXPRESSION_PARSER = r'(((?:\s+(and|or)\s+)?\((%s)\))(?:\s+(and|or)\s+)?)'
 	REGEX_LOGICAL_OPERATORS = r'\s+(and|or)\s+'
+	REGEX_SIMPLE_EXPRESSION = r'(\w+\s+\w+\s+(?:\d+|\w+))'
 
 	def parse_filters(filter_str):
 		
@@ -169,7 +170,7 @@ class Parser():
 		"""
 		operator,base_filters = set(),list()
 		operator = set([op for op in Parser.parse_logical_operator(expr)])
-		
+
 		if len(operator) > 1:
 				raise AmbiguousExpressionException(expr.strip())
 
@@ -200,7 +201,20 @@ class Parser():
 		op_list = list()
 		op_list = re.findall(Parser.REGEX_LOGICAL_OPERATORS, str, flags = re.I)
 
-		if not op_list:
+		if not op_list and not Parser.is_single_expression(str):
 			raise LogicalOperatorNotFound(str)
 		
 		return op_list
+
+	def is_single_expression(expr):
+		
+		expr_list = re.findall(Parser.REGEX_SIMPLE_EXPRESSION, expr, flags = re.I)
+
+		if len(expr_list) == 1:
+			return True
+
+		elif len(expr_list) > 1 or not expr_list:
+			return False
+		
+		else:
+			return False

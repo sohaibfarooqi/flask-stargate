@@ -90,13 +90,11 @@ class QueryFilter():
 		value = value.replace('(','')
 		value = value.replace(')','')
 		value = value.replace(' ','')
-		
-		
+
 		field = getattr(model, column, None)
 
 		if field is None:
 			raise ColumnNotFoundException(column)
-		
 		
 		attr = list(filter(
 						lambda e: hasattr(field, e % op), 
@@ -104,7 +102,7 @@ class QueryFilter():
 					  ))
 		
 		if not attr:
-			raise OperatorNotFoundException(op)
+			raise ColumnOperatorNotFoundException(op)
 		
 		attr = attr[0] %op
 		return getattr(field, attr)(value)
