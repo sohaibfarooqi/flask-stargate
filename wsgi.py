@@ -5,12 +5,13 @@ from flask import g
 from .stargate.extentions import db
 from .stargate.entity_manager.models import ServerLog
 from .stargate.entity_manager.exceptions import ApplicationError
- 
+from .stargate.middleware import ArgsParseMiddleware 
+
 app = create_app(ApplicationConfig)
+app.wsgi_app = ArgsParseMiddleware(app.wsgi_app)
 
 @app.errorhandler(ApplicationError)
 def application_error(error):
-
 	return error.message, 500
 
 @app.after_request

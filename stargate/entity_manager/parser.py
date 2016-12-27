@@ -13,9 +13,10 @@ class Parser():
 
 	Regular Expression:
 		- '\((.*?)\)' (Parse precedence groups)
-		-  '(((?:(and|or)\s+)*\((%s)\))(?:\s+(and|or))*)' (match groups within query string and identify pre and post logical operators)
-		-   '\s+(and|or)\s+' (match logical operator in simple statement)
-
+		- '(((?:(and|or)\s+)*\((%s)\))(?:\s+(and|or))*)' (match groups within query string and identify pre and post logical operators)
+		- '\s+(and|or)\s+' (match logical operator in simple statement)
+		- '(\w+\s+\w+\s+(?:\d+|\w+))' (Match single filter statement i.e name like 'Jhonny')
+		
 	Example Filter String: 
 		- filters = (name like Milk or name eq mil) and age ge 2 and age ge 2 and (name like Milk or name eq Eggs) and age ge  2
 		- filters = (name like Milk or name eq mil) and (name like Milk or name eq Eggs) 
@@ -208,6 +209,15 @@ class Parser():
 
 	def is_single_expression(expr):
 		
+		"""Identify if the 'expr' is single statement or multiple
+
+		   Args: 
+		   	- expr (str): Filters statement
+		   	
+		   Returns:
+		   	- bool: if single statement: T else: F    
+		"""
+
 		expr_list = re.findall(Parser.REGEX_SIMPLE_EXPRESSION, expr, flags = re.I)
 
 		if len(expr_list) == 1:

@@ -27,7 +27,7 @@ class ColumnOperatorNotFoundException(ApplicationError):
 		if message is not None:
 			self.message = message
 				
-		super(OperatorNotFoundException, self).__init__(self.message, op, *args)
+		super(ColumnOperatorNotFoundException, self).__init__(self.message, op, *args)
 
 class LogicalOperatorNotFound(ApplicationError):
 	

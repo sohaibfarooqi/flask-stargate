@@ -9,7 +9,7 @@ db = SQLAlchemy()
 
 class Entity:
     
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key = True, autoincrement = True)
 
     def __init__(self, **kwargs):
          
