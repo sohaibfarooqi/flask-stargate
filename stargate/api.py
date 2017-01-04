@@ -11,8 +11,6 @@ from .reqparser import ReqParser
 api_blueprint = Blueprint('api_blueprint', __name__)
 api = Api(api_blueprint)
 
-req_parser = ReqParser(request)
-
 __custom_endpoints__ = ('login', 'signup')
 
 @api_blueprint.before_request
@@ -115,7 +113,7 @@ class UserResource(Resource):
         if user_id is None:
             query_str = request.environ['QUERY_STRING']
             users = EntityManager.get(User, user_id, query_str)
-            return users_schema.dump(users).data, 200
+            return jsonify({"message" : "Request Successful", "code": 200,'data': users_schema.dump(users).data})
         
         else:
             user = EntityManager.get(User,user_id, query_str)

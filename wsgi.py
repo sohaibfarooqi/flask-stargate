@@ -8,7 +8,7 @@ from .stargate.entity_manager.exceptions import ApplicationError
 from .stargate.middleware import ArgsParseMiddleware 
 
 app = create_app(ApplicationConfig)
-app.wsgi_app = ArgsParseMiddleware(app.wsgi_app)
+# app.wsgi_app = ArgsParseMiddleware(app.wsgi_app)
 
 @app.errorhandler(ApplicationError)
 def application_error(error):
