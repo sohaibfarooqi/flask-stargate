@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
-from flask_api import status
+from core_api import status
 
 
 class APIException(Exception):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    detail = ''
+    detail = 'Interal server error'
 
     def __init__(self, detail=None):
         if detail is not None:

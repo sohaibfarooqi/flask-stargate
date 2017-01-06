@@ -1,4 +1,3 @@
-# coding: utf8
 from __future__ import unicode_literals
 from flask._compat import text_type
 from flask_api import exceptions

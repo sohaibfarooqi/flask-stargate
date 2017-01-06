@@ -1,4 +1,3 @@
-# coding: utf8
 from __future__ import unicode_literals
 from flask import request, render_template, current_app
 from flask.json import JSONEncoder
