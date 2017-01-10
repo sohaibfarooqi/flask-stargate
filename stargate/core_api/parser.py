@@ -1,12 +1,12 @@
 from __future__ import unicode_literals
 from flask._compat import text_type
-from flask_api import exceptions
+from .exception import APIException
 from werkzeug.formparser import MultiPartParser as WerkzeugMultiPartParser
 from werkzeug.formparser import default_stream_factory
 from werkzeug.urls import url_decode_stream
 import json
 import urllib.parse as urlparse
-
+from .api_parser.parser import Parser
 
 class BaseParser(object):
     media_type = None
@@ -27,7 +27,7 @@ class JSONParser(BaseParser):
             return json.loads(data)
         except ValueError as exc:
             msg = 'JSON parse error - %s' % text_type(exc)
-            raise exceptions.ParseError(msg)
+            raise APIException.ParseError(msg)
 
 
 class MultiPartParser(BaseParser):
@@ -41,7 +41,7 @@ class MultiPartParser(BaseParser):
         boundary = media_type.params.get('boundary')
         if boundary is None:
             msg = 'Multipart message missing boundary in Content-Type header'
-            raise exceptions.ParseError(msg)
+            raise APIException.ParseError(msg)
         boundary = boundary.encode('ascii')
 
         content_length = options.get('content_length')
@@ -51,7 +51,7 @@ class MultiPartParser(BaseParser):
             return multipart_parser.parse(stream, boundary, content_length)
         except ValueError as exc:
             msg = 'Multipart parse error - %s' % text_type(exc)
-            raise exceptions.ParseError(msg)
+            raise APIException.ParseError(msg)
 
 
 class URLEncodedParser(BaseParser):
@@ -65,4 +65,5 @@ class APIURLParser(BaseParser):
     media_type = 'application/vnd.api+text'
     
     def parse(self, stream, media_type, **options):
-        return dict(urlparse.parse_qs(stream, encoding = 'utf-8'))
+        query_string_dict = dict(urlparse.parse_qs(stream, encoding = 'utf-8'))
+        return Parser.parse_query_string(query_string_dict)

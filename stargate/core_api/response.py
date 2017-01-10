@@ -5,7 +5,7 @@ from flask._compat import text_type, string_types
 
 class ResponseCls(Response):
     def __init__(self, content=None, *args, **kwargs):
-        super(APIResponse, self).__init__(None, *args, **kwargs)
+        super(ResponseCls, self).__init__(None, *args, **kwargs)
 
         media_type = None
         if isinstance(content, (list, dict, text_type, string_types)):

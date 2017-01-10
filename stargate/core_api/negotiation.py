@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from flask import request
-from flask_api import exceptions
-from flask_api.mediatypes import MediaType, parse_accept_header
+from .exception import APIException
+from .mediatype import MediaType, parse_accept_header
 
 
 class BaseNegotiation(object):
@@ -24,10 +24,11 @@ class DefaultNegotiation(BaseNegotiation):
         client_media_type = MediaType(content_type_header)
         for parser in parsers:
             server_media_type = MediaType(parser.media_type)
+            print(server_media_type)
             if server_media_type.satisfies(client_media_type):
                 return (parser, client_media_type)
 
-        raise exceptions.UnsupportedMediaType()
+        raise APIException.UnsupportedMediaType()
 
     def select_renderer(self, renderers):
         """
@@ -46,4 +47,4 @@ class DefaultNegotiation(BaseNegotiation):
                         else:
                             return (renderer, client_media_type)
 
-        raise exceptions.NotAcceptable()
+        raise APIException.NotAcceptable()

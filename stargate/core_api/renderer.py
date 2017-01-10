@@ -2,8 +2,8 @@ from __future__ import unicode_literals
 from flask import request, render_template, current_app
 from flask.json import JSONEncoder
 from flask.globals import _request_ctx_stack
-from flask_api.mediatypes import MediaType
-from flask_api.compat import apply_markdown
+from .mediatype import MediaType
+from .compat import apply_markdown
 import json
 import pydoc
 import re

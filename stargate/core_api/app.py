@@ -1,15 +1,15 @@
 from __future__ import unicode_literals
 from flask import request, Flask
 from flask._compat import reraise, string_types, text_type
-from flask_api.exceptions import APIException
-from flask_api.request import RequestCls
-from flask_api.response import ResponseCls
-from flask_api.settings import APISettings
+from .exception import APIException
+from .request import RequestCls
+from .response import ResponseCls
+from .setting import APISettings
 from itertools import chain
 from werkzeug.exceptions import HTTPException
 import re
 import sys
-from flask_api.compat import is_flask_legacy
+from  .compat import is_flask_legacy
 
 
 class API(Flask):
@@ -21,8 +21,6 @@ class API(Flask):
         self.api_settings = APISettings(self.config)
         
     def preprocess_request(self):
-        request.parser_classes = self.api_settings.DEFAULT_PARSERS
-        request.renderer_classes = self.api_settings.DEFAULT_RENDERERS
         return super(API, self).preprocess_request()
 
     def make_response(self, rv):

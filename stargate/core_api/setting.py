@@ -37,10 +37,10 @@ class APISettings(object):
     @property
     def DEFAULT_PARSERS(self):
         default = [
-            'flask_api.parsers.JSONParser',
-            'flask_api.parsers.URLEncodedParser',
-            'flask_api.parsers.MultiPartParser',
-            'flask_api.parsers.APIURLParser'
+            'core_api.parsers.JSONParser',
+            'core_api.parsers.URLEncodedParser',
+            'core_api.parsers.MultiPartParser',
+            'core_api.parsers.APIURLParser'
         ]
         val = self.user_config.get('DEFAULT_PARSERS', default)
         return perform_imports(val, 'DEFAULT_PARSERS')
@@ -48,8 +48,8 @@ class APISettings(object):
     @property
     def DEFAULT_RENDERERS(self):
         default = [
-            'flask_api.renderers.JSONRenderer',
-            'flask_api.renderers.HTMLRenderer'
+            'core_api.renderers.JSONRenderer',
+            'core_api.renderers.HTMLRenderer'
         ]
         val = self.user_config.get('DEFAULT_RENDERERS', default)
         return perform_imports(val, 'DEFAULT_RENDERERS')

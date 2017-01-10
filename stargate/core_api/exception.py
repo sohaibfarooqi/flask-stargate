@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from core_api import status
+from .status import Status as status
 
 
 class APIException(Exception):

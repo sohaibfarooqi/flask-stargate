@@ -1,7 +1,6 @@
 from .models import Entity
 import urllib.parse as urlparse
 from .query_filter import QueryFilter, QueryUtils
-from .parser import Parser
 import timeit
 from functools import partial
 

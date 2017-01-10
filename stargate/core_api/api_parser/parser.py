@@ -1,17 +1,17 @@
 import re
-from .exceptions import LogicalOperatorNotFound, ParseException,AmbiguousExpressionException
+from .exceptions import LogicalOperatorNotFound, ParseException, AmbiguousExpressionException
 
 """Dated: 13-12-2016
-Parsing utility for EntityManager. Defines set of rules to parse filters string received in GET request URL.
+Defines set of rules to parse filters, sort order, fields, join entities received in GET request URL.
 """
 
 class Parser():
 	
 	"""Contains utility to parse precedence groups, simple filters i.e without grouping. This class assumes to receive
 	one kind of boolean logical operator at a certain level. If you wish to use 2 difference operator try enclosing 
-	one of them in a precedence group
+	one of them in a precedence group.
 
-	Regular Expression:
+	Regular Expressions:
 		- '\((.*?)\)' (Parse precedence groups)
 		- '(((?:(and|or)\s+)*\((%s)\))(?:\s+(and|or))*)' (match groups within query string and identify pre and post logical operators)
 		- '\s+(and|or)\s+' (match logical operator in simple statement)
@@ -27,6 +27,19 @@ class Parser():
 	REGEX_EXPRESSION_PARSER = r'(((?:\s+(and|or)\s+)?\((%s)\))(?:\s+(and|or)\s+)?)'
 	REGEX_LOGICAL_OPERATORS = r'\s+(and|or)\s+'
 	REGEX_SIMPLE_EXPRESSION = r'(\w+\s+\w+\s+(?:\d+|\w+))'
+
+
+	def parse_query_string(query_string):
+		
+		filters, fields, embed, embed_inner, sort, offset, page_size = list(),list(),list(),list(),list(),list(),list()
+		
+		for key in query_string:
+			
+			if key == 'filters':
+				filters = Parser.parse_filters(query_string[key][0])
+			
+			else:
+				Parser.get_query_element_list(query_string[key][0])
 
 	def parse_filters(filter_str):
 		
