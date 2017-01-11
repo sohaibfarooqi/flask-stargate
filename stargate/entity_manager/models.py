@@ -48,7 +48,7 @@ class Entity:
         
         query = query.offset(offset).limit(page_size)
         
-        if print_query : 
+        if print_query: 
             print(Entity.query_str_repr(query))
         
         return  query.all()
@@ -146,7 +146,7 @@ class User(db.Model,Entity,TimestampMixin):
     phone = db.Column(db.String)
     pic_url = db.Column(db.String)
     city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
-    age = db.Column(db.Integer)
+    #age = db.Column(db.Integer)
     city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location', backref = db.backref('user', lazy='dynamic'))

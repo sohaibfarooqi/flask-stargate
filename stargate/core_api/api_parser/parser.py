@@ -15,7 +15,7 @@ class Parser():
 		- '\((.*?)\)' (Parse precedence groups)
 		- '(((?:(and|or)\s+)*\((%s)\))(?:\s+(and|or))*)' (match groups within query string and identify pre and post logical operators)
 		- '\s+(and|or)\s+' (match logical operator in simple statement)
-		- '(\w+\s+\w+\s+(?:\d+|\w+))' (Match single filter statement i.e name like 'Jhonny')
+		- '(\w+\s+\w+\s+(?:\d+|\w+))' (Match single filter statement i.e `name like 'Jhonny'`)
 		
 	Example Filter String: 
 		- filters = (name like Milk or name eq mil) and age ge 2 and age ge 2 and (name like Milk or name eq Eggs) and age ge  2
@@ -31,15 +31,47 @@ class Parser():
 
 	def parse_query_string(query_string):
 		
-		filters, fields, embed, embed_inner, sort, offset, page_size = list(),list(),list(),list(),list(),list(),list()
+		"""Accepts Query String and parse filters, fields, joins, sort order, pagination
+
+		   Args: 
+		   	- filter_str (str): Filter string received in request URL.
+		   Returns:
+		   	- {'filters': filters,'fields': fields,'embed': embed,'embed_inner': embed_inner,'sort': sort,'offset': offset,'page_size': page_size}   
+		"""
+
+		filters, fields, embed, embed_inner, sort = list(),list(),list(),list(),list()
+		offset, page_size = 0,0
+			
+		if 'filters' in query_string:
+			filters = Parser.parse_filters(query_string['filters'][0])
 		
-		for key in query_string:
-			
-			if key == 'filters':
-				filters = Parser.parse_filters(query_string[key][0])
-			
-			else:
-				Parser.get_query_element_list(query_string[key][0])
+		if 'fields' in query_string:
+			fields = Parser.get_query_element_list(query_string['fields'][0])
+
+		if 'embed' in query_string:
+			embed = Parser.get_query_element_list(query_string['embed'][0])
+
+		if 'embed_inner' in query_string:
+			embed_inner = Parser.get_query_element_list(query_string['embed_inner'][0])
+
+		if 'sort' in query_string:
+			sort = Parser.get_query_element_list(query_string['sort'][0])
+
+		if 'offset' in query_string:
+			offset = Parser.get_query_element_list(query_string['offset'][0])
+
+		if 'page_size' in query_string:
+			page_size = Parser.get_query_element_list(query_string['page_size'][0])
+
+		return {
+					'filters': filters, 
+					'fields': fields, 
+					'embed': embed, 
+					'embed_inner': embed_inner, 
+					'sort': sort, 
+					'offset': offset, 
+					'page_size': page_size
+				}
 
 	def parse_filters(filter_str):
 		
@@ -48,7 +80,7 @@ class Parser():
 		   Args: 
 		   	- filter_str (str): Filter string received in request URL.
 		   Returns:
-		   	- [{},{}], [{},{}]: first list are precedence filters, second list is simple filters   
+		   	- {'priority_filters' : [], 'simple_filters' : []}: first list are precedence filters, second list is simple filters   
 		"""
 		r = re.compile(Parser.REGEX_FILTER_GROUPS)
 		iterator = r.finditer(filter_str)
@@ -74,11 +106,11 @@ class Parser():
 				op = logical_operator
 			
 			remaining_filters_dict = {'expr': remaining_filters, 'op': op}
-			return priority_filters, remaining_filters_dict
+			return {'priority_filters': priority_filters, 'simple_filters': remaining_filters_dict}
 		
 		else:
 			simple_filters,op = Parser.parse_filter_statement(filter_str)
-			return None, {'expr': simple_filters, 'op': op}
+			return {'priority_filters': [], 'simple_filters': {'expr': simple_filters, 'op': op}}
 	
 	def parse_priority_group_list(match_list, query_string):
 
@@ -241,3 +273,20 @@ class Parser():
 		
 		else:
 			return False
+
+	def get_query_element_list(str, element_type):
+
+		str = str.rstrip(',').strip()
+		elements = str.split(',')
+		element_list = list()
+
+		for element in elements:
+			
+			if element_type == 'sort':
+				element = element.strip()
+
+			if element.endswith('-'):
+				element = element.replace('-', '')
+			element_list.append(element)
+
+		return element_list

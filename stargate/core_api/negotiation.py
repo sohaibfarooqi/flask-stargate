@@ -24,7 +24,6 @@ class DefaultNegotiation(BaseNegotiation):
         client_media_type = MediaType(content_type_header)
         for parser in parsers:
             server_media_type = MediaType(parser.media_type)
-            print(server_media_type)
             if server_media_type.satisfies(client_media_type):
                 return (parser, client_media_type)
 

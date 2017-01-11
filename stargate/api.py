@@ -42,18 +42,9 @@ def authorize():
 class UserResource(Resource):
     
     def get(self, user_id):
-        print(request.args)
 
-        query_str = request.environ['QUERY_STRING']
-        
-        if user_id is None:
-            query_str = request.environ['QUERY_STRING']
-            users = EntityManager.get(User, user_id, query_str)
-            return jsonify({"message" : "Request Successful", "code": 200,'data': users_schema.dump(users).data})
-        
-        else:
-            user = EntityManager.get(User,user_id, query_str)
-            return jsonify({"message" : "Request Successful", "code": 200,'data': user_schema.dump(user).data})
+        users = EntityManager.get(User, user_id, request.args)
+        return jsonify({"message" : "Request Successful", "code": 200,'data': users_schema.dump(users).data})
         
     def post(self):
         try:

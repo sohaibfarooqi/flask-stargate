@@ -106,25 +106,3 @@ class QueryFilter():
 		
 		attr = attr[0] %op
 		return getattr(field, attr)(value)
-
-class QueryUtils:
-
-	def get_query_element_list(model, str, element_type):
-
-		str = str.rstrip(',').strip()
-		elements = str.split(',')
-		element_list = list()
-
-		for element in elements:
-			
-			if element_type == 'sort':
-				element = element.strip()
-
-			if element.endswith('-'):
-
-				element = element.replace('-', '')
-			
-			field = getattr(model, element)
-			element_list.append(field)
-
-		return element_list
