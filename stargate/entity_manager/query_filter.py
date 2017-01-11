@@ -27,30 +27,31 @@ class QueryFilter():
 						column_operator = QueryFilter.parse_column_operator(expr)
 						sql_filter.append(QueryFilter.get_filter_expression(expr.strip(), column_operator, model))
 					sql_filter_set.append(op(*sql_filter))
-			
+
 			sql_filter = list()
 			
 			op = None
-			
-			if expr_dict['simple_filters']['op'] is not None:
-				op = QueryFilter.get_sql_operator(expr_dict['simple_filters']['op'])
+			if 'op' in expr_dict['simple_filters']:
+				if expr_dict['simple_filters']['op'] is not None:
+					op = QueryFilter.get_sql_operator(expr_dict['simple_filters']['op'])
+					
 				
-			
-			if expr_dict['simple_filters']['expr'] is None:
-				return op(*sql_filter_set)
-			
-			else:
-
-				for key in expr_dict['simple_filters']['expr']:
+				if expr_dict['simple_filters']['expr'] is None:
+					return op(*sql_filter_set)
 				
-					column_operator = QueryFilter.parse_column_operator(key)
-					sql_filter.append(QueryFilter.get_filter_expression(key.strip(), column_operator, model))	
-				
-				if op is None:
-					return sql_filter
 				else:
-					return (op(*sql_filter_set,*sql_filter))
-				
+
+					for key in expr_dict['simple_filters']['expr']:
+					
+						column_operator = QueryFilter.parse_column_operator(key)
+						sql_filter.append(QueryFilter.get_filter_expression(key.strip(), column_operator, model))	
+					
+					if op is None:
+						return sql_filter
+					else:
+						return (op(*sql_filter_set,*sql_filter))
+			else:
+				return sql_filter_set
 
 		except KeyError:
 			print("Filter type not defined")

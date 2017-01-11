@@ -27,6 +27,7 @@ class EntityManager():
 				query_embed_inner = QueryUtils.get_query_element_list(model, inner_entities, 'embed_inner')
 
 			if len(query_string['filters']) > 0:
+				print(query_string['filters'])
 				query_filters = QueryFilter.create_filters(query_string['filters'], model)
 
 			if len(query_string['sort']) > 0:

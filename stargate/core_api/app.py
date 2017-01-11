@@ -19,9 +19,6 @@ class API(Flask):
     def __init__(self, *args, **kwargs):
         super(API, self).__init__(*args, **kwargs)
         self.api_settings = APISettings(self.config)
-        
-    def preprocess_request(self):
-        return super(API, self).preprocess_request()
 
     def make_response(self, rv):
         """

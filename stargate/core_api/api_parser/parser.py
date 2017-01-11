@@ -90,7 +90,7 @@ class Parser():
 			
 			filters, ranges = Parser.parse_priority_group_list(match_list, filter_str)
 			priority_filters = list()
-			
+			remaining_filters_dict = dict()
 			for key in Parser.parse_filter_statement_list(filters):
 				priority_filters.append(key)
 			
@@ -98,14 +98,14 @@ class Parser():
 			
 			if remaining_str.startswith('(') and remaining_str.endswith(')'):
 				remaining_filters_dict = {'expr': None, 'op': logical_operator}
-		
-			else:	
+			
+			elif remaining_str != '':
 				remaining_filters,op = Parser.parse_filter_statement(remaining_str)
 			
-			if op is None and logical_operator is not None:
-				op = logical_operator
-			
-			remaining_filters_dict = {'expr': remaining_filters, 'op': op}
+				if op is None and logical_operator is not None:
+					op = logical_operator
+				
+				remaining_filters_dict = {'expr': remaining_filters, 'op': op}
 			return {'priority_filters': priority_filters, 'simple_filters': remaining_filters_dict}
 		
 		else:
@@ -147,13 +147,12 @@ class Parser():
 			match_string = list()
 			
 			match_string = re.search(Parser.REGEX_EXPRESSION_PARSER % key, query_string_dict, flags = re.I).groups()
-
 			expr_with_both_operator = match_string[0]
 			expr_with_pre_operator = match_string[1]
 			pre_operator = match_string[2]
 			post_operator = match_string[4]
 			
-			if pre_operator is None and post_operator is None:
+			if pre_operator is None and post_operator is None and len(group_boundries) != 1 and len(match_string[0]) != group_boundries[0][1]:
 				raise ParseException(expr_with_both_operator)
 
 			logical_operator = pre_operator
@@ -268,9 +267,6 @@ class Parser():
 		if len(expr_list) == 1:
 			return True
 
-		elif len(expr_list) > 1 or not expr_list:
-			return False
-		
 		else:
 			return False
 
