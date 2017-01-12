@@ -1,14 +1,3 @@
-# drivers.py - high-level functions for filtering SQLAlchemy queries
-#
-# Copyright 2011 Lincoln de Sousa <lincoln@comum.org>.
-# Copyright 2012, 2013, 2014, 2015, 2016 Jeffrey Finkelstein
-#           <jeffrey.finkelstein@gmail.com> and contributors.
-#
-# This file is part of Flask-Restless.
-#
-# Flask-Restless is distributed under both the GNU Affero General Public
-# License version 3 and under the 3-clause BSD license. For more
-# information, see LICENSE.AGPL and LICENSE.BSD.
 """High-level functions for creating filtered SQLAlchemy queries.
 
 The :func:`search` and :func:`search_relationship` functions return

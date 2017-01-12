@@ -1,14 +1,3 @@
-# filters.py - parsing and creation of SQLAlchemy filter expressions
-#
-# Copyright 2011 Lincoln de Sousa <lincoln@comum.org>.
-# Copyright 2012, 2013, 2014, 2015, 2016 Jeffrey Finkelstein
-#           <jeffrey.finkelstein@gmail.com> and contributors.
-#
-# This file is part of Flask-Restless.
-#
-# Flask-Restless is distributed under both the GNU Affero General Public
-# License version 3 and under the 3-clause BSD license. For more
-# information, see LICENSE.AGPL and LICENSE.BSD.
 """Functions for parsing and creating SQLAlchemy filter expressions.
 
 The :func:`create_filters` function allows you to create SQLAlchemy
