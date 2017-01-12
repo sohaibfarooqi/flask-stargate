@@ -1,1 +1,1 @@
-REST api for for online event listings.
+A simple, clean REST api.
