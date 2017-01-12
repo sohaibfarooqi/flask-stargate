@@ -9,6 +9,7 @@ class EntityManager():
 	def get(model, pk_id, query_string):
 
 		query_embed,query_embed_inner,query_fields = list(), list(), list()
+		
 		if query_string is not None:
 
 			query_filters, query_order = list(), list()

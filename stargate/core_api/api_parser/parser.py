@@ -31,7 +31,7 @@ class Parser():
 
 	def parse_query_string(query_string):
 		
-		"""Accepts Query String and parse filters, fields, joins, sort order, pagination
+		"""Accepts Query String from GET request URL and parse filters, fields, joins, sort order, pagination
 
 		   Args: 
 		   	- filter_str (str): Filter string received in request URL.
