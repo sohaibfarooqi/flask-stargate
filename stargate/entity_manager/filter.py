@@ -1,15 +1,3 @@
-"""Functions for parsing and creating SQLAlchemy filter expressions.
-
-The :func:`create_filters` function allows you to create SQLAlchemy
-expressions that can be used by the :meth:`sqlalchemy.orm.Query.filter`
-method. It parses a dictionary representation of a filter as described
-in :doc:`filtering` into an executable SQLAlchemy expression.
-
-The :exc:`FilterParsingError` and :exc:`FilterCreationError` exceptions
-provide information about problems that arise from parsing filters and
-generating the SQLAlchemy expressions, respectively.
-
-"""
 from operator import methodcaller
 from functools import partial
 
@@ -17,8 +5,8 @@ from sqlalchemy import and_
 from sqlalchemy import not_
 from sqlalchemy import or_
 
-from ..helpers import get_related_model_from_attribute
-from ..helpers import string_to_datetime
+from .helpers import get_related_model_from_attribute
+from .helpers import string_to_datetime
 from .operators import create_operation
 from .operators import NO_ARGUMENT
 from .operators import OperatorCreationError
@@ -296,6 +284,7 @@ def create_filters(model, filters):
     # instance of :class:`.Filter` that facilitates the construction of
     # the actual SQLAlchemy code in `create_filter` below.
     filters = map(from_dict, filters)
+    print(list(filters))
     # Each of these function calls may raise a FilterCreationError.
     #
     # TODO In Python 3.3+, this should be `yield from ...`.

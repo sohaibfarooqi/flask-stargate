@@ -48,8 +48,8 @@ class Entity:
         
         query = query.offset(offset).limit(page_size)
         
-        if print_query: 
-            print(Entity.query_str_repr(query))
+        # if print_query: 
+            # print(Entity.query_str_repr(query))
         
         return  query.all()
 
@@ -67,8 +67,8 @@ class Entity:
 
         query = query.filter(model.id == pk_id)
         
-        if print_query : 
-            print(Entity.query_str_repr(query))
+        # if print_query : 
+            # print(Entity.query_str_repr(query))
 
         return query.first()
 

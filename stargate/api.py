@@ -5,11 +5,15 @@ from .entity_manager import EntityManager
 from .schemas import event_schema, events_schema, user_schema, users_schema
 from .route_handler import Api, Resource
 from .auth import Authorization
+from .entity_manager.filter import create_filters, from_dictionary
+
 
 api_blueprint = Blueprint('api_blueprint', __name__)
 api = Api(api_blueprint)
 
 __custom_endpoints__ = ('login', 'signup')
+
+
 
 @api_blueprint.before_request
 def authorize():
@@ -42,7 +46,21 @@ def authorize():
 class UserResource(Resource):
     
     def get(self, user_id):
-
+        
+        filter_data = {'or':
+                         [
+                            {'and':
+                               [
+                                    {'name': "name", 'op': "like", "val": "John"},
+                                    {'name': "age", 'op': "eq", "val": "John"}
+                                ]
+                            },
+                            {'name': "name", 'op': "eq", "val": "John"}
+                          ]
+        
+                     }
+        filters = from_dictionary(User, filter_data)
+        print(filters)
         users = EntityManager.get(User, user_id, request.args)
         return jsonify({"message" : "Request Successful", "code": 200,'data': users_schema.dump(users).data})
         
