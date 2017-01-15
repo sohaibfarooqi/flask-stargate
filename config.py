@@ -3,7 +3,7 @@ import os
 
 class ApplicationConfig:
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-    #SQLALCHEMY_ECHO=True #print SQL Query to Console
+    # SQLALCHEMY_ECHO=True #print SQL Query to Console
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_POOL_SIZE = 10
     SQLALCHEMY_POOL_TIMEOUT = 20

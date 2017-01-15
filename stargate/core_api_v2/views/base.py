@@ -447,7 +447,6 @@ class APIBase(ModelView):
         super(APIBase, self).__init__(session, model, *args, **kw)
 
         self.collection_name = collection_name(self.model)
-
         self.default_includes = includes
         if self.default_includes is not None:
             self.default_includes = frozenset(self.default_includes)
