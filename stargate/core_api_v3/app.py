@@ -1,4 +1,4 @@
-from flask import request, Flask
+from flask import request, Flask, current_app
 from .request import RequestCls
 from .response import ResponseCls
 from .setting import ApplicationSettings
@@ -25,6 +25,7 @@ class Application(Flask):
 		"""
 		super(Application, self).__init__(*args, **kwargs)
 		self.api_settings = ApplicationSettings(self.config)
+		self.blueprints = []#hold reference to current_app's blueprints
 		#default url prefix for app context.
 		if app_url_prefix is not None:
 			bp = Blueprint(str(uuid1()), __name__, url_prefix = app_url_prefix)
@@ -38,7 +39,12 @@ class Application(Flask):
 	def register_resource_as_api(self, *args, **kwargs):
 		"""Register callable endpoints for a particular resource.
 		"""	
-		pass
+		blueprint_name = str(uuid1())
+        blueprint = ResourceManager.create_api_blueprint(blueprint_name, *args, **kw)
+        self.blueprints.append(blueprint)
+
+        if app is not None:
+            app.register_blueprint(blueprint)
 
 	def make_response(self, rv):
 		"""Method overriden from Flask to perform any application specific postprocessing. 

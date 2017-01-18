@@ -3,7 +3,7 @@ from .config import ApplicationConfig
 from functools import wraps
 from flask import g, Flask
 # from .stargate.entity_manager.models import db
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import SQLAlchemy
 from .stargate.entity_manager.models import ServerLog, User, Location, City
 from .stargate.entity_manager.exceptions import ApplicationError
 from flask.ext.restless import APIManager
@@ -11,6 +11,7 @@ from flask.ext.restless import APIManager
 app = Flask(__name__)
 app.config.from_object(ApplicationConfig)
 db = SQLAlchemy()
+print(type(db))
 db.init_app(app)
 manager = APIManager(app, flask_sqlalchemy_db = db)
 manager.create_api(User, methods = ['GET', 'POST', 'DELETE'])

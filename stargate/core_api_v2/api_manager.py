@@ -46,11 +46,12 @@ class APIManager():
         self.blueprints = []
 
         if flask_sqlalchemy_db is not None:
-            session = flask_sqlalchemy_db.session
-
+            self.session = flask_sqlalchemy_db.session
+        else:
+            self.session = sqlalchemy_session
+                
         self.pre = preprocessors or {}
         self.post = postprocessors or {}
-        self.session = sqlalchemy_session
 
         self.url_prefix = url_prefix
 
