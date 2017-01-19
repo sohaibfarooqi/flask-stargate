@@ -34,17 +34,8 @@ class Application(Flask):
 	def preprocess_request(self):
 		"""Method overriden from Flask to perform any application specific preprocessing. 
 		"""
-		pass
-
-	def register_resource_as_api(self, *args, **kwargs):
-		"""Register callable endpoints for a particular resource.
-		"""	
-		blueprint_name = str(uuid1())
-        blueprint = ResourceManager.create_api_blueprint(blueprint_name, *args, **kw)
-        self.blueprints.append(blueprint)
-
-        if app is not None:
-            app.register_blueprint(blueprint)
+		self.parser_classes = DEFAULT_PARSER_CLASSES
+		self.renderer_classes = DEFAULT_RENDERER_CLASSES
 
 	def make_response(self, rv):
 		"""Method overriden from Flask to perform any application specific postprocessing. 

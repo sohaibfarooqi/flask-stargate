@@ -11,7 +11,6 @@ from flask.ext.restless import APIManager
 app = Flask(__name__)
 app.config.from_object(ApplicationConfig)
 db = SQLAlchemy()
-print(type(db))
 db.init_app(app)
 manager = APIManager(app, flask_sqlalchemy_db = db)
 manager.create_api(User, methods = ['GET', 'POST', 'DELETE'])
