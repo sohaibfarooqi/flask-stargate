@@ -58,7 +58,6 @@ class APIManager():
 
 	@staticmethod
     def api_name(collection_name):
-        
         return APIManager.APINAME_FORMAT.format(collection_name)
 
 	def create_api(self, *args, **kwargs):

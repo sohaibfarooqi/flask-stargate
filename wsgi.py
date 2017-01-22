@@ -3,21 +3,17 @@ from .config import ApplicationConfig
 from functools import wraps
 from flask import g, Flask
 # from .stargate.entity_manager.models import db
-from sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from .stargate.entity_manager.models import ServerLog, User, Location, City
 from .stargate.entity_manager.exceptions import ApplicationError
-from flask.ext.restless import APIManager
+from .stargate.core_api_v3 import Application, ResourceManager
 
-app = Flask(__name__)
+app = Application(__name__)
 app.config.from_object(ApplicationConfig)
 db = SQLAlchemy()
 db.init_app(app)
-manager = APIManager(app, flask_sqlalchemy_db = db)
-manager.create_api(User, methods = ['GET', 'POST', 'DELETE'])
-manager.create_api(Location, methods = ['GET', 'POST', 'DELETE'])
-manager.create_api(City, methods = ['GET', 'POST', 'DELETE'])
-
-manager.init_app(app)
+manager = ResourceManager(app, flask_sqlalchemy_db = db)
+manager.register_resource_as_api(User, methods = ['GET', 'POST', 'DELETE'])
 # @app.errorhandler(ApplicationError)
 # def application_error(error):
 # 	return error.message, 500
