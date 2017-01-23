@@ -28,7 +28,7 @@ class SerializationException(Exception):
 def get_model(instance):
     return type(instance)
 
-class Pagination(object):
+class Paginated(object):
     
     def __init__(self, items,first=None, last=None, prev=None, next_=None,
                         page_size=None, num_results=None, filters=None, sort=None,
@@ -39,20 +39,20 @@ class Pagination(object):
         self._header_links = []
         query_params = {}
         if filters:
-            query_params[FILTER_PARAM] = Pagination._filters_to_string(filters)
+            query_params[FILTER_PARAM] = Paginated._filters_to_string(filters)
         if sort:
-            query_params[SORT_PARAM] = Pagination._sort_to_string(sort)
+            query_params[SORT_PARAM] = Paginated._sort_to_string(sort)
         if group_by:
-            query_params[GROUP_PARAM] = Pagination._group_to_string(group_by)
+            query_params[GROUP_PARAM] = Paginated._group_to_string(group_by)
         query_params[PAGE_SIZE_PARAM] = str(page_size)
         link_numbers = [first, last, prev, next_]
-        base_url = Pagination._url_without_pagination_params()
+        base_url = Paginated._url_without_pagination_params()
         for rel, num in zip(LINK_NAMES, link_numbers):
             if num is None:
                 self._pagination_links[rel] = None
             else:
                 query_params[PAGE_NUMBER_PARAM] = str(num)
-                url = Pagination._to_url(base_url, query_params)
+                url = Paginated._to_url(base_url, query_params)
                 link_string = '<{0}>; rel="{1}"'.format(url, rel)
                 self._header_links.append(link_string)
                 self._pagination_links[rel] = url
@@ -103,16 +103,16 @@ class Pagination(object):
     def num_results(self):
         return self._num_results
 
-class SimplePagination(Pagination):
+class SimplePagination():
     page_size = 10
     max_page_size = 100
 
-    def __init__(self, items, filters=None, sort=None, group_by=None):
+    def simple_pagination(items, filters=None, sort=None, group_by=None):
         result = list()
-        page_size = int(request.args.get(PAGE_SIZE_PARAM, page_size))
+        page_size = int(request.args.get(PAGE_SIZE_PARAM, SimplePagination.page_size))
         if page_size < 0:
             raise PaginationError('Page size must be a positive integer')
-        if page_size > max_page_size:
+        if page_size > SimplePagination.max_page_size:
             msg = "Page size must not exceed the server's maximum: {0}"
             msg = msg.format(max_page_size)
             raise PaginationError(msg)
@@ -153,5 +153,5 @@ class SimplePagination(Pagination):
                 result.append(serialized)
             except SerializationException as exception:
                 pass
-        super(SimplePagination, self).__init__(result,*args, **kw)
+        return Paginated(result, num_results=num_results, first=first,last=last, next_=next_, prev=prev,page_size=page_size, filters=filters, sort=sort,group_by=group_by)
         

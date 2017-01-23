@@ -11,7 +11,7 @@ from collections import defaultdict
 from sqlalchemy.exc import SQLAlchemyError
 from .query_helper.search import Search
 from .query_helper.pagination import SimplePagination
-
+from sqlalchemy.orm.query import Query
 
 _HEADERS = '__restless_headers'
 
@@ -332,7 +332,49 @@ class CollectionAPIBase(MethodView):
         for method in ['get', 'post', 'patch', 'delete']:
             if hasattr(self, method):
                 decorate(method, catch_integrity_errors(self.session))
+   
+    def get_all_inclusions(self, instance_or_instances):
+        if isinstance(instance_or_instances, Query):
+            to_include = set(chain(self.resources_to_include(resource)
+                                   for resource in instance_or_instances))
+        else:
+            to_include = self.resources_to_include(instance_or_instances)
+        return self._serialize_many(to_include)
     
+    def _serialize_many(self, instances, relationship=False):
+        result = []
+        failed = []
+        for instance in instances:
+            model = get_model(instance)
+            if relationship:
+                serialize = self.serialize_relationship
+            else:
+                try:
+                    serialize = serializer_for(model)
+                except ValueError:
+                    serialize = self.serialize
+            _type = collection_name(model)
+            only = self.sparse_fields.get(_type)
+            try:
+                serialized = serialize(instance, only=only)
+                result.append(serialized)
+            except SerializationException as exception:
+                failed.append(exception)
+        if failed:
+            raise MultipleExceptions(failed)
+        return result
+    
+    def resources_to_include(self, instance):
+        toinclude = request.args.get('include')
+        if toinclude is None and self.default_includes is None:
+            return {}
+        elif toinclude is None and self.default_includes is not None:
+            toinclude = self.default_includes
+        else:
+            toinclude = set(toinclude.split(','))
+        return set(chain(resources_from_path(instance, path)
+                         for path in toinclude))
+
     def _collection_parameters(self):
         filters = json.loads(request.args.get(FILTER_PARAM, '[]'))
         sort = request.args.get(SORT_PARAM)
@@ -382,7 +424,7 @@ class CollectionAPIBase(MethodView):
         #collection
         if not single:
             try:
-                paginated = SimplePagination(search_items.search_collection(),filters = filters, sort = sort, group_by = group_by)
+                paginated = SimplePagination.simple_pagination(search_items.search_collection(),filters = filters, sort = sort, group_by = group_by)
             except MultipleExceptions as e:
                 return errors_from_serialization_exceptions(e.exceptions)
             except PaginationError as exception:
