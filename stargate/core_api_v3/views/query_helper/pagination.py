@@ -1,14 +1,38 @@
 from flask import request, json
-from ..base_collection import FILTER_PARAM, SORT_PARAM, PAGE_SIZE_PARAM, PAGE_NUMBER_PARAM, GROUP_PARAM
+from ...broker import serializer_for
+from urllib.parse import urlparse
+from urllib.parse import urlunparse
 
 LINK_NAMES = ('first', 'last', 'prev', 'next')
+
+FILTER_PARAM = 'filter[objects]'
+
+SORT_PARAM = 'sort'
+
+GROUP_PARAM = 'group'
+
+PAGE_NUMBER_PARAM = 'page[number]'
+
+PAGE_SIZE_PARAM = 'page[size]'
 
 class PaginationError(Exception):
     pass
 
+class SerializationException(Exception):
+    def __init__(self, instance, message=None, resource=None, *args, **kw):
+        super(SerializationException, self).__init__(*args, **kw)
+        self.resource = resource
+        self.message = message
+        self.instance = instance
+
+def get_model(instance):
+    return type(instance)
+
 class Pagination(object):
     
-    def __init__(self, items):
+    def __init__(self, items,first=None, last=None, prev=None, next_=None,
+                        page_size=None, num_results=None, filters=None, sort=None,
+                        group_by=None):
         self._items = items
         self._num_results = num_results
         self._pagination_links = {}
@@ -32,11 +56,6 @@ class Pagination(object):
                 link_string = '<{0}>; rel="{1}"'.format(url, rel)
                 self._header_links.append(link_string)
                 self._pagination_links[rel] = url
-
-    def simple_pagination(first=None, last=None, prev=None, next_=None,
-                        page_size=None, num_results=None, filters=None, sort=None,
-                        group_by=None):
-        pass
 
     @staticmethod
     def _filters_to_string(filters):
@@ -84,14 +103,18 @@ class Pagination(object):
     def num_results(self):
         return self._num_results
 
+class SimplePagination(Pagination):
+    page_size = 10
+    max_page_size = 100
 
-    def _paginated(self, items, filters=None, sort=None, group_by=None):
-        page_size = int(request.args.get(PAGE_SIZE_PARAM, self.page_size))
+    def __init__(self, items, filters=None, sort=None, group_by=None):
+        result = list()
+        page_size = int(request.args.get(PAGE_SIZE_PARAM, page_size))
         if page_size < 0:
             raise PaginationError('Page size must be a positive integer')
-        if page_size > self.max_page_size:
+        if page_size > max_page_size:
             msg = "Page size must not exceed the server's maximum: {0}"
-            msg = msg.format(self.max_page_size)
+            msg = msg.format(max_page_size)
             raise PaginationError(msg)
         page_number = int(request.args.get(PAGE_NUMBER_PARAM, 1))
         if page_number < 0:
@@ -118,20 +141,17 @@ class Pagination(object):
             items = items.limit(page_size).offset(offset)
         
         for item in items:
-            model = get_model(instance)
+            
+            model = get_model(item)
             
             try:
                 serialize = serializer_for(model)
             except ValueError:
                     serialize = self.serialize
-            
             try:
-                serialized = serialize(instance, only=only)
+                serialized = serialize(item)
                 result.append(serialized)
             except SerializationException as exception:
                 pass
-        return Paginated(result, num_results=num_results, first=first,
-                         last=last, next_=next_, prev=prev,
-                         page_size=page_size, filters=filters, sort=sort,
-                         group_by=group_by)
+        super(SimplePagination, self).__init__(result,*args, **kw)
         

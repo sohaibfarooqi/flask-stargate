@@ -1,4 +1,14 @@
 from six import with_metaclass
+import inspect
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.orm.attributes import QueryableAttribute
+from sqlalchemy.orm import ColumnProperty
+
+def primary_key_names(model):
+    return [key for key, field in inspect.getmembers(model)
+            if isinstance(field, QueryableAttribute)
+            and isinstance(field.property, ColumnProperty)
+            and field.property.columns[0].primary_key]
 
 class Singleton(type):
     _instances = {}
@@ -62,7 +72,7 @@ class UrlFinder(with_metaclass(Singleton, KnowsAPIManagers)):
                  relationship=False, **kw):
 
         if _apimanager is not None:
-            if model not in _apimanager.created_apis_for:
+            if model not in _apimanager.registered_apis:
                 message = ('APIManager {0} has not created an API for model '
                            ' {1}; maybe another APIManager instance'
                            ' did?').format(_apimanager, model)
@@ -90,7 +100,7 @@ class SerializerFinder(with_metaclass(Singleton, KnowsAPIManagers)):
 
     def __call__(self, model, _apimanager=None, **kw):
         if _apimanager is not None:
-            if model not in _apimanager.created_apis_for:
+            if model not in _apimanager.registered_apis:
                 message = ('APIManager {0} has not created an API for model '
                            ' {1}').format(_apimanager, model)
                 raise ValueError(message)
@@ -119,7 +129,7 @@ class PrimaryKeyFinder(with_metaclass(Singleton, KnowsAPIManagers)):
         else:
             managers_to_search = self.created_managers
         for manager in managers_to_search:
-            if model in manager.created_apis_for:
+            if model in manager.registered_apis:
                 primary_key = manager.primary_key_for(model, **kw)
                 break
         else:

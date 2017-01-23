@@ -10,7 +10,7 @@ from ..broker import collection_name
 from collections import defaultdict
 from sqlalchemy.exc import SQLAlchemyError
 from .query_helper.search import Search
-from .query_helper.pagination import Paginated
+from .query_helper.pagination import SimplePagination
 
 
 _HEADERS = '__restless_headers'
@@ -55,7 +55,6 @@ chain = chain.from_iterable
 register_mime('jsonapi', (CONTENT_TYPE, ))
 
 """View function exceptions"""
-
 class ComparisonToNull(Exception):
     pass
 
@@ -216,7 +215,6 @@ def jsonpify(*args, **kw):
 
 mimerender = FlaskMimeRender()(default='jsonapi', jsonapi=jsonpify)
 #####################################################################################################
-
 """Error Handling Functions"""
 def extract_error_messages(exception):
     if isinstance(exception, DeserializationException):
@@ -236,7 +234,6 @@ def extract_error_messages(exception):
         return {fieldname: msg}
     return None
 
-
 def error(id_=None, links=None, status=None, code=None, title=None,
           detail=None, source=None, meta=None):
     if all(kwvalue is None for kwvalue in locals().values()):
@@ -244,6 +241,9 @@ def error(id_=None, links=None, status=None, code=None, title=None,
     return {'id': id_, 'links': links, 'status': status, 'code': code,
             'title': title, 'detail': detail, 'source': source, 'meta': meta}
 
+def is_conflict(exception):
+    exception_string = str(exception)
+    return any(s in exception_string for s in CONFLICT_INDICATORS)
 
 def error_response(status=400, cause=None, **kw):
     if cause is not None:
@@ -251,12 +251,10 @@ def error_response(status=400, cause=None, **kw):
     kw['status'] = status
     return errors_response(status, [error(**kw)])
 
-
 def errors_response(status, errors):
     document = {'errors': errors, 'jsonapi': {'version': JSONAPI_VERSION},
                 'meta': {_STATUS: status}}
     return document, status
-
 
 def error_from_serialization_exception(exception, included=False):
     type_ = collection_name(get_model(exception.instance))
@@ -269,13 +267,13 @@ def error_from_serialization_exception(exception, included=False):
         detail = detail.format(resource, type_, id_)
     return error(status=500, detail=detail)
 
-
 def errors_from_serialization_exceptions(exceptions, included=False):
     _to_error = partial(error_from_serialization_exception, included=included)
     errors = list(map(_to_error, exceptions))
     return errors_response(500, errors)
 #####################################################################################################
 
+"""Utility functions"""
 def upper_keys(dictionary):
     return dict((k.upper(), v) for k, v in dictionary.items())
 
@@ -284,6 +282,7 @@ def parse_sparse_fields(type_=None):
                   for key, value in request.args.items()
                   if key.startswith('fields[') and key.endswith(']'))
         return fields.get(type_) if type_ is not None else fields
+#######################################################################################################
 
 class CollectionAPIBase(MethodView):
     
@@ -333,11 +332,7 @@ class CollectionAPIBase(MethodView):
         for method in ['get', 'post', 'patch', 'delete']:
             if hasattr(self, method):
                 decorate(method, catch_integrity_errors(self.session))
-
-
     
-
-
     def _collection_parameters(self):
         filters = json.loads(request.args.get(FILTER_PARAM, '[]'))
         sort = request.args.get(SORT_PARAM)
@@ -360,11 +355,16 @@ class CollectionAPIBase(MethodView):
 
         return filters, sort, group_by, single
 
-
-
+    
     def _get_collection_helper(self,filters=None, sort=None, group_by=None,
                                single=False):
         
+        links,link_header = {}, {}
+        num_results = 1
+        data = []
+        inclusions = []
+        single = False
+
         try:
             search_items = Search(self.session, self.model, filters=filters, sort=sort,
                                    group_by=group_by)
@@ -382,20 +382,21 @@ class CollectionAPIBase(MethodView):
         #collection
         if not single:
             try:
-                pagination = Pagination(search_items.search_collection())
-                paginated = pagination.simple_pagination(filters = filters, sort = sort, group_by = group_by)
+                paginated = SimplePagination(search_items.search_collection(),filters = filters, sort = sort, group_by = group_by)
             except MultipleExceptions as e:
                 return errors_from_serialization_exceptions(e.exceptions)
             except PaginationError as exception:
                 detail = exception.args[0]
                 return error_response(400, cause = exception, detail = detail)
-            result['data'] = paginated.items
-            result['links'].update(paginated.pagination_links)
-            link_header = ','.join(paginated.header_links)
-            headers = dict(Link = link_header)
+            
+            data = paginated.items
+            links = paginated.pagination_links
+            header = ','.join(paginated.header_links)
+            link_header = dict(Link = link_header)
             num_results = paginated.num_results
+            single = single
         
-        #Force Single Record
+        #Force single
         else:
             try:
                 data = search_items.search_collection().one()
@@ -411,11 +412,15 @@ class CollectionAPIBase(MethodView):
                 result['data'] = serialize(data, only=only)
             except SerializationException as exception:
                 return errors_from_serialization_exceptions([exception])
+            
+            #Link Header Generation
             primary_key = primary_key_for(data)
             pk_value = result['data'][primary_key]
             url = '{0}/{1}'.format(request.base_url, pk_value)
             headers = dict(Location=url)
-            num_results = 1
+
+            link_header = headers
+            single = single
 
         try:
             included = self.get_all_inclusions(search_items)
@@ -423,8 +428,10 @@ class CollectionAPIBase(MethodView):
             return errors_from_serialization_exceptions(e.exceptions,
                                                         included=True)
         if included:
-            result['included'] = included
+            inclusions = included
 
+        result = {'data': data, 'link_header': link_header, 'links': links, 'num_results': num_results,'include': inclusions, 'single': 'single'}
+        
         for postprocessor in self.postprocessors['GET_COLLECTION']:
             postprocessor(result=result, filters=filters, sort=sort,
                           group_by=group_by, single=single)

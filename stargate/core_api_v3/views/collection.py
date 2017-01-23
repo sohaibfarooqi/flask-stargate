@@ -14,7 +14,6 @@ class CollectionAPI(CollectionAPIBase):
 
         try:
             filters, sort, group_by, single = self._collection_parameters()
-            print(filters)
         except (TypeError, ValueError, OverflowError) as exception:
             detail = 'Unable to decode filter objects as JSON list'
             return error_response(400, cause=exception, detail=detail)
@@ -26,7 +25,8 @@ class CollectionAPI(CollectionAPIBase):
             preprocessor(filters=filters, sort=sort, group_by=group_by,
                          single=single)
 
-        return self._get_collection_helper(filters=filters, sort=sort,
+        result =  self._get_collection_helper(filters=filters, sort=sort,
                                            group_by=group_by, single=single)
+        return result
 
     

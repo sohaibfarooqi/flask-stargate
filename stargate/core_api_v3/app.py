@@ -15,6 +15,3 @@ class Application(Flask):
 
 	#Apopted from => http://flask.pocoo.org/docs/0.12/patterns/subclassing/
 	response_class = ResponseCls
-
-	def make_response(self, rv):
-		return b'None'

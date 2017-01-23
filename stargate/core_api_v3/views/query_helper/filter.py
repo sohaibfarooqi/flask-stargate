@@ -37,9 +37,9 @@ class JunctionFilter(Filter):
 
 
 class ConjunctionFilter(JunctionFilter):
-
+    pass
 class DisjunctionFilter(JunctionFilter):
-
+    pass
 def create_operation(model, fieldname, operator, argument):
     opfunc = OPERATORS[operator]
     numargs = len(inspect.getargspec(opfunc).args)

@@ -193,12 +193,10 @@ class ResourceManager():
 		return blueprint
 
 	def url_for(self, model, **kw):
-		collection_name = self.registered_apis[model].collection_name
-		blueprint_name = self.registered_apis[model].blueprint_name
-		api_name = APIManager.api_name(collection_name)
+		collection_name = self.registered_apis[model].collection
+		blueprint_name = self.registered_apis[model].blueprint
+		api_name = ResourceManager.api_name(collection_name)
 		parts = [blueprint_name, api_name]
-		if 'relationship' in kw and kw.pop('relationship'):
-			parts.append('relationships')
 		url = flask_url_for('.'.join(parts), **kw)
 		return url
 
@@ -209,7 +207,7 @@ class ResourceManager():
 		return self.registered_apis[model].serializer
 
 	def primary_key_for(self, model):
-		return self.registered_apis[model].primary_key
+		return self.registered_apis[model].pk
 
 	def _params_sanity_checks(self, *args, **kwargs):
 

@@ -1,6 +1,7 @@
 import inspect
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm import ColumnProperty
+from .filter import Filter
 
 def session_query(session, model):
     if hasattr(model, 'query'):
