@@ -30,9 +30,7 @@ class Search():
 		self.sort = sort
 		self.group_by = group_by
 		self.initial_query = _initial_query
-
-
-
+	
 	def search_collection(self):
 	    if self.initial_query is not None:
 	        query = _initial_query

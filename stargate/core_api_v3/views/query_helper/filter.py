@@ -1,4 +1,6 @@
-class Filter(object):
+import inspect
+
+class Filter:
 
     def __init__(self, fieldname, operator, argument=None, otherfield=None):
         self.fieldname = fieldname
@@ -8,6 +10,7 @@ class Filter(object):
 
     @staticmethod
     def from_dictionary(model, dictionary):
+        
         if 'or' not in dictionary and 'and' not in dictionary:
             fieldname = dictionary.get('name')
             if not hasattr(model, fieldname):
@@ -17,7 +20,9 @@ class Filter(object):
             argument = dictionary.get('val')
             argument = string_to_datetime(model, fieldname, argument)
             return Filter(fieldname, operator, argument, otherfield)
+        
         from_dict = Filter.from_dictionary
+        
         if 'or' in dictionary:
             subfilters = dictionary.get('or')
             return DisjunctionFilter(*[from_dict(model, filter_)
@@ -29,6 +34,7 @@ class Filter(object):
 
 
 class JunctionFilter(Filter):
+    
     def __init__(self, *subfilters):
         self.subfilters = subfilters
 
@@ -38,6 +44,7 @@ class JunctionFilter(Filter):
 
 class ConjunctionFilter(JunctionFilter):
     pass
+
 class DisjunctionFilter(JunctionFilter):
     pass
 

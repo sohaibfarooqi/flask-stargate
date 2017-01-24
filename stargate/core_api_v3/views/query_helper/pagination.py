@@ -15,16 +15,6 @@ PAGE_NUMBER_PARAM = 'page[number]'
 
 PAGE_SIZE_PARAM = 'page[size]'
 
-class PaginationError(Exception):
-    pass
-
-class SerializationException(Exception):
-    def __init__(self, instance, message=None, resource=None, *args, **kw):
-        super(SerializationException, self).__init__(*args, **kw)
-        self.resource = resource
-        self.message = message
-        self.instance = instance
-
 def get_model(instance):
     return type(instance)
 
@@ -153,5 +143,8 @@ class SimplePagination():
                 result.append(serialized)
             except SerializationException as exception:
                 pass
-        return Paginated(result, num_results=num_results, first=first,last=last, next_=next_, prev=prev,page_size=page_size, filters=filters, sort=sort,group_by=group_by)
+        
+        return Paginated(result, num_results=num_results, first=first,last=last, 
+                        next_=next_, prev=prev,page_size=page_size, 
+                        filters=filters, sort=sort,group_by=group_by)
         
