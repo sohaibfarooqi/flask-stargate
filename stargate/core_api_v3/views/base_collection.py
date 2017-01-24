@@ -1,6 +1,6 @@
+import re
 from mimerender import FlaskMimeRender
 from mimerender import register_mime
-import re
 from itertools import chain
 from functools import wraps
 from werkzeug.exceptions import HTTPException

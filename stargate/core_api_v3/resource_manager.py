@@ -2,7 +2,7 @@ from flask import Flask, Blueprint, url_for as flask_url_for
 from six import string_types
 from uuid import uuid1
 from collections import namedtuple, defaultdict
-from .broker import url_for, serializer_for, primary_key_for, collection_name, model_for
+from .broker import url_for, serializer_for, primary_key_for, collection_name_for, model_for
 from .serializer import DefaultSerializer
 from .deserializer import DefaultDeserializer
 from .views.collection import CollectionAPI
@@ -16,10 +16,6 @@ RESOURCE_API_INFO = namedtuple('RESOURCE_API_INFO', ['collection',
                                                     'serializer',
                                                     'deserializer',
                                                     'pk'])
-
-class IllegalArgumentError(Exception):
-    pass
-
 class ResourceManager():
 	
 	APINAME_FORMAT = '{0}api'
@@ -29,6 +25,7 @@ class ResourceManager():
 
 		if isinstance(app, Flask):
 			self.app = app
+			self.init_app(app)
 		else:
 			msg = "Provided app instance should be `Flask` instance instead of %s" %str(type(app));
 			raise IllegalArgumentError(msg)
@@ -60,7 +57,7 @@ class ResourceManager():
 	def api_name(collection_name):
 		return ResourceManager.APINAME_FORMAT.format(collection_name)
 
-	def register_resource_as_api(self, *args, **kwargs):
+	def register_resource(self, *args, **kwargs):
     
 		blueprint_name = str(uuid1())
 		blueprint = self.create_resource_blueprint(blueprint_name, *args, **kwargs)
@@ -73,14 +70,39 @@ class ResourceManager():
 			msg = "Application not initilized"
 			raise RuntimeError(msg)
 
+	def init_app(self, app):
+		app.handle_exception = partial(self._exception_handler, app.handle_exception)
+		app.handle_user_exception = partial(self._exception_handler, app.handle_user_exception)
+	
+	def add_resource():
+		pass
+	
+	def add_route():
+		pass
+	
+	def add_view():
+		pass
+	
+	def _exception_handler(self, original_handler, e):
+        if isinstance(e, PotionException):
+            return e.get_response()
 
+        if not request.path.startswith(self.prefix):
+            return original_handler(e)
+
+        if isinstance(e, HTTPException):
+            return _make_response({
+                'status': e.code,
+                'message': e.description
+            }, e.code)
+
+		return original_handler(e)
 	def create_resource_blueprint(self, name, model, methods=READONLY_METHODS,
                              url_prefix=None, collection_name=None,
                              allow_functions=False, only=None, exclude=None,
                              additional_attributes=None,
                              validation_exceptions=None, page_size=10,
-                             max_page_size=100, preprocessors=None,
-                             postprocessors=None, primary_key=None,
+                             max_page_size=100, decorators=[], primary_key=None,
                              serializer=None, deserializer=None,
                              includes=None, allow_to_many_replacement=False,
                              allow_delete_from_to_many_relationships=False,
@@ -91,15 +113,9 @@ class ResourceManager():
 		methods = frozenset((m.upper() for m in methods))
 		apiname = ResourceManager.api_name(collection_name)
 
-		preprocessors_ = defaultdict(list)
-		postprocessors_ = defaultdict(list)
-		preprocessors_.update(preprocessors or {})
-		postprocessors_.update(postprocessors or {})
-		for key, value in self.pre.items():
-			preprocessors_[key] = value + preprocessors_[key]
-		for key, value in self.post.items():
-			postprocessors_[key] = value + postprocessors_[key]
-
+		decorators_ = self.decorators
+		decorators_.append(decorators)
+		
 		if serializer is None:
 			serializer = DefaultSerializer(only, exclude,
 											additional_attributes)
@@ -112,8 +128,7 @@ class ResourceManager():
 		api_view = CollectionAPI.as_view(apiname, 
 										self.session, 
 										model,
-										preprocessors = preprocessors_,
-										postprocessors = postprocessors_,
+										decorators = decorators_,
 										primary_key = primary_key,
 										validation_exceptions = validation_exceptions,
 										allow_to_many_replacement = atmr,
