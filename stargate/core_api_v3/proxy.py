@@ -136,7 +136,7 @@ class FindPrimaryKey(with_metaclass(Singleton, ResourceManagerProxy)):
 
 url_for = FindUrl()
 
-collection_name = FindCollection()
+collection_name_for = FindCollection()
 
 serializer_for = FindSerializer()
 

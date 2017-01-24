@@ -15,14 +15,11 @@ from sqlalchemy.orm.query import Query
 
 
 FILTER_PARAM = 'filter[objects]'
-
 SORT_PARAM = 'sort'
-
 GROUP_PARAM = 'group'
-
 PAGE_NUMBER_PARAM = 'page[number]'
-
 PAGE_SIZE_PARAM = 'page[size]'
+SINGLE_RESOURCE_PARAM = 'filter[single]'
 
 chain = chain.from_iterable
 
@@ -146,7 +143,7 @@ class BaseAPI(MethodView):
             group_by = []
 
         try:
-            single = bool(int(request.args.get('filter[single]', 0)))
+            single = bool(int(request.args.get(SINGLE_RESOURCE_PARAM, 0)))
         except ValueError:
             raise SingleKeyError('failed to extract Boolean from parameter')
 
@@ -155,13 +152,6 @@ class BaseAPI(MethodView):
     
     def _get_collection(self,filters=None, sort=None, group_by=None,
                                single=False):
-        
-        links,link_header = {}, {}
-        num_results = 1
-        data = []
-        inclusions = []
-        single = False
-
         try:
             search_items = Search(self.session, self.model, filters=filters, sort=sort,
                                    group_by=group_by)

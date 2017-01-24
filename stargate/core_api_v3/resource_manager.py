@@ -9,7 +9,7 @@ from .views.collection import CollectionAPI
 
 READONLY_METHODS = frozenset(('GET', ))
 WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE'))
-ALL_METHODS = READONLY_METHODS | WRITEONLY_METHODS #`|` => union operator
+ALL_METHODS = READONLY_METHODS | WRITEONLY_METHODS
 DEFAULT_URL_PREFIX = '/api'
 RESOURCE_API_INFO = namedtuple('RESOURCE_API_INFO', ['collection', 
                                                     'blueprint', 

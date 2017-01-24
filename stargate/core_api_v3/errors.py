@@ -1,9 +1,12 @@
+from .exception import is_conflict
 
 ERROR_FIELDS = ('id_', 'links', 'status', 'code_', 'title', 'detail', 'source',
                 'meta')
 
+"""Utility function for class"""
 def un_camel_case(s):
     return re.sub(r'(?<=\w)([A-Z])', r' \1', s)
+#####################################################################################################
 
 """View Function Error handling Decorators"""
 def catch_processing_exceptions(func):
