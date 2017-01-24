@@ -1,4 +1,4 @@
-from flask import Response
+from flask import Request
 
-class RequestCls(Response):
+class RequestCls(Request):
 	pass

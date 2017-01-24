@@ -20,7 +20,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class KnowsAPIManagers:
+class ResourceManagerBroker:
     def __init__(self):
         self.created_managers = set()
 
@@ -28,7 +28,7 @@ class KnowsAPIManagers:
         self.created_managers.add(apimanager)
 
 
-class ModelFinder(with_metaclass(Singleton, KnowsAPIManagers)):
+class FindModel(with_metaclass(Singleton, ResourceManagerBroker)):
 
     def __call__(self, resource_type, _apimanager=None, **kw):
         if _apimanager is not None:
@@ -45,7 +45,7 @@ class ModelFinder(with_metaclass(Singleton, KnowsAPIManagers)):
         raise ValueError(message)
 
 
-class CollectionNameFinder(with_metaclass(Singleton, KnowsAPIManagers)):
+class FindCollection(with_metaclass(Singleton, ResourceManagerBroker)):
 
     def __call__(self, model, _apimanager=None, **kw):
         if _apimanager is not None:
@@ -65,7 +65,7 @@ class CollectionNameFinder(with_metaclass(Singleton, KnowsAPIManagers)):
         raise ValueError(message)
 
 
-class UrlFinder(with_metaclass(Singleton, KnowsAPIManagers)):
+class FindUrl(with_metaclass(Singleton, ResourceManagerBroker)):
 
     def __call__(self, model, resource_id=None, relation_name=None,
                  related_resource_id=None, _apimanager=None,
@@ -96,7 +96,7 @@ class UrlFinder(with_metaclass(Singleton, KnowsAPIManagers)):
         raise ValueError(message)
 
 
-class SerializerFinder(with_metaclass(Singleton, KnowsAPIManagers)):
+class FindSerializer(with_metaclass(Singleton, ResourceManagerBroker)):
 
     def __call__(self, model, _apimanager=None, **kw):
         if _apimanager is not None:
@@ -116,7 +116,7 @@ class SerializerFinder(with_metaclass(Singleton, KnowsAPIManagers)):
         raise ValueError(message)
 
 
-class PrimaryKeyFinder(with_metaclass(Singleton, KnowsAPIManagers)):
+class FindPrimaryKey(with_metaclass(Singleton, ResourceManagerBroker)):
 
     def __call__(self, instance_or_model, _apimanager=None, **kw):
         if isinstance(instance_or_model, type):
@@ -148,12 +148,12 @@ class PrimaryKeyFinder(with_metaclass(Singleton, KnowsAPIManagers)):
         return primary_key
 
 
-url_for = UrlFinder()
+url_for = FindUrl()
 
-collection_name = CollectionNameFinder()
+collection_name = FindCollection()
 
-serializer_for = SerializerFinder()
+serializer_for = FindSerializer()
 
-model_for = ModelFinder()
+model_for = FindModel()
 
-primary_key_for = PrimaryKeyFinder()
+primary_key_for = FindPrimaryKey()
