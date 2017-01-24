@@ -84,7 +84,7 @@ class ResourceManager():
 		pass
 	
 	def _exception_handler(self, original_handler, e):
-        if isinstance(e, PotionException):
+        if isinstance(e, ApplicationException):
             return e.get_response()
 
         if not request.path.startswith(self.prefix):
