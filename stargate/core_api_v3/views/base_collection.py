@@ -31,54 +31,6 @@ ERROR_FIELDS = ('id_', 'links', 'status', 'code_', 'title', 'detail', 'source',
 chain = chain.from_iterable
 
 
-
-"""View function exceptions"""
-class ComparisonToNull(Exception):
-    pass
-
-class UnknownField(Exception):
-
-    def __init__(self, field):
-        self.field = field
-
-class SingleKeyError(KeyError):
-    pass
-
-
-class PaginationError(Exception):
-    pass
-
-
-class ProcessingException(HTTPException):
-
-    def __init__(self, id_=None, links=None, status=400, code=None, title=None,
-                 detail=None, source=None, meta=None, *args, **kw):
-        super(ProcessingException, self).__init__(*args, **kw)
-        self.id_ = id_
-        self.links = links
-        self.status = status
-        self.code_ = code
-        self.code = status
-        self.title = title
-        self.detail = detail
-        self.source = source
-        self.meta = meta
-
-class MultipleExceptions(Exception):
-
-    def __init__(self, exceptions, *args, **kw):
-        super(MultipleExceptions, self).__init__(*args, **kw)
-        self.exceptions = exceptions
-#####################################################################################################
-
-def _is_msie8or9():
-    version = lambda ua: tuple(int(d) for d in ua.version.split('.'))
-    return (request.user_agent is not None
-            and request.user_agent.version is not None
-            and request.user_agent.browser == 'msie'
-            and (8, 0) <= version(request.user_agent) < (10, 0))
-
-
 def un_camel_case(s):
     return re.sub(r'(?<=\w)([A-Z])', r' \1', s)
 
@@ -91,7 +43,7 @@ def catch_processing_exceptions(func):
         except ProcessingException as exception:
             kw = dict((key, getattr(exception, key)) for key in ERROR_FIELDS)
             kw['code'] = kw.pop('code_')
-            return error_response(cause=exception, **kw)
+            return error_response(cause = exception, **kw)
     return new_func
 
 def catch_integrity_errors(session):
@@ -137,10 +89,6 @@ def error(id_=None, links=None, status=None, code=None, title=None,
         raise ValueError('At least one of the arguments must not be None.')
     return {'id': id_, 'links': links, 'status': status, 'code': code,
             'title': title, 'detail': detail, 'source': source, 'meta': meta}
-
-def is_conflict(exception):
-    exception_string = str(exception)
-    return any(s in exception_string for s in CONFLICT_INDICATORS)
 
 def error_response(status=400, cause=None, **kw):
     if cause is not None:

@@ -3,30 +3,37 @@
 Declared Exceptions: IllegalArgumentError,
 	
 	IllegalArgumentError:
+        Raise by: RequestManager
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
 class IllegalArgumentError(Exception):
     pass
 #######################################################################################################################################################
 
 """Module: All View Function(CollectionAPI,)
-Declared Exceptions: ComparisonToNull,UnknownField,SingleKeyError,ProcessingException,
+Declared Exceptions: ComparisonToNull,UnknownField,SingleKeyError,ProcessingException,is_conflict,
 	
 	ComparisonToNull:
+        Raise by: RequestManager
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	
 	UnknownField:
-		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Raise by: RequestManager
+        Args: str(msg) => detail message
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	
 	SingleKeyError:
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	
 	ProcessingException:
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+
+    is_conflict:
+        Args: str(msg) => detail message
+        Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
 class ComparisonToNull(Exception):
     pass
 
@@ -37,6 +44,10 @@ class UnknownField(Exception):
 
 class SingleKeyError(KeyError):
     pass
+
+def is_conflict(exception):
+    exception_string = str(exception)
+    return any(s in exception_string for s in CONFLICT_INDICATORS)
 
 class ProcessingException(HTTPException):
 
@@ -58,8 +69,9 @@ class ProcessingException(HTTPException):
 Declared Exceptions: SerializationException,
 	
 	SerializationException:
+        Raise by: Serializer
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
 class SerializationException(Exception):
     def __init__(self, instance, message=None, resource=None, *args, **kw):
         super(SerializationException, self).__init__(*args, **kw)
@@ -72,37 +84,45 @@ class SerializationException(Exception):
 Declared Exceptions: PaginationError,
 	
 	PaginationError:
+        Raise by: Serializer
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
 """Pagination Errors"""
 class PaginationError(Exception):
     pass
 #######################################################################################################################################################
 
-"""Module: All View Function(CollectionAPI,)
-Declared Exceptions: ComparisonToNull,UnknownField,SingleKeyError,ProcessingException,
+"""Module: Deserializer
+Declared Exceptions: DeserializationException,ClientGeneratedIDNotAllowed,MissingInformation,MissingData,MissingID,MissingType,ConflictingType
 	
 	DeserializationException:
+        Raise by: Serializer
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	ClientGeneratedIDNotAllowed:
-		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Raise by: Serializer
+        Args: str(msg) => detail message
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	MissingInformation:
+        Raise by: Serializer
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	MissingData:
-		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Raise by: Serializer
+        Args: str(msg) => detail message
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	MissingID:
+        Raise by: Serializer
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	MissingType:
-		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+		Raise by: Serializer
+        Args: str(msg) => detail message
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
 	ConflictingType:
+        Raise by: Serializer
 		Args: str(msg) => detail message
-		Thrown: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
+		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
 class DeserializationException(Exception):
     
     def __init__(self, *args, **kw):
