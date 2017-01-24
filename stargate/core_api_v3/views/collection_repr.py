@@ -5,7 +5,7 @@ class CollectionRepresentation:
 		self._link_header = {}
         self._num_results = 1
         self._data = []
-        self._inclusions = []
+        self._included = []
         self._single = False
 
 	@property
@@ -19,6 +19,10 @@ class CollectionRepresentation:
 	@property
 	def num_results(self):
 		return self._num_results
+
+	@property
+	def included(self):
+		return self._included
 
 	@property
 	def data(self):
