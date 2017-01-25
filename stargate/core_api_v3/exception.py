@@ -1,53 +1,75 @@
+from flask import jsonify, current_app
+from werkzeug.exceptions import Conflict, BadRequest, NotFound, InternalServerError, UnsupportedMediaType, UnprocessableEntity
+from werkzeug.http import HTTP_STATUS_CODES
 
-"""Module: RequestManager
-Declared Exceptions: IllegalArgumentError,
-	
-	IllegalArgumentError:
-        Raise by: RequestManager
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
-class IllegalArgumentError(Exception):
-    pass
-#######################################################################################################################################################
+"""Werkzeug Exceptions"""
+class StargateException(Exception):
+    werkzeug_exception = InternalServerError
 
-"""Module: All View Function(CollectionAPI,)
-Declared Exceptions: ComparisonToNull,UnknownField,SingleKeyError,ProcessingException,is_conflict,
-	
-	ComparisonToNull:
-        Raise by: RequestManager
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	
-	UnknownField:
-		Raise by: RequestManager
-        Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	
-	SingleKeyError:
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	
-	ProcessingException:
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
+    @property
+    def status_code(self):
+        return self.werkzeug_exception.code
 
-    is_conflict:
-        Args: str(msg) => detail message
-        Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
-class ComparisonToNull(Exception):
-    pass
+    def as_dict(self):
+        return {
+            'status': self.status_code,
+            'message': self.msg if self.msg else HTTP_STATUS_CODES.get(self.status_code, '')
+        }
 
-class UnknownField(Exception):
+    def get_response(self):
+        response = jsonify(self.as_dict())
+        response.status_code = self.status_code
+        return response
 
-    def __init__(self, field):
+class ResourceNotFound(StargateException):
+    werkzeug_exception = NotFound
+
+    def __init__(self, resource, msg = None, id = None):
+        super(ResourceNotFound, self).__init__()
+        self.resource = resource
+        self.msg = msg
+        self.id = id
+
+    def as_dict(self):
+        dct = super(ResourceNotFound, self).as_dict()
+        dct['resource'] = self.resource
+        dct['primary_key'] = self.id
+        return dct   
+
+class MediaTypeNotSupported(StargateException):
+    werkzeug_exception = UnsupportedMediaType
+
+class ValidationException(StargateException):
+    werkzeug_exception = BadRequest
+
+class ConflictException(StargateException):
+    werkzeug_exception = Conflict
+
+class ProcessingException(StargateException):
+    werkzeug_exception = UnprocessableEntity
+
+"""Application Custom Exceptions"""
+class IllegalArgumentError(ValidationException):
+    
+    def __init__(self, msg, **kwargs):
+        super(IllegalArgumentError, self).__init__()
+        self.msg = msg
+
+class ComparisonToNull(ValidationException):
+    def __init__(self, msg, **kwargs):
+        super(ComparisonToNull, self).__init__()
+        self.msg = msg
+
+class UnknownField(ValidationException):
+
+    def __init__(self, field, resource):
+        super(UnknownField, self).__init__()
         self.field = field
+        self.msg = "Unknown field {0} in model {1}".format(field, resource)
 
-class SingleKeyError(KeyError):
-    pass
-
-def is_conflict(exception):
-    exception_string = str(exception)
-    return any(s in exception_string for s in CONFLICT_INDICATORS)
+class SingleKeyError(ValidationException):
+    super(SingleKeyError, self).__init__()
+    self.msg = msg
 
 class ProcessingException(HTTPException):
 
@@ -63,71 +85,22 @@ class ProcessingException(HTTPException):
         self.detail = detail
         self.source = source
         self.meta = meta
-#######################################################################################################################################################
 
-"""Module: Serializer
-Declared Exceptions: SerializationException,
-	
-	SerializationException:
-        Raise by: Serializer
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
-class SerializationException(Exception):
+class SerializationException(ProcessingException):
     def __init__(self, instance, message=None, resource=None, *args, **kw):
         super(SerializationException, self).__init__(*args, **kw)
         self.resource = resource
         self.message = message
         self.instance = instance
-#######################################################################################################################################################
 
-"""Module: Pagination
-Declared Exceptions: PaginationError,
-	
-	PaginationError:
-        Raise by: Serializer
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
-"""Pagination Errors"""
-class PaginationError(Exception):
-    pass
-#######################################################################################################################################################
+class PaginationError(ValidationException):
+    super(PaginationError, self).__init__()
+    self.msg = msg
 
-"""Module: Deserializer
-Declared Exceptions: DeserializationException,ClientGeneratedIDNotAllowed,MissingInformation,MissingData,MissingID,MissingType,ConflictingType
-	
-	DeserializationException:
-        Raise by: Serializer
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	ClientGeneratedIDNotAllowed:
-		Raise by: Serializer
-        Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	MissingInformation:
-        Raise by: Serializer
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	MissingData:
-		Raise by: Serializer
-        Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	MissingID:
-        Raise by: Serializer
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	MissingType:
-		Raise by: Serializer
-        Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api
-	ConflictingType:
-        Raise by: Serializer
-		Args: str(msg) => detail message
-		Thrown when: When argument passed to RequestManger do not conform to type accepted by either meth:__init__ or meth:regiter_resource_as_api"""
-class DeserializationException(Exception):
+class DeserializationException(ProcessingException):
     
     def __init__(self, *args, **kw):
         super(DeserializationException, self).__init__(*args, **kw)
-
         self.detail = None
 
     def message(self):
@@ -189,5 +162,3 @@ class ConflictingType(DeserializationException):
                       ' object for relationship "{2}"')
             detail = detail.format(expected_type, given_type, relation_name)
         self.detail = detail
-
-#######################################################################################################################################################
