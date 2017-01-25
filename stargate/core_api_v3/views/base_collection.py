@@ -12,7 +12,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from .query_helper.search import Search
 from .query_helper.pagination import SimplePagination
 from sqlalchemy.orm.query import Query
-
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from ..exception import SerializationException, SingleKeyError, StargateException, ResourceNotFound
 
 FILTER_PARAM = 'filter[objects]'
 SORT_PARAM = 'sort'
@@ -111,9 +112,7 @@ class BaseAPI(MethodView):
                 serialized = serialize(instance, only=only)
                 result.append(serialized)
             except SerializationException as exception:
-                failed.append(exception)
-        if failed:
-            raise MultipleExceptions(failed)
+                raise SerializationException(instance,str(exception))
         return result
     
     def resources_to_include(self, instance):
@@ -155,26 +154,13 @@ class BaseAPI(MethodView):
         try:
             search_items = Search(self.session, self.model, filters=filters, sort=sort,
                                    group_by=group_by)
-        except ComparisonToNull as exception:
-            detail = str(exception)
-            return error_response(400, cause=exception, detail=detail)
-        except UnknownField as exception:
-            detail = 'Invalid filter object: No such field "{0}"'
-            detail = detail.format(exception.field)
-            return error_response(400, cause=exception, detail=detail)
         except Exception as exception:
             detail = 'Unable to construct query'
-            return error_response(400, cause=exception, detail=detail)
+            return StargateException(msg=detail)
 
         #collection
         if not single:
-            try:
-                paginated = SimplePagination.simple_pagination(search_items.search_collection(),filters = filters, sort = sort, group_by = group_by)
-            except MultipleExceptions as e:
-                return errors_from_serialization_exceptions(e.exceptions)
-            except PaginationError as exception:
-                detail = exception.args[0]
-                return error_response(400, cause = exception, detail = detail)
+            paginated = SimplePagination.simple_pagination(search_items.search_collection(),filters = filters, sort = sort, group_by = group_by)
             
             data = paginated.items
             links = paginated.pagination_links
@@ -189,16 +175,14 @@ class BaseAPI(MethodView):
                 data = search_items.search_collection().one()
             except NoResultFound as exception:
                 detail = 'No result found'
-                return error_response(404, cause=exception, detail=detail)
+                raise ResourceNotFound(self.model.__name__(), msg=detail)
             except MultipleResultsFound as exception:
                 detail = 'Multiple results found'
-                return error_response(404, cause=exception, detail=detail)
+                raise StargateException(msg=detail)
+            
             only = self.sparse_fields.get(self.collection_name)
-            try:
-                serialize = self.serialize
-                result['data'] = serialize(data, only=only)
-            except SerializationException as exception:
-                return errors_from_serialization_exceptions([exception])
+            serialize = self.serialize
+            result['data'] = serialize(data, only=only)
             
             #Link Header Generation
             primary_key = primary_key_for(data)
@@ -209,17 +193,11 @@ class BaseAPI(MethodView):
             link_header = headers
             single = single
 
-        try:
-            included = self.get_all_inclusions(search_items)
-        except MultipleExceptions as e:
-            return errors_from_serialization_exceptions(e.exceptions,
-                                                        included=True)
+        included = self.get_all_inclusions(search_items)
+        
         if included:
             inclusions = included
 
         result = {'data': data, 'link_header': link_header, 'links': links, 'num_results': num_results,'include': inclusions, 'single': 'single'}
         
-        for postprocessor in self.postprocessors['GET_COLLECTION']:
-            postprocessor(result=result, filters=filters, sort=sort,
-                          group_by=group_by, single=single)
         return result

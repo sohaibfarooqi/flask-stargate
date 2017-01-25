@@ -1,4 +1,5 @@
 import inspect
+from ...exception import UnknownField, ComparisonToNull
 
 class Filter:
 
@@ -14,7 +15,7 @@ class Filter:
         if 'or' not in dictionary and 'and' not in dictionary:
             fieldname = dictionary.get('name')
             if not hasattr(model, fieldname):
-                raise UnknownField(fieldname)
+                raise UnknownField("No Field found {0}",format(fieldname))
             operator = dictionary.get('op')
             otherfield = dictionary.get('field')
             argument = dictionary.get('val')

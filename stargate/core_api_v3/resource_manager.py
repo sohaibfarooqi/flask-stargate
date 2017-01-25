@@ -7,6 +7,7 @@ from .serializer import DefaultSerializer
 from .deserializer import DefaultDeserializer
 from .views.collection import CollectionAPI
 from functools import partial
+from .exception import IllegalArgumentError
 
 READONLY_METHODS = frozenset(('GET', ))
 WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE'))
@@ -183,7 +184,7 @@ class ResourceManager():
 			for attr in additional_attributes:
 				if isinstance(attr, string_types) and not hasattr(model, attr):
 					msg = 'no attribute named: "{0}" found in Model: {1}'.format(attr, model)
-					raise AttributeError(msg)
+					raise IllegalArgumentError(msg)
 		return True
     
     def url_for(self, model, **kw):

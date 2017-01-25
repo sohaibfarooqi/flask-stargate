@@ -2,6 +2,7 @@ from mimerender import FlaskMimeRender
 from mimerender import register_mime
 from functools import wraps
 from flask import request
+from .exception import NotAcceptable, MediaTypeNotSupported
 
 CONTENT_TYPE = 'application/vnd.api+json'
 
@@ -38,13 +39,13 @@ def requires_json_api_accept(func):
                          if name.startswith(CONTENT_TYPE)]
         if len(jsonapi_pairs) == 0:
             detail = ('Accept header, if specified, must be the JSON API media type: {0}'.format(CONTENT_TYPE))
-            return error_response(406, detail=detail)
+            raise NotAcceptable(msg=detail)
         if all(extra is not None for name, extra in jsonapi_pairs):
             detail = ('Accept header contained JSON API content type, but each'
                       ' instance occurred with media type parameters; at least'
                       ' one instance must appear without parameters (the part'
                       ' after the semicolon)')
-            return error_response(406, detail=detail)
+            raise NotAcceptable(msg=detail)
         return func(*args, **kw)
     return new_func
 
@@ -61,11 +62,11 @@ def requires_json_api_mimetype(func):
         if not content_is_json:
             detail = ('Request must have "Content-Type: {0}"'
                       ' header').format(CONTENT_TYPE)
-            return error_response(415, detail=detail)
+            return MediaTypeNotSupported(msg=detail)
         if extra:
             detail = ('Content-Type header must not have any media type'
                       ' parameters but found {0}'.format(extra))
-            return error_response(415, detail=detail)
+            return MediaTypeNotSupported(msg=detail)
         return func(*args, **kw)
     return new_func
 

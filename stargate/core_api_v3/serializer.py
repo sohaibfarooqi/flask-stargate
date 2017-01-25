@@ -7,6 +7,7 @@ from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from datetime import date, datetime, time, timedelta
 from werkzeug.routing import BuildError
 from flask import request
+from .exception import IllegalArgumentError
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
 RELATION_BLACKLIST = ('query', 'query_class', '_sa_class_manager',
@@ -18,18 +19,17 @@ def get_column_name(column):
         clause_element = column.__clause_element__()
         if not isinstance(clause_element, Column):
             msg = 'Expected a column attribute of a SQLAlchemy ORM class'
-            raise TypeError(msg)
+            raise IllegalArgumentError(msg)
         return clause_element.key
     return column
 
 def is_mapped_class(cls):
     try:
         sqlalchemy_inspect(cls)
-    except NoInspectionAvailable:
-        return False
-    else:
         return True
-
+    except NoInspectionAvailable:
+        raise ResourceNotFound(cls, "Model not found")
+        
 def get_model(instance):
     return type(instance)
 
@@ -65,11 +65,11 @@ class DefaultSerializer(Serializer):
                  **kw):
         super(DefaultSerializer, self).__init__(**kw)
         if only is not None and exclude is not None:
-            raise ValueError('Cannot specify both `only` and `exclude` keyword'
+            raise IllegalArgumentError('Cannot specify both `only` and `exclude` keyword'
                              ' arguments simultaneously')
         if (additional_attributes is not None and exclude is not None and
                 any(attr in exclude for attr in additional_attributes)):
-            raise ValueError('Cannot exclude attributes listed in the'
+            raise IllegalArgumentError('Cannot exclude attributes listed in the'
                              ' `additional_attributes` keyword argument')
         if only is not None:
             only = set(get_column_name(column) for column in only)
@@ -120,10 +120,7 @@ class DefaultSerializer(Serializer):
         for key, val in attributes.items():
             if is_mapped_class(type(val)):
                 model_ = get_model(val)
-                try:
-                    serialize = serializer_for(model_)
-                except ValueError:
-                    serialize = simple_serialize
+                serialize = serializer_for(model_)
                 attributes[key] = serialize(val)
         id_ = attributes.pop('id')
         type_ = collection_name(model)
@@ -133,10 +130,7 @@ class DefaultSerializer(Serializer):
         if ((self.default_fields is None or 'self' in self.default_fields)
                 and (only is None or 'self' in only)):
             instance_id = primary_key_value(instance)
-            try:
-                path = url_for(model, instance_id, _method='GET')
-            except BuildError:
-                pass
+            path = url_for(model, instance_id, _method='GET')
             else:
                 url = urljoin(request.url_root, path)
                 result['links'] = dict(self=url)

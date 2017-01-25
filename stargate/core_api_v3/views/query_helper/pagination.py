@@ -2,6 +2,7 @@ from flask import request, json
 from ...broker import serializer_for
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
+from ...exception import PaginationError
 
 LINK_NAMES = ('first', 'last', 'prev', 'next')
 
