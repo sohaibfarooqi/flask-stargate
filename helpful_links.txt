@@ -11,3 +11,5 @@ https://github.com/Robpol86/Flask-Large-Application-Example
 http://stackoverflow.com/questions/12806386/standard-json-api-response-format
 http://flask.pocoo.org/docs/0.11/config/#builtin-configuration-values
 http://postgresql-audit.readthedocs.io/en/latest/flask.html
+find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+
