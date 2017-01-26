@@ -1,12 +1,8 @@
-import re
-from mimerender import FlaskMimeRender
-from mimerender import register_mime
 from itertools import chain
-from functools import wraps
 from werkzeug.exceptions import HTTPException
 from flask.views import MethodView
 from flask import request, json, jsonify, current_app
-from ..broker import collection_name
+from ..proxy import collection_name_for
 from collections import defaultdict
 from sqlalchemy.exc import SQLAlchemyError
 from .query_helper.search import Search
@@ -14,6 +10,8 @@ from .query_helper.pagination import SimplePagination
 from sqlalchemy.orm.query import Query
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from ..exception import SerializationException, SingleKeyError, StargateException, ResourceNotFound
+from ..errors import catch_processing_exceptions, catch_integrity_errors
+from ..mimerender import requires_json_api_accept, requires_json_api_mimetype, mimerender
 
 FILTER_PARAM = 'filter[objects]'
 SORT_PARAM = 'sort'
@@ -50,9 +48,9 @@ class BaseAPI(MethodView):
                  max_page_size=100, allow_to_many_replacement=False, *args,
                  **kw):
 
-        super(BaseAPI, self).__init__(*args, **kw)
+        super(BaseAPI, self).__init__()
 
-        self.collection_name = collection_name(model)
+        self.collection_name = collection_name_for(model)
         
         self.default_includes = includes
         if self.default_includes is not None:
@@ -81,10 +79,10 @@ class BaseAPI(MethodView):
 
         self.sparse_fields = parse_sparse_fields()
 
-        decorate = lambda name, f: setattr(self, name, f(getattr(self, name)))
-        for method in ['get', 'post', 'patch', 'delete']:
-            if hasattr(self, method):
-                decorate(method, catch_integrity_errors(self.session))
+        # decorate = lambda name, f: setattr(self, name, f(getattr(self, name)))
+        # for method in ['get', 'post', 'patch', 'delete']:
+        #     if hasattr(self, method):
+        #         decorate(method, catch_integrity_errors(self.session))
    
     def get_all_inclusions(self, instance_or_instances):
         if isinstance(instance_or_instances, Query):
@@ -106,7 +104,7 @@ class BaseAPI(MethodView):
                     serialize = serializer_for(model)
                 except ValueError:
                     serialize = self.serialize
-            _type = collection_name(model)
+            _type = collection_name_for(model)
             only = self.sparse_fields.get(_type)
             try:
                 serialized = serialize(instance, only=only)
@@ -165,7 +163,7 @@ class BaseAPI(MethodView):
             data = paginated.items
             links = paginated.pagination_links
             header = ','.join(paginated.header_links)
-            link_header = dict(Link = link_header)
+            link_header = dict(Link = header)
             num_results = paginated.num_results
             single = single
         
@@ -197,7 +195,9 @@ class BaseAPI(MethodView):
         
         if included:
             inclusions = included
-
+        else:
+            inclusions = []
+            
         result = {'data': data, 'link_header': link_header, 'links': links, 'num_results': num_results,'include': inclusions, 'single': 'single'}
         
         return result

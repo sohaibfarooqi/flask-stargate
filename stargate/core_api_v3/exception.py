@@ -6,6 +6,9 @@ from werkzeug.http import HTTP_STATUS_CODES
 class StargateException(Exception):
     werkzeug_exception = InternalServerError
 
+    def __init__(self, msg=None):
+        self.msg = msg
+    
     @property
     def status_code(self):
         return self.werkzeug_exception.code

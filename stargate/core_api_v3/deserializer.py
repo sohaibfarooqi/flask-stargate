@@ -1,4 +1,4 @@
-from .broker import url_for, serializer_for, primary_key_for, collection_name, model_for
+from .proxy import url_for, serializer_for, primary_key_for, collection_name_for, model_for
 
 """Deserialization Exception Classes"""
 
@@ -26,7 +26,7 @@ class DefaultDeserializer(Deserializer):
         if 'id' in data and not self.allow_client_generated_ids:
             raise ClientGeneratedIDNotAllowed
         type_ = data.pop('type')
-        expected_type = collection_name(self.model)
+        expected_type = collection_name_for(self.model)
         if type_ != expected_type:
             raise ConflictingType(expected_type, type_)
         for field in data:
@@ -46,7 +46,7 @@ class DefaultDeserializer(Deserializer):
                     raise MissingData(link_name)
                 linkage = link_object['data']
                 related_model = get_related_model(self.model, link_name)
-                expected_type = collection_name(related_model)
+                expected_type = collection_name_for(related_model)
                 DRD = DefaultRelationshipDeserializer
                 deserialize = DRD(self.session, related_model, link_name)
                 links[link_name] = deserialize(linkage)

@@ -321,7 +321,7 @@ class PrimaryKeyFinder(KnowsAPIManagers, Singleton):
 
 url_for = UrlFinder()
 
-collection_name = CollectionNameFinder()
+collection_name_for = CollectionNameFinder()
 
 serializer_for = SerializerFinder()
 

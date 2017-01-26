@@ -37,7 +37,7 @@ class APIManager():
 
 		url_for.register(self)
         model_for.register(self)
-        collection_name.register(self)
+        collection_name_for.register(self)
         serializer_for.register(self)
         primary_key_for.register(self)
 

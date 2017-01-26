@@ -1,8 +1,8 @@
 from flask import request, json
-from ...broker import serializer_for
+from ...proxy import serializer_for
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
-from ...exception import PaginationError
+from ...exception import PaginationError, SerializationException
 
 LINK_NAMES = ('first', 'last', 'prev', 'next')
 
@@ -143,7 +143,7 @@ class SimplePagination():
                 serialized = serialize(item)
                 result.append(serialized)
             except SerializationException as exception:
-                pass
+                 raise SerializationException(instance,str(exception))
         
         return Paginated(result, num_results=num_results, first=first,last=last, 
                         next_=next_, prev=prev,page_size=page_size, 

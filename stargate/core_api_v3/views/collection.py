@@ -13,13 +13,13 @@ class CollectionAPI(BaseAPI):
 
         try:
             filters, sort, group_by, single = self._collection_filter_parameters()
-            for decorator in self.decorators['GET_COLLECTION']:
-                decorator(filters=filters, sort=sort, group_by=group_by,
-                         single=single)
+            # for decorator in self.decorators['GET_COLLECTION']:
+            #     decorator(filters=filters, sort=sort, group_by=group_by,
+            #              single=single)
 
             result =  self._get_collection(filters=filters, sort=sort,
                                            group_by=group_by, single=single)
             return result
         except Exception as exception:
-            raise StargateException(msg=str(exception))
+            raise StargateException(str(exception))
     

@@ -1,4 +1,5 @@
 from .exception import ProcessingException, ValidationException, ConflictException
+from functools import wraps
 
 ERROR_FIELDS = ('id_', 'links', 'status', 'code_', 'title', 'detail', 'source',
                 'meta')
@@ -22,7 +23,6 @@ def catch_processing_exceptions(func):
     return new_func
 
 def catch_integrity_errors(session):
-    
     def decorated(func):
         @wraps(func)
         def wrapped(*args, **kw):
@@ -31,10 +31,10 @@ def catch_integrity_errors(session):
             except SQLAlchemyError as exception:
                 session.rollback()
                 exception_string = str(exception)
-				if any(s in exception_string for s in CONFLICT_INDICATORS):
-					raise ConflictException(exception_string)
-				else:
-					raise ValidationException(exception_string)
-        return wrapped
-    return decorated
+                if any(s in exception_string for s in CONFLICT_INDICATORS):
+                    raise ConflictException(exception_string)
+                else:
+                    raise ValidationException(exception_string)
+            return wrapped
+        return decorated
 #####################################################################################################

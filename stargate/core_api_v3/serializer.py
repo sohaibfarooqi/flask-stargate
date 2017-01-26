@@ -2,12 +2,12 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.exc import NoInspectionAvailable
 from urllib.parse import urljoin
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
-from .broker import url_for, serializer_for, primary_key_for, collection_name, model_for
+from .proxy import url_for, serializer_for, primary_key_for, collection_name_for, model_for
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from datetime import date, datetime, time, timedelta
 from werkzeug.routing import BuildError
 from flask import request
-from .exception import IllegalArgumentError
+from .exception import IllegalArgumentError, ResourceNotFound
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
 RELATION_BLACKLIST = ('query', 'query_class', '_sa_class_manager',
@@ -28,7 +28,7 @@ def is_mapped_class(cls):
         sqlalchemy_inspect(cls)
         return True
     except NoInspectionAvailable:
-        raise ResourceNotFound(cls, "Model not found")
+        return False
         
 def get_model(instance):
     return type(instance)
@@ -123,7 +123,7 @@ class DefaultSerializer(Serializer):
                 serialize = serializer_for(model_)
                 attributes[key] = serialize(val)
         id_ = attributes.pop('id')
-        type_ = collection_name(model)
+        type_ = collection_name_for(model)
         result = dict(id=id_, type=type_)
         if attributes:
             result['attributes'] = attributes
@@ -131,9 +131,9 @@ class DefaultSerializer(Serializer):
                 and (only is None or 'self' in only)):
             instance_id = primary_key_value(instance)
             path = url_for(model, instance_id, _method='GET')
-            else:
-                url = urljoin(request.url_root, path)
-                result['links'] = dict(self=url)
+        else:
+            url = urljoin(request.url_root, path)
+            result['links'] = dict(self=url)
         pk_name = primary_key_for(model)
         if pk_name != 'id':
             result['id'] = result['attributes'][pk_name]
