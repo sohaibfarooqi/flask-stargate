@@ -1,7 +1,7 @@
 import inspect
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm import ColumnProperty
-from .filter import Filter
+from .filter import Filter, create_filter
 
 def session_query(session, model):
     if hasattr(model, 'query'):
@@ -37,8 +37,8 @@ class Search():
 	    else:
 	        query = session_query(self.session, self.model)
 
-	    filters = [Filter.from_dictionary(model, f) for f in self.filters]
-	    filters = [create_filter(model, f) for f in filters]
+	    filters = [Filter.from_dictionary(self.model, f) for f in self.filters]
+	    filters = [create_filter(self.model, f) for f in filters]
 	    query = query.filter(*filters)
 
 	    if self.sort:

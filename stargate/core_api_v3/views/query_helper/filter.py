@@ -1,5 +1,92 @@
 import inspect
 from ...exception import UnknownField, ComparisonToNull
+from sqlalchemy import Date
+from sqlalchemy import DateTime
+from sqlalchemy import Interval
+from sqlalchemy import Time
+from dateutil.parser import parse as parse_datetime
+import datetime
+from sqlalchemy.sql.expression import ColumnElement
+from sqlalchemy.orm import RelationshipProperty as RelProperty
+from sqlalchemy.ext.associationproxy import AssociationProxy
+
+OPERATORS = {
+    # Operators which accept a single argument.
+    'is_null': lambda f: f == None,
+    'is_not_null': lambda f: f != None,
+    # 'desc': lambda f: f.desc,
+    # 'asc': lambda f: f.asc,
+    # Operators which accept two arguments.
+    '==': lambda f, a: f == a,
+    'eq': lambda f, a: f == a,
+    'equals': lambda f, a: f == a,
+    'equal_to': lambda f, a: f == a,
+    '!=': lambda f, a: f != a,
+    'ne': lambda f, a: f != a,
+    'neq': lambda f, a: f != a,
+    'not_equal_to': lambda f, a: f != a,
+    'does_not_equal': lambda f, a: f != a,
+    '>': lambda f, a: f > a,
+    'gt': lambda f, a: f > a,
+    '<': lambda f, a: f < a,
+    'lt': lambda f, a: f < a,
+    '>=': lambda f, a: f >= a,
+    'ge': lambda f, a: f >= a,
+    'gte': lambda f, a: f >= a,
+    'geq': lambda f, a: f >= a,
+    '<=': lambda f, a: f <= a,
+    'le': lambda f, a: f <= a,
+    'lte': lambda f, a: f <= a,
+    'leq': lambda f, a: f <= a,
+    '<<': lambda f, a: f.op('<<')(a),
+    '<<=': lambda f, a: f.op('<<=')(a),
+    '>>': lambda f, a: f.op('>>')(a),
+    '>>=': lambda f, a: f.op('>>=')(a),
+    '<>': lambda f, a: f.op('<>')(a),
+    '&&': lambda f, a: f.op('&&')(a),
+    'ilike': lambda f, a: f.ilike(a),
+    'like': lambda f, a: f.like(a),
+    'not_like': lambda f, a: ~f.like(a),
+    'in': lambda f, a: f.in_(a),
+    'not_in': lambda f, a: ~f.in_(a),
+    # Operators which accept three arguments.
+    'has': lambda f, a, fn: f.has(_sub_operator(f, a, fn)),
+    'any': lambda f, a, fn: f.any(_sub_operator(f, a, fn)),
+}
+
+CURRENT_TIME_MARKERS = ('CURRENT_TIMESTAMP', 'CURRENT_DATE', 'LOCALTIMESTAMP')
+
+def get_field_type(model, fieldname):
+    field = getattr(model, fieldname)
+    if isinstance(field, ColumnElement):
+        return field.type
+    if isinstance(field, AssociationProxy):
+        field = field.remote_attr
+    if hasattr(field, 'property'):
+        prop = field.property
+        if isinstance(prop, RelProperty):
+            return None
+        return prop.columns[0].type
+    return None
+
+def string_to_datetime(model, fieldname, value):
+    if value is None:
+        return value
+    field_type = get_field_type(model, fieldname)
+    if isinstance(field_type, (Date, Time, DateTime)):
+        if value.strip() == '':
+            return None
+        if value in CURRENT_TIME_MARKERS:
+            return getattr(func, value.lower())()
+        value_as_datetime = parse_datetime(value)
+        if isinstance(field_type, Date):
+            return value_as_datetime.date()
+        if isinstance(field_type, Time):
+            return value_as_datetime.timetz()
+        return value_as_datetime
+    if isinstance(field_type, Interval) and isinstance(value, int):
+        return datetime.timedelta(seconds=value)
+    return value
 
 class Filter:
 
@@ -50,6 +137,7 @@ class DisjunctionFilter(JunctionFilter):
     pass
 
 def create_operation(model, fieldname, operator, argument):
+    
     opfunc = OPERATORS[operator]
     numargs = len(inspect.getargspec(opfunc).args)
     field = getattr(model, fieldname)

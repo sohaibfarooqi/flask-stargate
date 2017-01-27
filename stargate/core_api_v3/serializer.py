@@ -7,7 +7,7 @@ from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from datetime import date, datetime, time, timedelta
 from werkzeug.routing import BuildError
 from flask import request
-from .exception import IllegalArgumentError, ResourceNotFound
+from .exception import IllegalArgumentError, ResourceNotFound, SerializationException
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
 RELATION_BLACKLIST = ('query', 'query_class', '_sa_class_manager',
@@ -79,8 +79,30 @@ class DefaultSerializer(Serializer):
         self.default_fields = only
         self.exclude = exclude
         self.additional_attributes = additional_attributes
+    
+    def __call__(self, instance, only = None, many = False):
+        
+        if many and isinstance(instance, list):
+            self._serialize_many(instance, only = None)
+        
+        else:
+            self._serialize_one(instance, only=None)
 
-    def __call__(self, instance, only=None):
+    def _serialize_many(self, instances, only=None):
+        result = []
+        for instance in instances:
+            model = get_model(instance)
+            serialize = serializer_for(model)
+            serialize = self.serialize
+            _type = collection_name_for(model)
+            try:
+                serialized = self._serialize_one(instance, only=only)
+                result.append(serialized)
+            except SerializationException as exception:
+                raise SerializationException(instance,str(exception))
+        return result
+
+    def _serialize_one(self, instance, only=None):
         if only is not None:
             only = set(only) | set(['type', 'id'])
         model = type(instance)

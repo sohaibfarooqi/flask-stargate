@@ -49,7 +49,6 @@ class BaseAPI(MethodView):
                  **kw):
 
         super(BaseAPI, self).__init__()
-
         self.collection_name = collection_name_for(model)
         
         self.default_includes = includes
@@ -92,26 +91,6 @@ class BaseAPI(MethodView):
             to_include = self.resources_to_include(instance_or_instances)
         return self._serialize_many(to_include)
     
-    def _serialize_many(self, instances, relationship=False):
-        result = []
-        failed = []
-        for instance in instances:
-            model = get_model(instance)
-            if relationship:
-                serialize = self.serialize_relationship
-            else:
-                try:
-                    serialize = serializer_for(model)
-                except ValueError:
-                    serialize = self.serialize
-            _type = collection_name_for(model)
-            only = self.sparse_fields.get(_type)
-            try:
-                serialized = serialize(instance, only=only)
-                result.append(serialized)
-            except SerializationException as exception:
-                raise SerializationException(instance,str(exception))
-        return result
     
     def resources_to_include(self, instance):
         toinclude = request.args.get('include')
@@ -125,15 +104,23 @@ class BaseAPI(MethodView):
                          for path in toinclude))
 
     def _collection_filter_parameters(self):
-        filters = json.loads(request.args.get(FILTER_PARAM, '[]'))
-        sort = request.args.get(SORT_PARAM)
+        query_string = request.args.to_dict()
+        
+        filters = query_string['filters']
+        sort = query_string['sort']
+        group_by = query_string['group']
+        single = query_string['single']
+        include = query_string['include']
+        fields = query_string['fields']
+        
+        filters = json.loads(query_string)
+
         if sort:
             sort = [('-', value[1:]) if value.startswith('-') else ('+', value)
                     for value in sort.split(',')]
         else:
             sort = []
 
-        group_by = request.args.get(GROUP_PARAM)
         if group_by:
             group_by = group_by.split(',')
         else:
@@ -159,7 +146,6 @@ class BaseAPI(MethodView):
         #collection
         if not single:
             paginated = SimplePagination.simple_pagination(search_items.search_collection(),filters = filters, sort = sort, group_by = group_by)
-            
             data = paginated.items
             links = paginated.pagination_links
             header = ','.join(paginated.header_links)
