@@ -10,8 +10,9 @@ from .representation import InstanceRepresentation, CollectionRepresentation
 FILTER_PARAM = 'filters'
 SORT_PARAM = 'sort'
 GROUP_PARAM = 'group'
-FIELDS = 'fields'
-EXCLUDE = 'exclude'
+FIELDS_PARM = 'fields'
+EXCLUDE_PARAM = 'exclude'
+INCLUDE_PARAM = 'include'
 PAGE_SIZE_PARAM = 'page_size'
 PAGE_NUMBER_PARAM = 'page_number'
 
@@ -58,14 +59,14 @@ class ResourceAPI(MethodView):
 		
 		query_string = request.args.to_dict()
 
-		filters = query_string['filters'] if 'filter' in query_string else []
-		sort = query_string['sort'] if 'sort' in query_string else []
-		group_by = query_string['group'] if 'group' in query_string else []
-		include = query_string['include'] if 'includes' in query_string else []
-		fields = query_string['fields'] if 'fields' in query_string else []
-		exclude = query_string['exclude'] if 'exclude' in query_string else []
-		page_size = query_string['page_size'] if 'page_size' in query_string else DEFAULT_PAGE_SIZE
-		page_number = query_string['page_number'] if 'page_number' in query_string else DEFAULT_PAGE_NUMBER
+		filters = query_string[FILTER_PARAM] if FILTER_PARAM in query_string else []
+		sort = query_string[SORT_PARAM] if SORT_PARAM in query_string else []
+		group_by = query_string[GROUP_PARAM] if GROUP_PARAM in query_string else []
+		include = query_string[INCLUDE_PARAM] if INCLUDE_PARAM in query_string else []
+		fields = query_string[FIELDS_PARAM] if FIELDS_PARAM in query_string else []
+		exclude = query_string[EXCLUDE_PARAM] if EXCLUDE_PARAM in query_string else []
+		page_size = query_string[PAGE_SIZE_PARAM] if PAGE_SIZE_PARAM in query_string else DEFAULT_PAGE_SIZE
+		page_number = query_string[PAGE_NUMBER_PARAM] if PAGE_NUMBER_PARAM in query_string else DEFAULT_PAGE_NUMBER
         
         
 		if filters:

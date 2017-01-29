@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, url_for as flask_url_for, request
+from flask import Flask, Blueprint, url_for as flask_url_for, request,current_app,json,make_response
 from six import string_types
 from uuid import uuid1
 from collections import namedtuple, defaultdict
@@ -136,12 +136,23 @@ class ResourceManager():
 			return e.get_response()
 
 		elif isinstance(e, HTTPException):
-			return _make_response({'status': e.code,'message': e.description}, e.code)
-		
-		else:
-			return original_handler(e)
-		
+			return self._make_response({'status': e.code,'message': e.description}, e.code)
+
 		return original_handler(e)
+
+	def _make_response(self, data, code, headers=None):
+    	
+		settings = {}
+		
+		if current_app.debug:
+			settings.setdefault('indent', 4)
+			settings.setdefault('sort_keys', True)
+
+		data = json.dumps(data, **settings)
+
+		resp = make_response(data, code)
+		resp.headers.extend(headers or {})
+		return resp
 
 	def _params_sanity_checks(self, *args, **kwargs):
 
