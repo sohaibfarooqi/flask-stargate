@@ -1,7 +1,6 @@
 from itertools import chain
-from werkzeug.exceptions import HTTPException
 from flask.views import MethodView
-from flask import request, json, jsonify, current_app
+from flask import request, json
 from ..proxy import collection_name_for
 from collections import defaultdict
 from sqlalchemy.exc import SQLAlchemyError
@@ -83,27 +82,10 @@ class BaseAPI(MethodView):
         #     if hasattr(self, method):
         #         decorate(method, catch_integrity_errors(self.session))
    
-    def get_all_inclusions(self, instance_or_instances):
-        if isinstance(instance_or_instances, Query):
-            to_include = set(chain(self.resources_to_include(resource)
-                                   for resource in instance_or_instances))
-        else:
-            to_include = self.resources_to_include(instance_or_instances)
-        return self._serialize_many(to_include)
     
-    
-    def resources_to_include(self, instance):
-        toinclude = request.args.get('include')
-        if toinclude is None and self.default_includes is None:
-            return {}
-        elif toinclude is None and self.default_includes is not None:
-            toinclude = self.default_includes
-        else:
-            toinclude = set(toinclude.split(','))
-        return set(chain(resources_from_path(instance, path)
-                         for path in toinclude))
 
     def _collection_filter_parameters(self):
+
         query_string = request.args.to_dict()
         
         filters = query_string['filters']
@@ -164,9 +146,9 @@ class BaseAPI(MethodView):
                 detail = 'Multiple results found'
                 raise StargateException(msg=detail)
             
-            only = self.sparse_fields.get(self.collection_name)
             serialize = self.serialize
-            result['data'] = serialize(data, only=only)
+            # result['data'] = serialize(data, only=only)
+            result['data'] = serialize(data)
             
             #Link Header Generation
             primary_key = primary_key_for(data)
@@ -177,12 +159,6 @@ class BaseAPI(MethodView):
             link_header = headers
             single = single
 
-        included = self.get_all_inclusions(search_items)
-        
-        if included:
-            inclusions = included
-        else:
-            inclusions = []
             
         result = {'data': data, 'link_header': link_header, 'links': links, 'num_results': num_results,'include': inclusions, 'single': 'single'}
         

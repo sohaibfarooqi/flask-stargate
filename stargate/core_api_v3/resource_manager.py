@@ -5,7 +5,7 @@ from collections import namedtuple, defaultdict
 from .proxy import url_for, serializer_for, primary_key_for, collection_name_for, model_for
 from .serializer import DefaultSerializer
 from .deserializer import DefaultDeserializer
-from .views.collection import CollectionAPI
+from .views import ApiViews
 from functools import partial
 from .exception import IllegalArgumentError, StargateException
 from werkzeug.exceptions import HTTPException
@@ -74,34 +74,29 @@ class ResourceManager():
 	
 	def create_resource_blueprint(self, name, model, methods=READONLY_METHODS,
                              url_prefix=None, collection_name=None,
-                             allow_functions=False, only=None, exclude=None,
-                             additional_attributes=None,page_size=10,
+                             fields=None, exclude=None,page_size=10,
                              max_page_size=100, decorators=[], primary_key=None,
                              serializer=None, deserializer=None,
-                             includes=None, allow_to_many_replacement=False,
-                             allow_delete_from_to_many_relationships=False,
-                             allow_client_generated_ids=False):
+                             includes=None):
 		
 		if collection_name is None:
 			collection_name = model.__table__.name
 		methods = frozenset((m.upper() for m in methods))
-		apiname = ResourceManager.api_name(collection_name)
+		apiname = self.api_name(collection_name)
 
 		decorators_ = self.decorators
 		decorators_.append(decorators)
 		
 		if serializer is None:
-			serializer = DefaultSerializer(only, exclude,
-											additional_attributes)
+			serializer = DefaultSerializer(only=fields, exclude=exclude)
 
 		if deserializer is None:
-			deserializer = DefaultDeserializer(self.session, model,
-												allow_client_generated_ids)
+			deserializer = DefaultDeserializer(self.session, model)
 
-		atmr = allow_to_many_replacement
-		api_view = self._add_view(apiname, self.session, model, decorators_, 
-								primary_key, atmr, page_size, max_page_size, 
-								serializer, deserializer, includes)
+		resource_api_view = ApiViews.add_resource_view(apiname, self.session, model, decorators_,
+															primary_key,  page_size,
+															 max_page_size, serializer,
+															 deserializer, includes)
 
 		if url_prefix is not None:
 			prefix = url_prefix
@@ -112,8 +107,13 @@ class ResourceManager():
 			blueprint = Blueprint(name, __name__, url_prefix=prefix)
 
 		collection_url = '/{0}'.format(collection_name)
-		collection_methods = frozenset(('POST', 'GET',)) & methods
-		self._add_route(blueprint, collection_url, api_view, methods=collection_methods)
+		collection_methods = ALL_METHODS & methods
+		self._add_endpoint(blueprint, collection_url, resource_api_view, methods=collection_methods)
+		
+		resource_url = '/{0}/<pk_id>'.format(collection_name)
+		resource_methods = ALL_METHODS & methods
+		self._add_endpoint(blueprint, resource_url, resource_api_view ,methods=resource_methods)
+		
 		self._add_resource(model, collection_name, blueprint, serializer, deserializer, primary_key)
 
 		return blueprint
@@ -121,26 +121,11 @@ class ResourceManager():
 	def _add_resource(self, model, collection_name, blueprint, serializer, deserializer, primary_key):
 		self.registered_apis[model] = RESOURCE_API_INFO(collection_name, blueprint.name,
 												serializer, deserializer, primary_key)
-	
-	def _add_route(self, blueprint, endpoint, view_func, methods=READONLY_METHODS):
+
+	def _add_endpoint(self, blueprint, endpoint, view_func, methods=READONLY_METHODS):
 		add_rule = blueprint.add_url_rule
 		add_rule(endpoint, view_func=view_func,
 					methods=methods)
-	
-	def _add_view(self, _apiname, session, model, decorators_, 
-				primary_key_, atmr, page_size_, max_page_size_, 
-				serializer_, deserializer_, includes_):
-		return CollectionAPI.as_view(_apiname, 
-									session, 
-									model,
-									decorators = decorators_,
-									primary_key = primary_key_,
-									allow_to_many_replacement = atmr,
-									page_size = page_size_,
-									max_page_size = max_page_size_,
-									serializer = serializer_,
-									deserializer = deserializer_,
-									includes = includes_)
 
 	def init_app(self, app):
 		app.handle_exception = partial(self._exception_handler, app.handle_exception)

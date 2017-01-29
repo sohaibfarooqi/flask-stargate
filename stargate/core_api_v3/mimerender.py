@@ -94,8 +94,8 @@ def create_json_response(*args, **kw):
     response.status_code = status_code
     return response
 
-register_mime('jsonapi', (CONTENT_TYPE, ))
-mimerender = FlaskMimeRender()(default = 'jsonapi', jsonapi = create_json_response)
+#register_mime('jsonapi', (CONTENT_TYPE, ))
+#mimerender = FlaskMimeRender()(default = 'jsonapi', jsonapi = create_json_response)
 ####################################################################################################################################
 
 

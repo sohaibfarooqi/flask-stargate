@@ -6,6 +6,16 @@ from ...exception import PaginationError, SerializationException
 
 LINK_NAMES = ('first', 'last', 'prev', 'next')
 
+FILTER_PARAM = 'filter[objects]'
+
+SORT_PARAM = 'sort'
+
+GROUP_PARAM = 'group'
+
+PAGE_NUMBER_PARAM = 'page[number]'
+
+PAGE_SIZE_PARAM = 'page[size]'
+
 def get_model(instance):
     
     if isinstance(instance, list):

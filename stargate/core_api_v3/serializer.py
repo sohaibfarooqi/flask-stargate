@@ -80,20 +80,19 @@ class DefaultSerializer(Serializer):
         self.exclude = exclude
         self.additional_attributes = additional_attributes
     
-    def __call__(self, instance, only = None, many = False):
+    def __call__(self, instance, only = None):
         
-        if many and isinstance(instance, list):
-            self._serialize_many(instance, only = None)
+        if isinstance(instance, list):
+            return self._serialize_many(instance, only = None)
         
         else:
-            self._serialize_one(instance, only=None)
+            return self._serialize_one(instance, only=None)
 
     def _serialize_many(self, instances, only=None):
         result = []
         for instance in instances:
             model = get_model(instance)
             serialize = serializer_for(model)
-            serialize = self.serialize
             _type = collection_name_for(model)
             try:
                 serialized = self._serialize_one(instance, only=only)
