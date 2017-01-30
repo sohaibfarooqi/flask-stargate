@@ -93,12 +93,13 @@ class Location(db.Model,Entity,TimestampMixin):
     longitude = db.Column(db.Float)
     parent_id = db.Column(db.Integer)
     city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
-    city = db.relationship('City', backref = db.backref('location', lazy='dynamic'))
+    city = db.relationship('City', backref = db.backref('cityid', lazy='dynamic'))    
     
 class City(db.Model,Entity,TimestampMixin):
     title = db.Column(db.String)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
+    location = db.relationship('Location', backref = db.backref('locationid'))
 
 class Organization(db.Model,Entity,TimestampMixin):
     name = db.Column(db.String)
@@ -145,8 +146,8 @@ class User(db.Model,Entity,TimestampMixin):
     email = db.Column(db.String)
     phone = db.Column(db.String)
     pic_url = db.Column(db.String)
-    # city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
-    # city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
+    city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
+    city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location', backref = db.backref('user', lazy='dynamic'))
 

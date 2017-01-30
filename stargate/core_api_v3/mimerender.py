@@ -4,6 +4,7 @@ from mimerender import register_mime
 from functools import wraps
 from flask import request, json, jsonify
 from .exception import NotAcceptable, MediaTypeNotSupported
+from werkzeug import parse_options_header
 
 CONTENT_TYPE = 'application/vnd.api+json'
 
@@ -59,15 +60,14 @@ def requires_json_api_mimetype(func):
         header = request.headers.get('Content-Type')
         content_type, extra = parse_options_header(header)
         content_is_json = content_type.startswith(CONTENT_TYPE)
-        is_msie = _is_msie8or9()
         if not content_is_json:
             detail = ('Request must have "Content-Type: {0}"'
                       ' header').format(CONTENT_TYPE)
-            return MediaTypeNotSupported(msg=detail)
+            raise MediaTypeNotSupported(msg=detail)
         if extra:
             detail = ('Content-Type header must not have any media type'
                       ' parameters but found {0}'.format(extra))
-            return MediaTypeNotSupported(msg=detail)
+            raise MediaTypeNotSupported(msg=detail)
         return func(*args, **kw)
     return new_func
 

@@ -86,25 +86,31 @@ class ResourceAPI(MethodView):
 
 		if exclude_resource:
 			exclude_resource = exclude_resource.split(',')
+
+		if include_fields:
+			include_fields = include_fields.split(',')
+
+		if exclude_fields:
+			exclude_fields = exclude_fields.split(',')
 		
 
 		try:
 			search_items = Search(self.session, self.model)
 		except Exception as exception:
-			print(exception)
 			detail = 'Unable to construct query'
 			raise StargateException(msg=detail)
 
 		result_set = search_items.search_resource(pk_id, filters = filters,sort = sort, 
 													group_by = group_by, page_size=page_size, 
 													page_number=page_number)
-		
+		serializer = serializer_for(self.model)
+			
 		if pk_id is not None:
+			data = serializer(result_set, include_resource=include_resource, exclude_resource=exclude_resource)
 			representation = InstanceRepresentation(self.model, pk_id, result_set,200)
 
 		else:
-			serializer = serializer_for(self.model)
-			data = serializer(result_set.items, include_resource=None, exclude_resource=None)
+			data = serializer(result_set.items, include_resource=include_resource, exclude_resource=exclude_resource)
 			representation = CollectionRepresentation(self.model, self.page_size, result_set, data, 200)
 
 		return representation.to_response()

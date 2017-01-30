@@ -125,10 +125,10 @@ class DefaultSerializer(Serializer):
     def __call__(self, instance, include_resource=None, exclude_resource=None):
         
         if isinstance(instance, list):
-            return self._serialize_many(instance, include_resource=None, exclude_resource=None)
+            return self._serialize_many(instance, include_resource=include_resource, exclude_resource=exclude_resource)
         
         else:
-            return self._serialize_one(instance, include_resource=None, exclude_resource=None)
+            return self._serialize_one(instance, include_resource=include_resource, exclude_resource=exclude_resource)
 
     def _serialize_many(self, instances, include_resource=None, exclude_resource=None):
         result = []
@@ -137,14 +137,14 @@ class DefaultSerializer(Serializer):
             serialize = serializer_for(model)
             _type = collection_name_for(model)
             try:
-                serialized = self._serialize_one(instance, include_resource=None, exclude_resource=None)
+                serialized = self._serialize_one(instance, include_resource=include_resource, exclude_resource=exclude_resource)
                 result.append(serialized)
             except SerializationException as exception:
                 raise SerializationException(instance,str(exception))
         return result
 
     def _serialize_one(self, instance, include_resource=None, exclude_resource=None):
-        
+
         model = type(instance)
         try:
             inspected_instance = inspect(model)
@@ -191,9 +191,9 @@ class DefaultSerializer(Serializer):
 
         relations = Inclusions.get_relations(model)
         if include_resource is not None:
-            relations = [r for r in relations if r in self.default_fields]
+            relations = [r for r in relations if r in include_resource]
         if exclude_resource is not None:
-            relations = [r for r in relations if r not in self.exclude]
+            relations = [r for r in relations if r not in exclude_resource]
         if not relations:
             return result
         cr = create_relationship
