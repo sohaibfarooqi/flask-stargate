@@ -10,15 +10,16 @@ from .representation import InstanceRepresentation, CollectionRepresentation
 FILTER_PARAM = 'filters'
 SORT_PARAM = 'sort'
 GROUP_PARAM = 'group'
-FIELDS_PARM = 'fields'
-EXCLUDE_PARAM = 'exclude'
-INCLUDE_PARAM = 'include'
+INCLUDE_ATTRS_PARAM = 'include_f'
+EXCLUDE_ATTRS_PARAM = 'exclude_f'
+INCLUDE_RESOURCE_PARAM = 'include_r'
+EXCLUDE_RESOURCE_PARAM = 'exclude_r'
 PAGE_SIZE_PARAM = 'page_size'
 PAGE_NUMBER_PARAM = 'page_number'
 
-DEFAULT_PAGE_NUMBER = 1
-DEFAULT_PAGE_SIZE = 10
-DEFAULT_MAX_PAGE_SIZE = 100
+STARGATE_DEFAULT_PAGE_NUMBER = 1
+STARGATE_DEFAULT_PAGE_SIZE = 10
+STARGATE_DEFAULT_MAX_PAGE_SIZE = 100
 
 class ResourceAPI(MethodView):
 
@@ -62,12 +63,13 @@ class ResourceAPI(MethodView):
 		filters = query_string[FILTER_PARAM] if FILTER_PARAM in query_string else []
 		sort = query_string[SORT_PARAM] if SORT_PARAM in query_string else []
 		group_by = query_string[GROUP_PARAM] if GROUP_PARAM in query_string else []
-		include = query_string[INCLUDE_PARAM] if INCLUDE_PARAM in query_string else []
-		fields = query_string[FIELDS_PARAM] if FIELDS_PARAM in query_string else []
-		exclude = query_string[EXCLUDE_PARAM] if EXCLUDE_PARAM in query_string else []
-		page_size = query_string[PAGE_SIZE_PARAM] if PAGE_SIZE_PARAM in query_string else DEFAULT_PAGE_SIZE
-		page_number = query_string[PAGE_NUMBER_PARAM] if PAGE_NUMBER_PARAM in query_string else DEFAULT_PAGE_NUMBER
-        
+		include_resource = query_string[INCLUDE_RESOURCE_PARAM] if INCLUDE_RESOURCE_PARAM in query_string else []
+		exclude_resource = query_string[EXCLUDE_RESOURCE_PARAM] if EXCLUDE_RESOURCE_PARAM in query_string else []
+		include_fields = query_string[INCLUDE_ATTRS_PARAM] if INCLUDE_ATTRS_PARAM in query_string else []
+		exclude_fields = query_string[EXCLUDE_ATTRS_PARAM] if EXCLUDE_ATTRS_PARAM in query_string else []
+		page_size = query_string[PAGE_SIZE_PARAM] if PAGE_SIZE_PARAM in query_string else STARGATE_DEFAULT_PAGE_SIZE
+		page_number = query_string[PAGE_NUMBER_PARAM] if PAGE_NUMBER_PARAM in query_string else STARGATE_DEFAULT_PAGE_NUMBER
+
         
 		if filters:
 			filters = json.loads(query_string)
@@ -75,22 +77,19 @@ class ResourceAPI(MethodView):
 		if sort:
 			sort = [('-', value[1:]) if value.startswith('-') else ('+', value)
 					for value in sort.split(',')]
-
+		
 		if group_by:
 			group_by = group_by.split(',')
 
-		if include:
-			pass
+		if include_resource:
+			include_resource = include_resource.split(',')
 
-		if fields:
-			pass
-
-		if exclude:
-			pass
+		if exclude_resource:
+			exclude_resource = exclude_resource.split(',')
+		
 
 		try:
-			search_items = Search(self.session, self.model, 
-									fields = fields, exclude = exclude)
+			search_items = Search(self.session, self.model)
 		except Exception as exception:
 			print(exception)
 			detail = 'Unable to construct query'
@@ -104,6 +103,8 @@ class ResourceAPI(MethodView):
 			representation = InstanceRepresentation(self.model, pk_id, result_set,200)
 
 		else:
-			representation = CollectionRepresentation(self.model, self.page_size, result_set,200)
+			serializer = serializer_for(self.model)
+			data = serializer(result_set.items, include_resource=None, exclude_resource=None)
+			representation = CollectionRepresentation(self.model, self.page_size, result_set, data, 200)
 
 		return representation.to_response()

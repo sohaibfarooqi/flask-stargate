@@ -1,19 +1,26 @@
-def get_all_inclusions(self, instance_or_instances):
-        if isinstance(instance_or_instances, Query):
-            to_include = set(chain(self.resources_to_include(resource)
-                                   for resource in instance_or_instances))
-        else:
-            to_include = self.resources_to_include(instance_or_instances)
-        return self._serialize_many(to_include)
-    
-    
-    def resources_to_include(self, instance):
-        toinclude = request.args.get('include')
-        if toinclude is None and self.default_includes is None:
-            return {}
-        elif toinclude is None and self.default_includes is not None:
-            toinclude = self.default_includes
-        else:
-            toinclude = set(toinclude.split(','))
-        return set(chain(resources_from_path(instance, path)
-                         for path in toinclude))
+from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm import RelationshipProperty as RelProperty
+from sqlalchemy.ext.associationproxy import AssociationProxy
+
+NON_RELATION_ATTRS = ('query', 'query_class', '_sa_class_manager','_decl_class_registry')
+
+class Inclusions():
+	
+	def get_relations(model):
+		return [k for k in dir(model) if not (k.startswith('__') or k in NON_RELATION_ATTRS) and Inclusions.get_related_model(model, k)]
+	
+	def get_related_model(model, relationname):
+		if hasattr(model, relationname):
+			attr = getattr(model, relationname)
+			if hasattr(attr, 'property') and isinstance(attr.property, RelProperty):
+				return attr.property.mapper.class_
+			if isinstance(attr, AssociationProxy):
+				return Inclusions.get_related_association_proxy_model(attr)
+		return None
+
+	def get_related_association_proxy_model(attr):
+		prop = attr.remote_attr.property
+		for attribute in ('mapper', 'parent'):
+			if hasattr(prop, attribute):
+				return getattr(prop, attribute).class_
+		return None       

@@ -145,25 +145,25 @@ class User(db.Model,Entity,TimestampMixin):
     email = db.Column(db.String)
     phone = db.Column(db.String)
     pic_url = db.Column(db.String)
-    city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
-    city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
+    # city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
+    # city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location', backref = db.backref('user', lazy='dynamic'))
 
-class Auth(db.Model,Entity,TimestampMixin):
-    auth_token = db.Column(db.String)
-    expires_at = db.Column(db.DateTime)
-    ip_address = db.Column(db.String)
-    user_agent = db.Column(db.String)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship('User', backref = db.backref('auth', lazy='dynamic'))
+# class Auth(db.Model,Entity,TimestampMixin):
+#     auth_token = db.Column(db.String)
+#     expires_at = db.Column(db.DateTime)
+#     ip_address = db.Column(db.String)
+#     user_agent = db.Column(db.String)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     user = db.relationship('User', backref = db.backref('auth', lazy='dynamic'))
     
-    @hybrid_property
-    def remaining_time(self):
-        if self.expires_at > datetime.datetime.now():
-            return (self.expires_at - datetime.datetime.now()).seconds  // 60 % 60
-        else:
-            return 0
+#     @hybrid_property
+#     def remaining_time(self):
+#         if self.expires_at > datetime.datetime.now():
+#             return (self.expires_at - datetime.datetime.now()).seconds  // 60 % 60
+#         else:
+#             return 0
 
 
 class ServerLog(db.Model,Entity,TimestampMixin):

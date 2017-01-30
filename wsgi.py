@@ -1,4 +1,4 @@
-from .stargate import create_app
+# from .stargate import create_app
 from .config import ApplicationConfig
 from functools import wraps
 from flask import g, Flask
@@ -14,6 +14,7 @@ db = SQLAlchemy()
 db.init_app(app)
 manager = ResourceManager(app, flask_sqlalchemy_db = db)
 manager.register_resource(User, methods = ['GET', 'POST', 'DELETE'])
+manager.register_resource(Location, methods = ['GET', 'POST', 'DELETE'])
 # @app.errorhandler(ApplicationError)
 # def application_error(error):
 # 	return error.message, 500
