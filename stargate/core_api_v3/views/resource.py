@@ -95,7 +95,7 @@ class ResourceAPI(MethodView):
 		
 
 		try:
-			search_items = Search(self.session, self.model)
+			search_items = Search(self.session, self.model, include_fields = include_fields, exclude_fields = exclude_fields)
 		except Exception as exception:
 			detail = 'Unable to construct query'
 			raise StargateException(msg=detail)

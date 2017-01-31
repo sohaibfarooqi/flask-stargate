@@ -4,6 +4,7 @@ from sqlalchemy.orm import ColumnProperty, joinedload
 from .filter import Filter, create_filter
 from ...proxy import primary_key_for
 from .inclusion import Inclusions
+from .fields import Fields
 
 def session_query(session, model):
 	if hasattr(model, 'query'):
@@ -23,12 +24,13 @@ def primary_key_names(model):
 
 class Search():
 
-	def __init__(self, session, model, fields = None, _initial_query=None):
+	def __init__(self, session, model, include_fields = None, exclude_fields = None, _initial_query=None):
 		
 		self.session = session
 		self.model = model
 		self.initial_query = _initial_query
-		self.fields = fields
+		self.include_fields = include_fields
+		self.exclude_fields = exclude_fields
 
 	def search_resource(self, pk_id = None, filters=None, sort=None, 
 						group_by=None,page_size=None, page_number=None):
@@ -38,16 +40,13 @@ class Search():
 		else:
 			query = session_query(self.session, self.model)
 		
-		if self.fields:
-			query = query.with_entitites(fields)
+		Fields.get_effective_fields(self.model, self.include_fields, self.exclude_fields)
 		
 		if pk_id is not None:
 			return self._search_one(query, pk_id)
 		else:
 			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
-		
-		
-
+	
 	def _search_one(self, query, pk_value):
 		
 		try:

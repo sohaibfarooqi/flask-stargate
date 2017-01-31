@@ -13,6 +13,7 @@ app.config.from_object(ApplicationConfig)
 db = SQLAlchemy()
 db.init_app(app)
 manager = ResourceManager(app, flask_sqlalchemy_db = db)
+
 manager.register_resource(User, methods = ['GET', 'POST', 'DELETE'])
 manager.register_resource(Location, methods = ['GET', 'POST', 'DELETE'])
 manager.register_resource(City, methods = ['GET', 'POST', 'DELETE'])
