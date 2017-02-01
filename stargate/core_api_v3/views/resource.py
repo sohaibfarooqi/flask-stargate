@@ -87,8 +87,8 @@ class ResourceAPI(MethodView):
 		if exclude_resource:
 			exclude_resource = exclude_resource.split(',')
 
-		if include_fields:
-			include_fields = include_fields.split(',')
+		# if include_fields:
+		# 	include_fields = include_fields.split(',')
 
 		if exclude_fields:
 			exclude_fields = exclude_fields.split(',')

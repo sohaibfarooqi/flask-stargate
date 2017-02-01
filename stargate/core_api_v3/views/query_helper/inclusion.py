@@ -10,6 +10,7 @@ class Inclusions():
 		return [k for k in dir(model) if not (k.startswith('__') or k in NON_RELATION_ATTRS) and Inclusions.get_related_model(model, k)]
 	
 	def get_related_model(model, relationname):
+		
 		if hasattr(model, relationname):
 			attr = getattr(model, relationname)
 			if hasattr(attr, 'property') and isinstance(attr.property, RelProperty):

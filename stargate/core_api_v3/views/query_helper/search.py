@@ -40,8 +40,8 @@ class Search():
 		else:
 			query = session_query(self.session, self.model)
 		
-		Fields.get_effective_fields(self.model, self.include_fields, self.exclude_fields)
-		
+		all_fields = Fields.get_effective_fields(self.model, self.include_fields, self.exclude_fields)
+
 		if pk_id is not None:
 			return self._search_one(query, pk_id)
 		else:

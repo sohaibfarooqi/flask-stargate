@@ -1,3 +1,4 @@
+import re
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.inspection import inspect
 from sqlalchemy.exc import NoInspectionAvailable
@@ -6,17 +7,43 @@ from ...exception import IllegalArgumentError
 from .inclusion import Inclusions
 
 DEFAULT_FIELD_LIST = ['id', 'created_at', 'updated_at']
-REGEX_MATCH_FIELD = r'(\w+)\(([\w,.]+)\)'
+REGEX_MATCH_FIELD = r'((\w+)\(([\s+\w\s+,\s+.]+)\))'
 
 class Fields():
 
 	def get_effective_fields(model, include_fields, exclude_fields):
 		
+		nested_fields = re.findall(REGEX_MATCH_FIELD, include_fields)
+		print(nested_fields)
+		resource_fields = include_fields
+		resource_fields = re.sub(REGEX_MATCH_FIELD, '', resource_fields)
+		resource_fields = re.sub(r'\s+', '', resource_fields)
+		resource_fields = re.sub(r'\A(?:\s+)?,(?:\s+)?', '', resource_fields)
+		resource_fields = re.sub(r'(?:\s+)?,(?:\s+)?$', '', resource_fields)
+		resource_fields = resource_fields.split(',')
+		resource_fields.extend(DEFAULT_FIELD_LIST)
+		resource_fields = set(resource_fields)
+
+		all_fields = [getattr(model, col) for col in resource_fields]
+		all_relations = Inclusions.get_relations(model)
+
+		for fields in nested_fields:
+			if fields[0] in all_relations:
+				nested_resource_fields = fields[1].split(',')
+				nested_resource_fields.extend(DEFAULT_FIELD_LIST)
+				nested_resource_fields = set(nested_resource_fields)
+				
+				relation_model = Inclusions.get_related_model(model, fields[0])
+				all_fields.extend([getattr(relation_model, col) for col in nested_resource_fields])
+		return all_fields
+	
+	def get_effective_fields_1(model, include_fields, exclude_fields):
+		
 		fields = []
 		all_relations = Inclusions.get_relations(model)
 		all_columns = Fields._get_all_columns(model, all_relations)
 		fields = [val for val in all_columns if val in include_fields or val in DEFAULT_FIELD_LIST]
-		print(fields)
+
 		for inc_field in include_fields:
 			relation_model = None
 			if '.' in inc_field:
