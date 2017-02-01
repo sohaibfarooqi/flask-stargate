@@ -6,6 +6,7 @@ from ...exception import IllegalArgumentError
 from .inclusion import Inclusions
 
 DEFAULT_FIELD_LIST = ['id', 'created_at', 'updated_at']
+REGEX_MATCH_FIELD = r'(\w+)\(([\w,.]+)\)'
 
 class Fields():
 
@@ -16,14 +17,14 @@ class Fields():
 		all_columns = Fields._get_all_columns(model, all_relations)
 		fields = [val for val in all_columns if val in include_fields or val in DEFAULT_FIELD_LIST]
 		print(fields)
-		for inc_fields in include_fields:
+		for inc_field in include_fields:
 			relation_model = None
-			if '.' in inc_fields:
-				field_name, field_name_in_relation = field_name.split('.')
+			if '.' in inc_field:
+				field_name, field_name_in_relation = inc_field.split('.')
 				relation_model = Inclusions.get_related_model(model, field_name)
 				field = getattr(relation_model, field_name_in_relation)
 			else:
-				field = getattr(model, inc_fields)
+				field = getattr(model, inc_field)
 			fields.append((field, relation_model))
 		return fields
     
