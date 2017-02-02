@@ -40,8 +40,9 @@ class Search():
 		else:
 			query = session_query(self.session, self.model)
 		
-		all_fields = Fields.get_effective_fields(self.model, self.include_fields, self.exclude_fields)
-
+		all_fields,all_joins = Fields.get_effective_fields(self.model, self.include_fields)
+		query = query.with_entities(*all_fields).select_from(*all_joins)
+		
 		if pk_id is not None:
 			return self._search_one(query, pk_id)
 		else:

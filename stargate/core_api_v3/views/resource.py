@@ -6,6 +6,7 @@ from ..errors import catch_processing_exceptions, catch_integrity_errors
 from ..exception import StargateException
 from .query_helper.search import Search
 from .representation import InstanceRepresentation, CollectionRepresentation
+from sqlalchemy import inspect
 
 FILTER_PARAM = 'filters'
 SORT_PARAM = 'sort'
@@ -103,6 +104,7 @@ class ResourceAPI(MethodView):
 		result_set = search_items.search_resource(pk_id, filters = filters,sort = sort, 
 													group_by = group_by, page_size=page_size, 
 													page_number=page_number)
+		print(inspect(result_set.query), 'Query')
 		serializer = serializer_for(self.model)
 			
 		if pk_id is not None:

@@ -11,10 +11,10 @@ REGEX_MATCH_FIELD = r'((\w+)\(([\s+\w\s+,\s+.]+)\))'
 
 class Fields():
 
-	def get_effective_fields(model, include_fields, exclude_fields):
+	def get_effective_fields(model, include_fields):
 		
 		nested_fields = re.findall(REGEX_MATCH_FIELD, include_fields)
-		print(nested_fields)
+
 		resource_fields = include_fields
 		resource_fields = re.sub(REGEX_MATCH_FIELD, '', resource_fields)
 		resource_fields = re.sub(r'\s+', '', resource_fields)
@@ -26,16 +26,16 @@ class Fields():
 
 		all_fields = [getattr(model, col) for col in resource_fields]
 		all_relations = Inclusions.get_relations(model)
-
+		all_joins = set()
 		for fields in nested_fields:
-			if fields[0] in all_relations:
-				nested_resource_fields = fields[1].split(',')
+			if fields[1] in all_relations:
+				nested_resource_fields = [field.strip() for field in fields[2].split(',') if field is not None]
 				nested_resource_fields.extend(DEFAULT_FIELD_LIST)
 				nested_resource_fields = set(nested_resource_fields)
-				
-				relation_model = Inclusions.get_related_model(model, fields[0])
+				relation_model = Inclusions.get_related_model(model, fields[1])
+				all_joins.add(relation_model)
 				all_fields.extend([getattr(relation_model, col) for col in nested_resource_fields])
-		return all_fields
+		return all_fields,all_joins
 	
 	def get_effective_fields_1(model, include_fields, exclude_fields):
 		
