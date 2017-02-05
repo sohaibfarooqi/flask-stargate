@@ -24,13 +24,11 @@ def primary_key_names(model):
 
 class Search():
 
-	def __init__(self, session, model, include_fields = None, exclude_fields = None, _initial_query=None):
+	def __init__(self, session, model, _initial_query=None):
 		
 		self.session = session
 		self.model = model
 		self.initial_query = _initial_query
-		self.include_fields = include_fields
-		self.exclude_fields = exclude_fields
 
 	def search_resource(self, pk_id = None, filters=None, sort=None, 
 						group_by=None,page_size=None, page_number=None):
@@ -39,9 +37,6 @@ class Search():
 			query = self._initial_query
 		else:
 			query = session_query(self.session, self.model)
-		
-		all_fields,all_joins = Fields.get_effective_fields(self.model, self.include_fields)
-		query = query.with_entities(*all_fields).select_from(*all_joins)
 		
 		if pk_id is not None:
 			return self._search_one(query, pk_id)

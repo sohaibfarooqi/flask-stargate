@@ -61,25 +61,21 @@ class FindCollection(with_metaclass(Singleton, ResourceManagerProxy)):
 
 class FindUrl(with_metaclass(Singleton, ResourceManagerProxy)):
 
-    def __call__(self, model, resource_id=None, relation_name=None,
-                 related_resource_id=None, _resmanager=None,
-                 relationship=False, **kw):
+    def __call__(self, model, pk_id=None, relation=None,
+                 related_id=None, _resmanager=None, **kw):
 
         if _resmanager is not None:
             if model not in _resmanager.registered_apis:
                 message = ('ResourceManager {0} has not registered API for model {1}').format(_resmanager, model)
                 raise ValueError(message)
-            return _resmanager.url_for(model, resource_id=resource_id,
-                                       relation_name=relation_name,
-                                       related_resource_id=related_resource_id,
-                                       relationship=relationship, **kw)
+            return _resmanager.url_for(model, pk_id = pk_id,
+                                       relation = relation,
+                                       related_id=related_id,**kw)
         for manager in self.created_managers:
             try:
-                return self(model, resource_id=resource_id,
-                            relation_name=relation_name,
-                            related_resource_id=related_resource_id,
-                            relationship=relationship, _resmanager=manager,
-                            **kw)
+                return self(model, pk_id=pk_id,
+                            relation=relation,
+                            related_id=related_id,_resmanager=manager,**kw)
             except ValueError:
                 pass
         message = ('Model: {0} is not registered to any ResourceManager object. Hence FindUrl failed').format(model)

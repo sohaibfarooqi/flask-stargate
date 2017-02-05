@@ -88,7 +88,7 @@ class ResourceManager():
 		decorators_.append(decorators)
 		
 		if serializer is None:
-			serializer = DefaultSerializer(only=fields, exclude=exclude)
+			serializer = DefaultSerializer(model, fields=fields, exclude=exclude)
 
 		if deserializer is None:
 			deserializer = DefaultDeserializer(self.session, model)
@@ -114,6 +114,12 @@ class ResourceManager():
 		resource_methods = ALL_METHODS & methods
 		self._add_endpoint(blueprint, resource_url, resource_api_view ,methods=resource_methods)
 		
+		nested_collection_url = '{0}/<relation>'.format(resource_url)
+		self._add_endpoint(blueprint, nested_collection_url, resource_api_view ,methods=resource_methods)
+		
+		nested_instance_url = '{0}/<related_id>'.format(nested_collection_url)
+		self._add_endpoint(blueprint, nested_instance_url, resource_api_view ,methods=resource_methods)
+
 		self._add_resource(model, collection_name, blueprint, serializer, deserializer, primary_key)
 
 		return blueprint

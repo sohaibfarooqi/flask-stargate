@@ -1,7 +1,9 @@
+import re
 from sqlalchemy.inspection import inspect
 from sqlalchemy.exc import NoInspectionAvailable
 from urllib.parse import urljoin
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
+from sqlalchemy import Column
 from .proxy import url_for, serializer_for, primary_key_for, collection_name_for, model_for
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from datetime import date, datetime, time, timedelta
@@ -11,8 +13,11 @@ from .exception import IllegalArgumentError, ResourceNotFound, SerializationExce
 from .views.query_helper.inclusion import Inclusions
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
+
 RELATION_BLACKLIST = ('query', 'query_class', '_sa_class_manager',
                       '_decl_class_registry')
+
+REGEX_MATCH_FIELD = r'((\w+)\(([\s+\w\s+,\s+.]+)\))'
 
 """Serialization Helper Methods"""
 def get_column_name(column):
@@ -42,25 +47,36 @@ def foreign_key_columns(model):
     all_columns = inspector.columns
     return [c for c in all_columns if c.foreign_keys]
 
-def create_relationship(model, instance, relation):
-    result = {}
-    pk_value = primary_key_value(instance)
-    self_link = url_for(model, pk_value, relation, relationship=True)
-    related_link = url_for(model, pk_value, relation)
-    result['links'] = {'self': self_link}
-    try:
-        related_model = Inclusions.get_related_model(model, relation)
-        url_for(related_model)
-    except ValueError:
-        pass
-    else:
-        result['links']['related'] = related_link
+def create_relationship(model, instance, relation, expand = False):
+    result = {'meta':{}}
+    related_model = Inclusions.get_related_model(model, relation)
     related_value = getattr(instance, relation)
+    
+    pk_value = getattr(instance, primary_key_for(model))
+
     if is_like_list(instance, relation):
-        result['data'] = [simple_relationship_serialize(instance)
-                          for instance in related_value]
+        related_value = related_value.all()
+        related_class = related_value[0].__class__
+        nested_url = url_for(model, pk_id = pk_value, relation = relation)
+        result['meta']['_links'] = {'self': nested_url, 'next': nested_url, 'prev': nested_url, 'first': nested_url, 'last': nested_url}
+        result['meta']['_type'] = 'TO_MANY'
+        serializer = serializer_for(related_class)
+        result['data'] = serializer(related_value, serialize_rel = False)
+
+        pk_id_ = getattr(related_value[0], primary_key_for(related_class))
+        self_link = url_for(related_model, pk_id = pk_id_)
+        result['data'][0]['_link'] = dict(self = self_link)
+    
     elif related_value is not None:
-        result['data'] = simple_relationship_serialize(related_value)
+        related_id = getattr(related_value, primary_key_for(related_model))
+        nested_url = url_for(model, pk_id = pk_value, relation = relation, related_id = related_id)
+        result['meta']['_type'] = 'TO_ONE'
+        result['meta']['_links'] = {'self': nested_url}
+        serializer = serializer_for(related_model)
+        result['data'] = serializer(related_value, serialize_rel = False)
+        pk_id_ = getattr(related_value, primary_key_for(related_model))
+        self_link = url_for(related_model, pk_id = pk_id_)
+        result['data']['_link'] = dict(self = self_link)
     else:
         result['data'] = None
     return result
@@ -90,74 +106,98 @@ def primary_key_value(instance, as_string=False):
         return str(result)
     except UnicodeEncodeError:
         return url_quote_plus(result.encode('utf-8'))
+
+def parse_field_set(field_str):
+    
+    resource_fields = re.sub(REGEX_MATCH_FIELD, '', field_str)
+    resource_fields = re.sub(r'\s+', '', resource_fields)
+    resource_fields = re.sub(r'\A(?:\s+)?,(?:\s+)?', '', resource_fields)
+    resource_fields = re.sub(r'(?:\s+)?,(?:\s+)?$', '', resource_fields)
+    resource_fields = resource_fields.split(',')
+
+    return set(resource_fields)
 #####################################################################################################
 
 class Serializer(object):
     def __call__(self, instance, only=None):
         raise NotImplementedError
 
-class DefaultRelationshipSerializer(Serializer):
-    def __call__(self, instance, only=None, _type=None):
-        if _type is None:
-            _type = collection_name_for(get_model(instance))
-        return {'id': str(primary_key_value(instance)), 'type': _type}
+class DefaultSerializer():
 
-class DefaultSerializer(Serializer):
-    def __init__(self, only=None, exclude=None, additional_attributes=None,
-                 **kw):
-        super(DefaultSerializer, self).__init__(**kw)
-        if only is not None and exclude is not None:
-            raise IllegalArgumentError('Cannot specify both `only` and `exclude` keyword'
+    def __init__(self, model, fields = None, exclude = None, expand = None):
+        
+        self.model = model
+        
+        if fields is not None and exclude is not None:
+            raise IllegalArgumentError('Cannot specify both `fields` and `exclude` keyword'
                              ' arguments simultaneously')
-        if (additional_attributes is not None and exclude is not None and
-                any(attr in exclude for attr in additional_attributes)):
-            raise IllegalArgumentError('Cannot exclude attributes listed in the'
-                             ' `additional_attributes` keyword argument')
-        if only is not None:
-            only = set(get_column_name(column) for column in only)
-            only |= set(['type', 'id'])
+        if fields is not None:
+            fields = set(get_column_name(column) for column in fields)
+            pk_name = primary_key_for(self.model)
+            include.add(pk_name)
+        
         if exclude is not None:
             exclude = set(get_column_name(column) for column in exclude)
-        self.default_fields = only
+        
+        self.allowed_fields = fields
         self.exclude = exclude
-        self.additional_attributes = additional_attributes
     
-    def __call__(self, instance, include_resource=None, exclude_resource=None):
+    def __call__(self, instance, fields = None, exclude = None, expand = None, serialize_rel = True):
         
         if isinstance(instance, list):
-            return self._serialize_many(instance, include_resource=include_resource, exclude_resource=exclude_resource)
+            return self._serialize_many(instance, fields = fields, exclude = exclude, expand = expand, serialize_rel = serialize_rel)
         
         else:
-            return self._serialize_one(instance, include_resource=include_resource, exclude_resource=exclude_resource)
+            return self._serialize_one(instance, fields = fields, exclude = exclude, expand = expand, serialize_rel = serialize_rel)
 
-    def _serialize_many(self, instances, include_resource=None, exclude_resource=None):
+    def _serialize_many(self, instances, fields = None, exclude = None, expand = None, serialize_rel = False):
         result = []
         for instance in instances:
             model = get_model(instance)
-            serialize = serializer_for(model)
-            _type = collection_name_for(model)
             try:
-                serialized = self._serialize_one(instance, include_resource=include_resource, exclude_resource=exclude_resource)
+                serialized = self._serialize_one(instance, fields = fields, exclude = exclude, expand = expand, serialize_rel = serialize_rel)
                 result.append(serialized)
             except SerializationException as exception:
                 raise SerializationException(instance,str(exception))
         return result
 
-    def _serialize_one(self, instance, include_resource=None, exclude_resource=None):
+    def _serialize_one(self, instance, fields = None, exclude = None, expand = None, serialize_rel = None):
+        
+        result = {}
+        columns = set()
+        if fields  and exclude:
+            raise IllegalArgumentError('Cannot specify both `fields` and `exclude` keyword'
+                             ' arguments simultaneously')
+        if self.allowed_fields:
+            columns = self.allowed_fields
+        
+        else:
+            model = type(instance)
+            try:
+                inspected_instance = inspect(model)
+            except NoInspectionAvailable:
+                return instance
+            column_attrs = inspected_instance.column_attrs.keys()
+            descriptors = inspected_instance.all_orm_descriptors.items()
+            hybrid_columns = [k for k, d in descriptors if d.extension_type == HYBRID_PROPERTY]
+            columns = column_attrs + hybrid_columns
+            foreign_key_columns = foreign_keys(model)
+            columns = (c for c in columns if c not in foreign_key_columns)
+            
+        if self.exclude:
+                columns = (c for c in columns if c not in self.exclude)
 
-        model = type(instance)
-        try:
-            inspected_instance = inspect(model)
-        except NoInspectionAvailable:
-            return instance
-        column_attrs = inspected_instance.column_attrs.keys()
-        descriptors = inspected_instance.all_orm_descriptors.items()
-        hybrid_columns = [k for k, d in descriptors
-                          if d.extension_type == HYBRID_PROPERTY]
-        columns = column_attrs + hybrid_columns
-        foreign_key_columns = foreign_keys(model)
-        columns = (c for c in columns if c not in foreign_key_columns)
+        pk_name = primary_key_for(model)
+        
+        if fields:
+            fields = parse_field_set(include)
+            fields.add(pk_name)
+            columns = (c for c in columns if c in fields)
 
+        if exclude:
+            fields = parse_field_set(exclude)
+            columns = (c for c in columns if c not in fields)
+        
         attributes = dict((column, getattr(instance, column))
                           for column in columns)
         attributes = dict((k, (v() if callable(v) else v))
@@ -167,38 +207,15 @@ class DefaultSerializer(Serializer):
                 attributes[key] = val.isoformat()
             elif isinstance(val, timedelta):
                 attributes[key] = total_seconds(val)
-        for key, val in attributes.items():
-            if is_mapped_class(type(val)):
-                model_ = get_model(val)
-                serialize = serializer_for(model_)
-                attributes[key] = serialize(val)
-        id_ = attributes.pop('id')
-        type_ = collection_name_for(model)
-        result = dict(id=id_, type=type_)
+        
         if attributes:
+            result[pk_name] = attributes.pop(pk_name)
             result['attributes'] = attributes
         
-        instance_id = primary_key_value(instance)
-        path = url_for(model, instance_id, _method='GET')
-        
-        pk_name = primary_key_for(model)
-        if pk_name != 'id':
-            result['id'] = result['attributes'][pk_name]
-        try:
-            result['id'] = str(result['id'])
-        except UnicodeEncodeError:
-            result['id'] = url_quote_plus(result['id'].encode('utf-8'))
-
-        relations = Inclusions.get_relations(model)
-        if include_resource is not None:
-            relations = [r for r in relations if r in include_resource]
-        if exclude_resource is not None:
-            relations = [r for r in relations if r not in exclude_resource]
-        if not relations:
-            return result
-        cr = create_relationship
-        result['relationships'] = dict((rel, cr(model, instance, rel))
+        if serialize_rel:
+            relations = Inclusions.get_relations(model)
+            print(relations)
+            cr = create_relationship
+            result['_embedded'] = dict((rel, cr(model, instance, rel))
                                        for rel in relations)
         return result
-
-simple_relationship_serialize = DefaultRelationshipSerializer()

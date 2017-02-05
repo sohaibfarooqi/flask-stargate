@@ -11,10 +11,9 @@ from sqlalchemy import inspect
 FILTER_PARAM = 'filters'
 SORT_PARAM = 'sort'
 GROUP_PARAM = 'group'
-INCLUDE_ATTRS_PARAM = 'include_f'
-EXCLUDE_ATTRS_PARAM = 'exclude_f'
-INCLUDE_RESOURCE_PARAM = 'include_r'
-EXCLUDE_RESOURCE_PARAM = 'exclude_r'
+FIELDS_PARAM = 'field'
+EXPAND_PARAM = 'expand'
+EXCLUDE_PARAM = 'exclude'
 PAGE_SIZE_PARAM = 'page_size'
 PAGE_NUMBER_PARAM = 'page_number'
 
@@ -30,9 +29,9 @@ class ResourceAPI(MethodView):
                     catch_processing_exceptions
                  ]
 
-	def __init__(self, session, model, primary_key=None, serializer=None, deserializer=None,
-                 validation_exceptions=None, includes=None,fields=None,exclude=None,
-                 page_size=None, per_page=None, *args,**kw):
+	def __init__(self, session, model, primary_key = None, serializer = None, deserializer = None,
+                 validation_exceptions = None, includes = None,fields = None,exclude = None,
+                 page_size = None, per_page = None, *args,**kw):
         
 		super(ResourceAPI, self).__init__()
 
@@ -57,19 +56,18 @@ class ResourceAPI(MethodView):
 
 		self.primary_key = primary_key
 
-	def get(self, pk_id = None):
+	def get(self, pk_id = None, relation = None, related_id = None):
 		
 		query_string = request.args.to_dict()
 
 		filters = query_string[FILTER_PARAM] if FILTER_PARAM in query_string else []
 		sort = query_string[SORT_PARAM] if SORT_PARAM in query_string else []
 		group_by = query_string[GROUP_PARAM] if GROUP_PARAM in query_string else []
-		include_resource = query_string[INCLUDE_RESOURCE_PARAM] if INCLUDE_RESOURCE_PARAM in query_string else []
-		exclude_resource = query_string[EXCLUDE_RESOURCE_PARAM] if EXCLUDE_RESOURCE_PARAM in query_string else []
-		include_fields = query_string[INCLUDE_ATTRS_PARAM] if INCLUDE_ATTRS_PARAM in query_string else []
-		exclude_fields = query_string[EXCLUDE_ATTRS_PARAM] if EXCLUDE_ATTRS_PARAM in query_string else []
 		page_size = query_string[PAGE_SIZE_PARAM] if PAGE_SIZE_PARAM in query_string else STARGATE_DEFAULT_PAGE_SIZE
 		page_number = query_string[PAGE_NUMBER_PARAM] if PAGE_NUMBER_PARAM in query_string else STARGATE_DEFAULT_PAGE_NUMBER
+		fields = query_string[FIELDS_PARAM] if FIELDS_PARAM in query_string else []
+		exclude = query_string[EXCLUDE_PARAM] if EXCLUDE_PARAM in query_string else []
+		expand = query_string[EXPAND_PARAM] if EXPAND_PARAM in query_string else None
 
         
 		if filters:
@@ -81,38 +79,30 @@ class ResourceAPI(MethodView):
 		
 		if group_by:
 			group_by = group_by.split(',')
-
-		if include_resource:
-			include_resource = include_resource.split(',')
-
-		if exclude_resource:
-			exclude_resource = exclude_resource.split(',')
-
-		# if include_fields:
-		# 	include_fields = include_fields.split(',')
-
-		if exclude_fields:
-			exclude_fields = exclude_fields.split(',')
 		
-
+		if fields:
+			fields = fields.split(',')
+		
+		if exclude:
+			exclude = exclude.split(',')
+		
 		try:
-			search_items = Search(self.session, self.model, include_fields = include_fields, exclude_fields = exclude_fields)
+			search_items = Search(self.session, self.model)
 		except Exception as exception:
-			detail = 'Unable to construct query'
-			raise StargateException(msg=detail)
+			detail = 'Unable to construct query{0}'
+			raise StargateException(msg=detail.format(exception))
 
 		result_set = search_items.search_resource(pk_id, filters = filters,sort = sort, 
 													group_by = group_by, page_size=page_size, 
 													page_number=page_number)
-		print(inspect(result_set.query), 'Query')
 		serializer = serializer_for(self.model)
 			
 		if pk_id is not None:
-			data = serializer(result_set, include_resource=include_resource, exclude_resource=exclude_resource)
+			data = serializer(result_set, fields = fields, exclude = exclude, expand = expand)
 			representation = InstanceRepresentation(self.model, pk_id, result_set,200)
 
 		else:
-			data = serializer(result_set.items, include_resource=include_resource, exclude_resource=exclude_resource)
+			data = serializer(result_set.items, fields = fields, exclude = exclude, expand = expand)
 			representation = CollectionRepresentation(self.model, self.page_size, result_set, data, 200)
 
 		return representation.to_response()

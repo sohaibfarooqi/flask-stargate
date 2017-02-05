@@ -4,7 +4,7 @@ from functools import wraps
 from flask import g, Flask
 # from .stargate.entity_manager.models import db
 from flask_sqlalchemy import SQLAlchemy
-from .stargate.entity_manager.models import ServerLog, User, Location, City
+from .stargate.entity_manager.models import User, Location, City
 from .stargate.entity_manager.exceptions import ApplicationError
 from .stargate.core_api_v3 import ResourceManager
 
