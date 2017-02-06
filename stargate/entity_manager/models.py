@@ -88,16 +88,14 @@ class Location(db.Model,Entity,TimestampMixin):
     longitude = db.Column(db.Float)
     parent_id = db.Column(db.Integer)
     city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
-    city = db.relationship('City', backref = db.backref('city', lazy='dynamic'))    
-    
+    city = db.relationship('City')
+
 class City(db.Model,Entity,TimestampMixin):
     title = db.Column(db.String)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    location = db.relationship('Location', backref = db.backref('locationid'))    
-        
+    location = db.relationship('Location')    
 
-    
 class User(db.Model,Entity,TimestampMixin):
     name = db.Column(db.String)
     username = db.Column(db.String)
@@ -106,22 +104,7 @@ class User(db.Model,Entity,TimestampMixin):
     phone = db.Column(db.String)
     pic_url = db.Column(db.String)
     city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
-    city = db.relationship('City', backref = db.backref('user', lazy='dynamic'))
+    city = db.relationship('City')
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship('Location', backref = db.backref('user', lazy='dynamic'))
-
-# class Auth(db.Model,Entity,TimestampMixin):
-#     auth_token = db.Column(db.String)
-#     expires_at = db.Column(db.DateTime)
-#     ip_address = db.Column(db.String)
-#     user_agent = db.Column(db.String)
-#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-#     user = db.relationship('User', backref = db.backref('auth', lazy='dynamic'))
-    
-#     @hybrid_property
-#     def remaining_time(self):
-#         if self.expires_at > datetime.datetime.now():
-#             return (self.expires_at - datetime.datetime.now()).seconds  // 60 % 60
-#         else:
-#             return 0
+    location = db.relationship('Location')
 

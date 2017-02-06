@@ -53,9 +53,7 @@ def create_relationship(model, instance, relation, expand = False):
     related_value = getattr(instance, relation)
     
     pk_value = getattr(instance, primary_key_for(model))
-
     if is_like_list(instance, relation):
-        related_value = related_value.all()
         related_class = related_value[0].__class__
         nested_url = url_for(model, pk_id = pk_value, relation = relation)
         result['meta']['_links'] = {'self': nested_url, 'next': nested_url, 'prev': nested_url, 'first': nested_url, 'last': nested_url}
@@ -214,7 +212,6 @@ class DefaultSerializer():
         
         if serialize_rel:
             relations = Inclusions.get_relations(model)
-            print(relations)
             cr = create_relationship
             result['_embedded'] = dict((rel, cr(model, instance, rel))
                                        for rel in relations)

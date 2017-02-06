@@ -1,6 +1,4 @@
 import re
-from mimerender import FlaskMimeRender
-from mimerender import register_mime
 from functools import wraps
 from flask import request, json, jsonify
 from .exception import NotAcceptable, MediaTypeNotSupported

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm import RelationshipProperty as RelProperty
 from sqlalchemy.ext.associationproxy import AssociationProxy
+from sqlalchemy.inspection import inspect
 
 NON_RELATION_ATTRS = ('query', 'query_class', '_sa_class_manager','_decl_class_registry')
 
