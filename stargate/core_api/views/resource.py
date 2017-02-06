@@ -1,8 +1,7 @@
 from flask import request
 from flask.views import MethodView
 from ..proxy import url_for, serializer_for, collection_name_for
-from ..mimerender import requires_json_api_accept, requires_json_api_mimetype
-from ..errors import catch_processing_exceptions, catch_integrity_errors
+from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
 from ..exception import StargateException
 from .query_helper.search import Search
 from .representation import InstanceRepresentation, CollectionRepresentation
@@ -24,8 +23,8 @@ STARGATE_DEFAULT_MAX_PAGE_SIZE = 100
 class ResourceAPI(MethodView):
 
 	decorators = [  
-                    requires_json_api_accept, 
-                    requires_json_api_mimetype,
+                    requires_api_accept, 
+                    requires_api_mimetype,
                     catch_processing_exceptions
                  ]
 

@@ -25,8 +25,8 @@ ACCEPT_RE = re.compile(
         )?                      # accept params are optional
     ''', re.VERBOSE)
 
-"""View function decorators"""
-def requires_json_api_accept(func):
+"""View function Content-Type decorators"""
+def requires_api_accept(func):
     @wraps(func)
     def new_func(*args, **kw):
         header = request.headers.get('Accept')
@@ -41,16 +41,15 @@ def requires_json_api_accept(func):
             detail = ('Accept header, if specified, must be the JSON API media type: {0}'.format(CONTENT_TYPE))
             raise NotAcceptable(msg=detail)
         if all(extra is not None for name, extra in jsonapi_pairs):
-            detail = ('Accept header contained JSON API content type, but each'
+            detail = ('Accept header contained API content type, but each'
                       ' instance occurred with media type parameters; at least'
-                      ' one instance must appear without parameters (the part'
-                      ' after the semicolon)')
+                      ' one instance must appear without parameters')
             raise NotAcceptable(msg=detail)
         return func(*args, **kw)
     return new_func
 
 
-def requires_json_api_mimetype(func):
+def requires_api_mimetype(func):
     @wraps(func)
     def new_func(*args, **kw):
         if request.method not in ('PATCH', 'POST'):
@@ -76,24 +75,40 @@ def parse_accept_header(value):
         quality = max(min(float(extra), 1), 0) if extra else None
         return name, quality
     return map(match_to_pair, ACCEPT_RE.finditer(value))
-###############################################################################################################################
 
 
-"""Mimerender initilization"""  
-def create_json_response(*args, **kw):
-    headers = kw['meta'].pop(_HEADERS, {}) if 'meta' in kw else {}
-    status_code = kw['meta'].pop(_STATUS, 200) if 'meta' in kw else 200
-    response = jsonify(*args, **kw)
-    if 'Content-Type' not in headers:
-        headers['Content-Type'] = CONTENT_TYPE
-    if headers:
-        for key, value in headers.items():
-            response.headers.set(key, value)
-    response.status_code = status_code
-    return response
+ERROR_FIELDS = ('id_', 'links', 'status', 'code_', 'title', 'detail', 'source',
+                'meta')
 
-#register_mime('jsonapi', (CONTENT_TYPE, ))
-#mimerender = FlaskMimeRender()(default = 'jsonapi', jsonapi = create_json_response)
-####################################################################################################################################
+CONFLICT_INDICATORS = ('conflicts with', 'UNIQUE constraint failed',
+                        'is not unique')
 
 
+def un_camel_case(s):
+    return re.sub(r'(?<=\w)([A-Z])', r' \1', s)
+
+"""View Function Error handling Decorators"""
+def catch_processing_exceptions(func):
+    @wraps(func)
+    def new_func(*args, **kw):
+        try:
+            return func(*args, **kw)
+        except ProcessingException as exception:
+            raise ProcessingException(exception)
+    return new_func
+
+def catch_integrity_errors(session):
+    def decorated(func):
+        @wraps(func)
+        def wrapped(*args, **kw):
+            try:
+                return func(*args, **kw)
+            except SQLAlchemyError as exception:
+                session.rollback()
+                exception_string = str(exception)
+                if any(s in exception_string for s in CONFLICT_INDICATORS):
+                    raise ConflictException(exception_string)
+                else:
+                    raise ValidationException(exception_string)
+            return wrapped
+        return decorated

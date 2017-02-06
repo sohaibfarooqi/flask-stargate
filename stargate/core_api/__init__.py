@@ -1,3 +1,1 @@
-from .app import API
-
-__version__ = '0.1.0'
+from .resource_manager import ResourceManager
