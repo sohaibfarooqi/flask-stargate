@@ -30,7 +30,7 @@ class Search():
 		self.model = model
 		self.initial_query = _initial_query
 
-	def search_resource(self, pk_id = None, filters=None, sort=None, 
+	def search_resource(self, pk_id = None, relation = None, related_id = None, filters=None, sort=None, 
 						group_by=None,page_size=None, page_number=None):
 		
 		if self.initial_query is not None:
@@ -38,10 +38,16 @@ class Search():
 		else:
 			query = session_query(self.session, self.model)
 		
-		if pk_id is not None:
-			return self._search_one(query, pk_id)
-		else:
+		if pk_id is None:
 			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
+		
+		elif relation is not None:
+			pk_value = primary_key_for(self.model)
+			query = session_query(session, model)
+    		primary_resource = query.filter(getattr(model, pk_name) == pk_value).first()
+		elif related_id is not None:
+		else:
+			return self._search_one(query, pk_id)
 	
 	def _search_one(self, query, pk_value):
 		

@@ -1,7 +1,7 @@
 import re
 from functools import wraps
 from flask import request, json, jsonify
-from .exception import NotAcceptable, MediaTypeNotSupported
+from .exception import NotAcceptable, MediaTypeNotSupported, ProcessingException
 from werkzeug import parse_options_header
 
 CONTENT_TYPE = 'application/vnd.api+json'

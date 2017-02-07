@@ -48,20 +48,23 @@ def foreign_key_columns(model):
 def create_relationship(model, instance, relation, expand = None):
     EXPAND = True
     fields = None
+    
     if expand is None:
         EXPAND = False
+    
     else:
         
         if  relation in expand['expand_full']:
             pass
         else:
             relation_ = [t[0] for t in expand['expand_partial'] if t[0] == relation]
-            if relation_ is None:
-                EXPAND = False
-            else:
+            if relation_:
                 for t in expand['expand_partial']: 
                     if t[0] == relation:
                         fields = t[1]
+            else:
+                EXPAND = False
+                
 
     result = {'meta':{}}
     related_model = Inclusions.get_related_model(model, relation)
@@ -124,11 +127,7 @@ def primary_key_value(instance, as_string=False):
 
 #####################################################################################################
 
-class Serializer(object):
-    def __call__(self, instance, only=None):
-        raise NotImplementedError
-
-class DefaultSerializer():
+class Serializer():
 
     def __init__(self, model, fields = None, exclude = None, expand = None):
         

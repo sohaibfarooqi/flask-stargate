@@ -1,6 +1,6 @@
 from flask import request, make_response, jsonify, json
 from ..proxy import serializer_for, url_for
-
+import math
 class Representation():
         
     _response_message={200: 'Ok.'}
@@ -46,7 +46,7 @@ class InstanceRepresentation(Representation):
 
 class CollectionRepresentation(Representation):
     
-    def __init__(self, model, page_size, pagination, data,*args, **kw):
+    def __init__(self, model, page_size, page_number, pagination, data,*args, **kw):
         
         super(CollectionRepresentation, self).__init__(200,*args, **kw)
 
@@ -57,6 +57,7 @@ class CollectionRepresentation(Representation):
         self.next = pagination.next_num
         self.data = data
         self.page_size = page_size
+        self.page_number = page_number
         self.model = model
 
     def to_response(self):
@@ -75,10 +76,22 @@ class CollectionRepresentation(Representation):
         
         link_url = self._url_without_pagination_params()
         
+        if self.num_results == 0:
+            last = 1
+        
+        else:
+            last = int(math.ceil(self.num_results / self.page_size))
+        
+        prev = self.page_number - 1 if self.page_number > 1 else None
+        next = self.page_number + 1 if self.page_number < last else None
+            
         first = "{0}&page_number={1}&page_size={2}".format(link_url,self.first,self.page_size)
         last = "{0}&page_number={1}&page_size={2}".format(link_url,self.last,self.page_size)
-        next = "{0}&page_number={1}&page_size={2}".format(link_url,self.next,self.page_size)
-        prev = "{0}&page_number={1}&page_size={2}".format(link_url,self.prev,self.page_size)
+        
+        if next is not None:
+            next = "{0}&page_number={1}&page_size={2}".format(link_url,self.next,self.page_size)
+        if prev is not None:
+            prev = "{0}&page_number={1}&page_size={2}".format(link_url,self.prev,self.page_size)
 
         return {'first': first, 'last': last, 'next': next, 'prev': prev}
 

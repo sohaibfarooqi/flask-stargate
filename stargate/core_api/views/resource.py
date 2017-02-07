@@ -28,28 +28,18 @@ class ResourceAPI(MethodView):
                     catch_processing_exceptions
                  ]
 
-	def __init__(self, session, model, primary_key = None, serializer = None, deserializer = None,
-                 validation_exceptions = None, includes = None,fields = None,exclude = None,
-                 page_size = None, per_page = None, *args,**kw):
+	def __init__(self, session, model, primary_key = None,validation_exceptions = None, 
+				includes = None,fields = None,exclude = None,*args,**kw):
         
 		super(ResourceAPI, self).__init__()
 
 		self.collection_name = collection_name_for(model)
-
-		self.default_includes = includes
-
-
+		
 		self.session = session
 		self.model = model
 
 		self.fields = fields
 		self .exclude = exclude
-
-		self.page_size = page_size
-		self.per_page = per_page
-
-		self.serialize = serializer
-		self.deserialize = deserializer
 
 		self.validation_exceptions = tuple(validation_exceptions or ())
 
@@ -86,14 +76,14 @@ class ResourceAPI(MethodView):
 			exclude = exclude.split(',')
 		
 		try:
-			search_items = Search(self.session, self.model)
+			search_obj = Search(self.session, self.model)
 		except Exception as exception:
-			detail = 'Unable to construct query{0}'
+			detail = 'Unable to construct query {0}'
 			raise StargateException(msg=detail.format(exception))
 
-		result_set = search_items.search_resource(pk_id, filters = filters,sort = sort, 
-													group_by = group_by, page_size=page_size, 
-													page_number=page_number)
+		result_set = search_obj.search_resource(pk_id, relation, related_id, filters = filters,sort = sort, 
+												group_by = group_by, page_size = page_size, 
+												page_number = page_number)
 		serializer = serializer_for(self.model)
 			
 		if pk_id is not None:
@@ -102,6 +92,6 @@ class ResourceAPI(MethodView):
 
 		else:
 			data = serializer(result_set.items, fields = fields, exclude = exclude, expand = expand)
-			representation = CollectionRepresentation(self.model, self.page_size, result_set, data, 200)
+			representation = CollectionRepresentation(self.model, page_size, page_number, result_set, data, 200)
 
 		return representation.to_response()

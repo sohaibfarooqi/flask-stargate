@@ -9,15 +9,6 @@ class Deserializer(object):
         self.model = model
 
     def __call__(self, document):
-        raise NotImplementedError
-
-class DefaultDeserializer(Deserializer):
-    def __init__(self, session, model, allow_client_generated_ids=False, **kw):
-        super(DefaultDeserializer, self).__init__(session, model, **kw)
-
-        self.allow_client_generated_ids = allow_client_generated_ids
-
-    def __call__(self, document):
         if 'data' not in document:
             raise MissingData
         data = document['data']
