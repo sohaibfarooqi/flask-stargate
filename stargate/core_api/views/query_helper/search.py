@@ -24,13 +24,14 @@ def primary_key_names(model):
 
 class Search():
 
-	def __init__(self, session, model, _initial_query=None):
+	def __init__(self, session, model, relation = None, _initial_query=None):
 		
 		self.session = session
 		self.model = model
+		self.relation = Inclusion.get_related_model(self.model, relation_name)
 		self.initial_query = _initial_query
 
-	def search_resource(self, pk_id = None, relation = None, related_id = None, filters=None, sort=None, 
+	def search_resource(self, pk_id = None, related_id = None, filters=None, sort=None, 
 						group_by=None,page_size=None, page_number=None):
 		
 		if self.initial_query is not None:
@@ -38,24 +39,35 @@ class Search():
 		else:
 			query = session_query(self.session, self.model)
 		
-		if pk_id is None:
-			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
+		if pk_id is not None or related_id is not None:
+			return self._search_one(query, pk_id, related_id)
 		
 		elif relation is not None:
+			
 			pk_value = primary_key_for(self.model)
 			query = session_query(session, model)
     		primary_resource = query.filter(getattr(model, pk_name) == pk_value).first()
-		elif related_id is not None:
+    		related_model = Inclusion.get_related_model(self.model, relation_name)
+    		
+    		if is_like_list(primary_resource, relation_name):
+    			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
+		
+			else:
+				return related_model
 		else:
-			return self._search_one(query, pk_id)
+			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
 	
-	def _search_one(self, query, pk_value):
+	def _search_one(self, query, pk_value, related_id):
 		
 		try:
 			pk_name = primary_key_for(self.model)
 			query = session_query(self.session, self.model)
 			query = query.filter(getattr(self.model, pk_name) == pk_value)
-			return query.first()
+			resource = query.first()
+			
+			if relation is not None:
+				resource = Inclusion.get_related_model(self.model, relation_name)	
+			return resource
 
 		except NoResultFound as exception:
 			detail = 'No result found'
@@ -64,7 +76,7 @@ class Search():
 		except MultipleResultsFound as exception:
 			detail = 'Multiple results found'
 			raise StargateException(msg=detail)
-	
+
 	def _search_collection(self, query,filters, sort, group_by, page_size, page_number):
 		
 		if filters:

@@ -76,16 +76,20 @@ class ResourceAPI(MethodView):
 			exclude = exclude.split(',')
 		
 		try:
-			search_obj = Search(self.session, self.model)
+			search_obj = Search(self.session, self.model, relation = relation)
 		except Exception as exception:
 			detail = 'Unable to construct query {0}'
 			raise StargateException(msg=detail.format(exception))
 
-		result_set = search_obj.search_resource(pk_id, relation, related_id, filters = filters,sort = sort, 
+		result_set = search_obj.search_resource(pk_id, related_id, filters = filters,sort = sort, 
 												group_by = group_by, page_size = page_size, 
 												page_number = page_number)
-		serializer = serializer_for(self.model)
-			
+		
+		if relation is None:
+			serializer = serializer_for(self.model)
+		else:
+			serializer	= serializer_for(self.)
+		
 		if pk_id is not None:
 			data = serializer(result_set, fields = fields, exclude = exclude, expand = expand)
 			representation = InstanceRepresentation(self.model, pk_id, result_set,200)
