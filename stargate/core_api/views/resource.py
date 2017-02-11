@@ -4,8 +4,10 @@ from ..proxy import url_for, serializer_for, collection_name_for
 from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
 from ..exception import StargateException
 from .query_helper.search import Search
+from .query_helper.inclusion import Inclusions
 from .representation import InstanceRepresentation, CollectionRepresentation
 from sqlalchemy import inspect
+from flask_sqlalchemy import Pagination
 
 FILTER_PARAM = 'filters'
 SORT_PARAM = 'sort'
@@ -88,14 +90,14 @@ class ResourceAPI(MethodView):
 		if relation is None:
 			serializer = serializer_for(self.model)
 		else:
-			serializer	= serializer_for(self.)
+			serializer	= serializer_for(Inclusions.get_related_model(self.model, relation))
 		
-		if pk_id is not None:
-			data = serializer(result_set, fields = fields, exclude = exclude, expand = expand)
-			representation = InstanceRepresentation(self.model, pk_id, result_set,200)
-
-		else:
+		if isinstance(result_set, Pagination):
 			data = serializer(result_set.items, fields = fields, exclude = exclude, expand = expand)
 			representation = CollectionRepresentation(self.model, page_size, page_number, result_set, data, 200)
+
+		else:
+			data = serializer(result_set, fields = fields, exclude = exclude, expand = expand)
+			representation = InstanceRepresentation(self.model, pk_id, result_set,200)
 
 		return representation.to_response()

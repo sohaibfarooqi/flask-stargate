@@ -4,7 +4,22 @@ from sqlalchemy.orm import ColumnProperty, joinedload
 from .filter import Filter, create_filter
 from ...proxy import primary_key_for
 from .inclusion import Inclusions
-from .fields import Fields
+from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
+
+def is_like_list(instance, relation):
+    if relation in instance._sa_class_manager:
+        return instance._sa_class_manager[relation].property.uselist
+    elif hasattr(instance, relation):
+        attr = getattr(instance._sa_instance_state.class_, relation)
+        if hasattr(attr, 'property'):
+            return attr.property.uselist
+    related_value = getattr(type(instance), relation, None)
+    if isinstance(related_value, AssociationProxy):
+        local_prop = related_value.local_attr.prop
+        if isinstance(local_prop, RelProperty):
+            return local_prop.uselist
+    return False
 
 def session_query(session, model):
 	if hasattr(model, 'query'):
@@ -28,7 +43,7 @@ class Search():
 		
 		self.session = session
 		self.model = model
-		self.relation = Inclusion.get_related_model(self.model, relation_name)
+		self.relation = relation
 		self.initial_query = _initial_query
 
 	def search_resource(self, pk_id = None, related_id = None, filters=None, sort=None, 
@@ -39,23 +54,26 @@ class Search():
 		else:
 			query = session_query(self.session, self.model)
 		
-		if pk_id is not None or related_id is not None:
+		if pk_id is not None and self.relation is not None and related_id is not None:
 			return self._search_one(query, pk_id, related_id)
 		
-		elif relation is not None:
+		elif pk_id is not None and self.relation is not None:
 			
-			pk_value = primary_key_for(self.model)
-			query = session_query(session, model)
-    		primary_resource = query.filter(getattr(model, pk_name) == pk_value).first()
-    		related_model = Inclusion.get_related_model(self.model, relation_name)
-    		
-    		if is_like_list(primary_resource, relation_name):
-    			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
+			pk_name = primary_key_for(self.model)
+			primary_resource = query.filter(getattr(self.model, pk_name) == pk_id).first()
+			related_model = getattr(primary_resource, self.relation)
+
+			if is_like_list(primary_resource, self.relation):
+				query = session_query(self.session, related_model[0].__class__)
+				return self._search_collection(query, filters, sort, group_by, page_size, page_number)
 		
 			else:
 				return related_model
+
+		elif pk_id is not None:
+			return self._search_one(query, pk_id, None)
 		else:
-			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
+			raise Exception("Unprocessiable entity")
 	
 	def _search_one(self, query, pk_value, related_id):
 		
@@ -65,8 +83,8 @@ class Search():
 			query = query.filter(getattr(self.model, pk_name) == pk_value)
 			resource = query.first()
 			
-			if relation is not None:
-				resource = Inclusion.get_related_model(self.model, relation_name)	
+			if self.relation is not None:
+				resource = getattr(resource, self.relation)	
 			return resource
 
 		except NoResultFound as exception:
@@ -98,10 +116,6 @@ class Search():
 					field = getattr(self.model, field_name)
 					direction = getattr(field, direction_name)
 					query = query.order_by(direction())
-		else:
-			pks = primary_key_names(self.model)
-			pk_order = (getattr(self.model, field).asc() for field in pks)
-			query = query.order_by(*pk_order)
 
 		if group_by:
 			for field_name in group_by:
