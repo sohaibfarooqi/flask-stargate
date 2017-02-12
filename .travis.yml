@@ -5,14 +5,14 @@ language: python
 python:
   - "3.5"
 
+env:
+  - DATABASE_URL = postgres://postgres:@localhost:5434/test_db
+  - FLASK_DEBUG = False
+  - SECRET_KEY = 'qi8H8R7OM4xMUNMPuRAZxlY'
+  - FLASK_APP = wsgi.py
+
 install: 
   - "pip install -r requirements.txt"
-
-env:
-    DATABASE_URL = postgres://postgres:@localhost:5434/test_db
-    FLASK_DEBUG = False
-    SECRET_KEY = 'qi8H8R7OM4xMUNMPuRAZxlY'
-    FLASK_APP = wsgi.py
 
 services:
   - postgresql
