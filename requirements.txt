@@ -5,3 +5,4 @@ Flask-Migrate==2.0.0
 psycopg2==2.6.2
 SQLAlchemy==1.1.0b3
 python-dateutil>2.2
+sphinx==1.5.2
