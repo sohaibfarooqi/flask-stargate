@@ -1,14 +1,12 @@
+sudo: required
+
 language: python
 
 python:
   - "3.5"
 
-sudo: required
-
 install: 
   - "pip install -r requirements.txt"
-  - flask db migrate
-  - flask db upgrade
 
 env:
     DATABASE_URL = postgres://postgres:@localhost:5434/test_db
