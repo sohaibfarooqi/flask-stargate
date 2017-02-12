@@ -9,6 +9,7 @@ from functools import partial
 from .exception import IllegalArgumentError, StargateException
 from werkzeug.exceptions import HTTPException
 from .views.resource import ResourceAPI
+from flask.testing import FlaskClient
 
 READONLY_METHODS = frozenset(('GET', ))
 WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE'))
@@ -24,8 +25,12 @@ class ResourceManager():
 		if isinstance(app, Flask):
 			self.app = app
 			self.register_exception_handler(app)
+		
+		elif isinstance(app, FlaskClient):
+			self.app = app
+		
 		else:
-			msg = "Provided app instance should be `Flask` instance instead of %s" %str(type(app))
+			msg = "Provided app instance should be `Flask` or `FlaskClient` instance instead of %s" %str(type(app))
 			raise IllegalArgumentError(msg)
 
 		if flask_sqlalchemy_db is not None:
