@@ -1,6 +1,7 @@
 from flask import request, make_response, jsonify, json
 from ..proxy import serializer_for, url_for
 import math
+
 class Representation():
         
     _response_message={200: 'Ok.'}

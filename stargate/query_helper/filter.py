@@ -1,45 +1,14 @@
 import inspect
-
-from sqlalchemy import and_
-from sqlalchemy import or_
+from ..exception import UnknownField, ComparisonToNull
+from sqlalchemy import Date
+from sqlalchemy import DateTime
+from sqlalchemy import Interval
+from sqlalchemy import Time
+from dateutil.parser import parse as parse_datetime
+import datetime
+from sqlalchemy.sql.expression import ColumnElement
+from sqlalchemy.orm import RelationshipProperty as RelProperty
 from sqlalchemy.ext.associationproxy import AssociationProxy
-from sqlalchemy.orm import aliased
-from sqlalchemy.orm.attributes import InstrumentedAttribute
-from sqlalchemy.sql import false as FALSE
-
-from .helpers import get_model
-from .helpers import get_related_model
-from .helpers import get_related_association_proxy_model
-from .helpers import primary_key_names
-from .helpers import primary_key_value
-from .helpers import session_query
-from .helpers import string_to_datetime
-
-
-class ComparisonToNull(Exception):
-    pass
-
-
-class UnknownField(Exception):
-
-    def __init__(self, field):
-
-        self.field = field
-
-
-def _sub_operator(model, argument, fieldname):
-    if isinstance(model, InstrumentedAttribute):
-        submodel = model.property.mapper.class_
-    elif isinstance(model, AssociationProxy):
-        submodel = get_related_association_proxy_model(model)
-    else:
-        # TODO what to do here?
-        pass
-    fieldname = argument['name']
-    operator = argument['op']
-    argument = argument.get('val')
-    return create_operation(submodel, fieldname, operator, argument)
-
 
 OPERATORS = {
     # Operators which accept a single argument.
@@ -85,8 +54,41 @@ OPERATORS = {
     'any': lambda f, a, fn: f.any(_sub_operator(f, a, fn)),
 }
 
+CURRENT_TIME_MARKERS = ('CURRENT_TIMESTAMP', 'CURRENT_DATE', 'LOCALTIMESTAMP')
 
-class Filter(object):
+def get_field_type(model, fieldname):
+    field = getattr(model, fieldname)
+    if isinstance(field, ColumnElement):
+        return field.type
+    if isinstance(field, AssociationProxy):
+        field = field.remote_attr
+    if hasattr(field, 'property'):
+        prop = field.property
+        if isinstance(prop, RelProperty):
+            return None
+        return prop.columns[0].type
+    return None
+
+def string_to_datetime(model, fieldname, value):
+    if value is None:
+        return value
+    field_type = get_field_type(model, fieldname)
+    if isinstance(field_type, (Date, Time, DateTime)):
+        if value.strip() == '':
+            return None
+        if value in CURRENT_TIME_MARKERS:
+            return getattr(func, value.lower())()
+        value_as_datetime = parse_datetime(value)
+        if isinstance(field_type, Date):
+            return value_as_datetime.date()
+        if isinstance(field_type, Time):
+            return value_as_datetime.timetz()
+        return value_as_datetime
+    if isinstance(field_type, Interval) and isinstance(value, int):
+        return datetime.timedelta(seconds=value)
+    return value
+
+class Filter:
 
     def __init__(self, fieldname, operator, argument=None, otherfield=None):
         self.fieldname = fieldname
@@ -96,16 +98,19 @@ class Filter(object):
 
     @staticmethod
     def from_dictionary(model, dictionary):
+        
         if 'or' not in dictionary and 'and' not in dictionary:
             fieldname = dictionary.get('name')
             if not hasattr(model, fieldname):
-                raise UnknownField(fieldname)
+                raise UnknownField("No Field found {0}",format(fieldname))
             operator = dictionary.get('op')
             otherfield = dictionary.get('field')
             argument = dictionary.get('val')
             argument = string_to_datetime(model, fieldname, argument)
             return Filter(fieldname, operator, argument, otherfield)
+        
         from_dict = Filter.from_dictionary
+        
         if 'or' in dictionary:
             subfilters = dictionary.get('or')
             return DisjunctionFilter(*[from_dict(model, filter_)
@@ -117,6 +122,7 @@ class Filter(object):
 
 
 class JunctionFilter(Filter):
+    
     def __init__(self, *subfilters):
         self.subfilters = subfilters
 
@@ -125,10 +131,13 @@ class JunctionFilter(Filter):
 
 
 class ConjunctionFilter(JunctionFilter):
+    pass
 
 class DisjunctionFilter(JunctionFilter):
+    pass
 
 def create_operation(model, fieldname, operator, argument):
+    
     opfunc = OPERATORS[operator]
     numargs = len(inspect.getargspec(opfunc).args)
     field = getattr(model, fieldname)
@@ -153,65 +162,3 @@ def create_filter(model, filt):
     if isinstance(filt, ConjunctionFilter):
         return and_(create_filter(model, f) for f in filt)
     return or_(create_filter(model, f) for f in filt)
-
-
-def search_relationship(session, instance, relation, filters=None, sort=None,
-                        group_by=None):
-    model = get_model(instance)
-    related_model = get_related_model(model, relation)
-    query = session_query(session, related_model)
-
-    relationship = getattr(instance, relation)
-    primary_keys = set(primary_key_value(inst) for inst in relationship)
-    if not primary_keys:
-        return query.filter(FALSE())
-    query = query.filter(primary_key_value(related_model).in_(primary_keys))
-
-    return search(session, related_model, filters=filters, sort=sort,
-                  group_by=group_by, _initial_query=query)
-
-
-def search(session, model, filters=None, sort=None, group_by=None,
-           _initial_query=None):
-    if _initial_query is not None:
-        query = _initial_query
-    else:
-        query = session_query(session, model)
-
-    filters = [Filter.from_dictionary(model, f) for f in filters]
-    filters = [create_filter(model, f) for f in filters]
-    query = query.filter(*filters)
-
-    if sort:
-        for (symbol, field_name) in sort:
-            direction_name = 'asc' if symbol == '+' else 'desc'
-            if '.' in field_name:
-                field_name, field_name_in_relation = field_name.split('.')
-                relation_model = aliased(get_related_model(model, field_name))
-                field = getattr(relation_model, field_name_in_relation)
-                direction = getattr(field, direction_name)
-                query = query.join(relation_model)
-                query = query.order_by(direction())
-            else:
-                field = getattr(model, field_name)
-                direction = getattr(field, direction_name)
-                query = query.order_by(direction())
-    else:
-        pks = primary_key_names(model)
-        pk_order = (getattr(model, field).asc() for field in pks)
-        query = query.order_by(*pk_order)
-
-    # Group the query.
-    if group_by:
-        for field_name in group_by:
-            if '.' in field_name:
-                field_name, field_name_in_relation = field_name.split('.')
-                relation_model = get_related_model(model, field_name)
-                field = getattr(relation_model, field_name_in_relation)
-                query = query.join(relation_model)
-                query = query.group_by(field)
-            else:
-                field = getattr(model, field_name)
-                query = query.group_by(field)
-
-    return query

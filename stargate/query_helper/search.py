@@ -2,7 +2,7 @@ import inspect
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm import ColumnProperty, joinedload
 from .filter import Filter, create_filter
-from ...proxy import primary_key_for
+from ..proxy import primary_key_for
 from .inclusion import Inclusions
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.exc import NoResultFound

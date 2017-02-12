@@ -1,22 +1,14 @@
 import os
 import unittest
 from flask import Flask
+import sys
+import os
+sys.path.insert(0,'..')
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from stargate.core_api import ResourceManager
-from config import ApplicationConfig
-from models import User
-
-def init_db(app):
-	db = SQLAlchemy()
-	db.init_app(app)
-	Migrate(app, db)
-	return db
-
-def init_app():
-	app = Flask(__name__)
-	app.config.from_object(ApplicationConfig)
-	return app
+from stargate.stargate import ResourceManager
+from stargate.models import User
+from stargate.app import init_app, init_db
 
 class TestResource(unittest.TestCase):
 

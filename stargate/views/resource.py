@@ -3,8 +3,8 @@ from flask.views import MethodView
 from ..proxy import url_for, serializer_for, collection_name_for
 from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
 from ..exception import StargateException
-from .query_helper.search import Search
-from .query_helper.inclusion import Inclusions
+from ..query_helper.search import Search
+from ..query_helper.inclusion import Inclusions
 from .representation import InstanceRepresentation, CollectionRepresentation
 from sqlalchemy import inspect
 from flask_sqlalchemy import Pagination

@@ -10,7 +10,7 @@ from datetime import date, datetime, time, timedelta
 from werkzeug.routing import BuildError
 from flask import request
 from .exception import IllegalArgumentError, ResourceNotFound, SerializationException
-from .views.query_helper.inclusion import Inclusions
+from .query_helper.inclusion import Inclusions
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
 
