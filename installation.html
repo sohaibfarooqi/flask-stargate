@@ -26,7 +26,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Welcome to Stargate’s documentation!" href="index.html" />
+    <link rel="next" title="Quickstart" href="quickstart.html" />
+    <link rel="prev" title="Stargate Api Docs!" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -44,22 +45,46 @@
             
   <div class="section" id="installation-and-running">
 <h1>Installation and Running<a class="headerlink" href="#installation-and-running" title="Permalink to this headline">¶</a></h1>
-<dl class="docutils">
-<dt>You need to define following Environment Variables:</dt>
-<dd><ul class="first last simple">
-<li>DATABASE_URL = &#8216;&lt;yourdburi&gt;&#8217;</li>
-<li>FLASK_APP = wsgi.py</li>
-<li>FLASK_DEBUG = &#8216;True/False&#8217;</li>
+<div class="section" id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>DATABASE_URL = <code class="docutils literal"><span class="pre">&lt;yourdburi&gt;</span></code></li>
+<li>FLASK_APP = <code class="docutils literal"><span class="pre">wsgi.py</span></code></li>
+<li>FLASK_DEBUG = <code class="docutils literal"><span class="pre">True/False</span></code></li>
 </ul>
-</dd>
-</dl>
-<p>Clone the repository:
-<a class="reference external" href="https://github.com/sohaibfarooqi/stargate.git">https://github.com/sohaibfarooqi/stargate.git</a></p>
-<p>Create VirtualEnv:
-virtualenv -p &#8220;path to python&#8221; env
-source env/bin/activate</p>
-<p>Running:
-flask run</p>
+</div></blockquote>
+</div>
+<div class="section" id="clone-the-repository">
+<h2>Clone the repository<a class="headerlink" href="#clone-the-repository" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/sohaibfarooqi/stargate.git</span></code></p>
+</div>
+<div class="section" id="create-virtualenv">
+<h2>Create VirtualEnv<a class="headerlink" href="#create-virtualenv" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">virtualenv</span> <span class="pre">-p</span> <span class="pre">&quot;/path/to/python&quot;</span> <span class="pre">env</span></code></li>
+<li><code class="docutils literal"><span class="pre">source</span> <span class="pre">env/bin/activate</span></code></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="install-dependencies">
+<h2>Install Dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code></p>
+</div>
+<div class="section" id="run-migrations">
+<h2>Run Migrations<a class="headerlink" href="#run-migrations" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">flask</span> <span class="pre">db</span> <span class="pre">migrate</span></code></li>
+<li><code class="docutils literal"><span class="pre">flask</span> <span class="pre">db</span> <span class="pre">upgrade</span></code></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="running">
+<h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">flask</span> <span class="pre">run</span></code></p>
+</div>
 </div>
 
 
@@ -67,11 +92,25 @@ flask run</p>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation and Running</a><ul>
+<li><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+<li><a class="reference internal" href="#clone-the-repository">Clone the repository</a></li>
+<li><a class="reference internal" href="#create-virtualenv">Create VirtualEnv</a></li>
+<li><a class="reference internal" href="#install-dependencies">Install Dependencies</a></li>
+<li><a class="reference internal" href="#run-migrations">Run Migrations</a></li>
+<li><a class="reference internal" href="#running">Running</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Stargate&#8217;s documentation!</a></li>
+      <li>Previous: <a href="index.html" title="previous chapter">Stargate Api Docs!</a></li>
+      <li>Next: <a href="quickstart.html" title="next chapter">Quickstart</a></li>
   </ul></li>
 </ul>
 </div>
