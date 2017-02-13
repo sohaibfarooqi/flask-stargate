@@ -69,13 +69,4 @@ Specifying attributes to exclude:
 
 The response will result in all attributes of ``User`` except ``name`` and ``username``.
 
-Specifying embedded resources:
-	
-.. sourcecode:: python
-	
-	manager.register_resource(User, methods = ['GET'], includes = ['city', 'location'])
-
-By default all embedded resources will only have link and relationship type in it. Includes option
-will expand the specified resources.
-
 .. _flask_sqlahcemy_docs: http://flask-sqlalchemy.pocoo.org/2.1/

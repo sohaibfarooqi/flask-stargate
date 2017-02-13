@@ -71,8 +71,8 @@ class ResourceManager():
 			raise RuntimeError(msg)
 	
 	def create_resource_blueprint(self, name, model, methods=READONLY_METHODS,
-                             url_prefix=None, collection_name=None,serializer=None, deserializer=None,
-                             fields=None, exclude=None, decorators=[], primary_key=None):
+                             url_prefix=None, collection_name=None,fields=None, 
+                             includes = None, exclude=None, decorators=[], primary_key=None):
 		
 		if collection_name is None or collection_name == '':
 			collection_name = model.__table__.name
@@ -83,11 +83,9 @@ class ResourceManager():
 		decorators_ = self.decorators
 		decorators_.append(decorators)
 		
-		if serializer is None:
-			serializer = Serializer(model, fields=fields, exclude=exclude)
+		serializer = Serializer(model, fields=fields, exclude=exclude)
 
-		if deserializer is None:
-			deserializer = Deserializer(self.session, model)
+		deserializer = Deserializer(self.session, model)
 
 		resource_api_view = ResourceAPI.as_view( apiname, self.session, model, decorators, primary_key)
 
