@@ -1,10 +1,8 @@
-.. Stargate documentation master file, created by
-   sphinx-quickstart on Tue Feb  7 15:53:35 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. docs root file
 
-Welcome to Stargate's documentation!
-====================================
+Stargate Api Docs!
+==================
+
 .. automodule:: stargate
 
 User's guide
@@ -16,3 +14,4 @@ User's guide
 
    installation
    quickstart
+   usageguide

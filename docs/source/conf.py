@@ -98,12 +98,16 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'stargatedoc'
 
+html_theme_options = {
+    'logo':'stargate.jpg',
+    'github_user': 'sohaibfarooqi',
+    'github_repo': 'stargate',
+}
 
 # -- Options for LaTeX output ---------------------------------------------
 
