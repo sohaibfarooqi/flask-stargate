@@ -1,0 +1,20 @@
+=====================
+Filtering Collections
+=====================
+
+Collection filteration is supported in following format
+
+Filters
+--------
+
+Pagination
+-----------
+
+Partial Response
+-----------------
+
+Sorting
+-------
+
+Grouping
+--------

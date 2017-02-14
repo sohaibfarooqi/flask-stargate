@@ -80,15 +80,26 @@ By default the resource endpoint will be <code class="docutils literal"><span cl
 </div>
 <p>Now on localhost <code class="docutils literal"><span class="pre">User</span></code> resource is accessible at: <a class="reference external" href="http://127.0.0.1:5000/api/my_custom_collection">http://127.0.0.1:5000/api/my_custom_collection</a></p>
 <p>Specifying Model attributes:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Now GET request on <code class="docutils literal"><span class="pre">/user</span></code> will only result in <code class="docutils literal"><span class="pre">name</span></code> and <code class="docutils literal"><span class="pre">username</span></code> keys. Primary key will always be included in response.</p>
 <p>Specifying attributes to exclude:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>The response will result in all attributes of <code class="docutils literal"><span class="pre">User</span></code> except <code class="docutils literal"><span class="pre">name</span></code> and <code class="docutils literal"><span class="pre">username</span></code>.</p>
+<p>Specifying embedded resources:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">includes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>By default all embedded resources will only have link and relationship type in it. Includes option
+will expand the specified resources.</p>
+<p>Specifying View Decorators:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">my_decorators</span> <span class="kn">import</span> <span class="n">decorator</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">decorators</span> <span class="o">=</span> <span class="p">[</span><span class="n">decorator</span><span class="p">])</span>
+</pre></div>
+</div>
 </div>
 </div>
 

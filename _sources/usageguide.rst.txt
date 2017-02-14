@@ -21,9 +21,9 @@ Second line exposes HTTP GET method for ``User`` model. If you are running this 
 can excess this resource at: http://127.0.0.1:5000/api/user
 By default the resource endpoint will be ``Resource.__tablename__``.
 
-=========================
+
 Customizing API Endpoints
-=========================
+-------------------------
 
 You can specify custom url_prefix for all models registered with a ``ResourceManager``
 
@@ -57,7 +57,7 @@ Specifying Model attributes:
 	
 .. sourcecode:: python
 	
-	manager.register_resource(User, methods = ['GET'], fields = ['name', 'username'])
+	manager.register_resource(User, fields = ['name', 'username'])
 
 Now GET request on ``/user`` will only result in ``name`` and ``username`` keys. Primary key will always be included in response. 
 
@@ -65,8 +65,24 @@ Specifying attributes to exclude:
 	
 .. sourcecode:: python
 	
-	manager.register_resource(User, methods = ['GET'], exclude = ['name', 'username'])
+	manager.register_resource(User, exclude = ['name', 'username'])
 
 The response will result in all attributes of ``User`` except ``name`` and ``username``.
+
+Specifying embedded resources:
+	
+.. sourcecode:: python
+	
+	manager.register_resource(User, includes = ['city', 'location'])
+
+By default all embedded resources will only have link and relationship type in it. Includes option
+will expand the specified resources.
+
+Specifying View Decorators:
+	
+.. sourcecode:: python
+
+	from my_decorators import decorator
+	manager.register_resource(User, decorators = [decorator])
 
 .. _flask_sqlahcemy_docs: http://flask-sqlalchemy.pocoo.org/2.1/
