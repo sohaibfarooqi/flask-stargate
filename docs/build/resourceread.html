@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>REST Resources Read Operations &#8212; stargate 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Guidelines on creating API Endpoints" href="usageguide.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rest-resources-read-operations">
+<h1>REST Resources Read Operations<a class="headerlink" href="#rest-resources-read-operations" title="Permalink to this headline">¶</a></h1>
+<p>Collection filteration is supported in following format</p>
+<div class="section" id="filters">
+<h2>Filters<a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h2>
+<p>Following example shows a basic use of resource filteration</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user?filters=[{&quot;name&quot;:&quot;name&quot;,&quot;op&quot;:&quot;like&quot;,&quot;val&quot;:&quot;john&quot;}]</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>This will perform SQL operation <code class="docutils literal"><span class="pre">name</span> <span class="pre">LIKE</span> <span class="pre">&quot;john&quot;</span></code></p>
+<p>Query Format is:</p>
+<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;attribute&quot;</span><span class="p">,</span> <span class="nt">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;Operator&quot;</span><span class="p">,</span> <span class="nt">&quot;val&quot;</span><span class="p">:</span> <span class="s2">&quot;compare against&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>You can also nest filters with logical boolean operators</p>
+<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">[{</span><span class="nt">&quot;or&quot;</span><span class="p">:[{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;age&quot;</span><span class="p">,</span><span class="nt">&quot;op&quot;</span><span class="p">:</span><span class="s2">&quot;ge&quot;</span><span class="p">,</span><span class="nt">&quot;val&quot;</span><span class="p">:</span><span class="s2">&quot;19&quot;</span><span class="p">},</span> <span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;city&quot;</span><span class="p">,</span><span class="nt">&quot;op&quot;</span><span class="p">:</span><span class="s2">&quot;eq&quot;</span><span class="p">,</span><span class="nt">&quot;val&quot;</span><span class="p">:</span><span class="s2">&quot;1&quot;</span><span class="p">}]}]</span>
+</pre></div>
+</div>
+<p>This will result in SQL Expression <code class="docutils literal"><span class="pre">age</span> <span class="pre">&gt;</span> <span class="pre">19</span> <span class="pre">OR</span> <span class="pre">city=1</span></code></p>
+</div>
+<div class="section" id="pagination">
+<h2>Pagination<a class="headerlink" href="#pagination" title="Permalink to this headline">¶</a></h2>
+<p>Pagination on collections can be simply performed as follows:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user?page=1&amp;perpage=20</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>This will result in 20 <code class="docutils literal"><span class="pre">User</span></code> objects starting from first. By default <code class="docutils literal"><span class="pre">page=1</span></code>
+and <code class="docutils literal"><span class="pre">perpage=10</span></code>. <code class="docutils literal"><span class="pre">perpage</span></code> cannot go beyond 100.</p>
+</div>
+<div class="section" id="partial-response">
+<h2>Partial Response<a class="headerlink" href="#partial-response" title="Permalink to this headline">¶</a></h2>
+<p>Partial response can be done in two ways:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Selective attributes</li>
+</ol>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user?fields=name,age</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+
+This response objects will only contain `name` and `age` keys.
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Excluding attributes</li>
+</ol>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user?exclude=name,age</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+
+This response objects will contain all attributes except`name` and `age`.
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="resource-expansion">
+<h2>Resource Expansion<a class="headerlink" href="#resource-expansion" title="Permalink to this headline">¶</a></h2>
+<p>Related resources can be expanded in a following manner:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user?expand=location</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>By default related resource will only have link in their data, which can be used
+to get the resource.</p>
+<p>You can also specify selective fields on related resources</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user?expand=location(latitude,longitude)</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="sorting">
+<h2>Sorting<a class="headerlink" href="#sorting" title="Permalink to this headline">¶</a></h2>
+<p>Sorting can be done like</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user?sort=updated_at-,name+</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>This will perform <code class="docutils literal"><span class="pre">updated_at</span> <span class="pre">DESE,</span> <span class="pre">name</span> <span class="pre">ASC</span></code>. This will have users who were updated
+recently sorted alphabetically</p>
+</div>
+<div class="section" id="grouping">
+<h2>Grouping<a class="headerlink" href="#grouping" title="Permalink to this headline">¶</a></h2>
+<p>Grouping example:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user?group=created_at,age</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>This will perform <code class="docutils literal"><span class="pre">GROUP</span> <span class="pre">BY</span> <span class="pre">created_at,</span> <span class="pre">age</span></code>. This will group the users who were created
+at same date/time and have same age.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">REST Resources Read Operations</a><ul>
+<li><a class="reference internal" href="#filters">Filters</a></li>
+<li><a class="reference internal" href="#pagination">Pagination</a></li>
+<li><a class="reference internal" href="#partial-response">Partial Response</a></li>
+<li><a class="reference internal" href="#resource-expansion">Resource Expansion</a></li>
+<li><a class="reference internal" href="#sorting">Sorting</a></li>
+<li><a class="reference internal" href="#grouping">Grouping</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="usageguide.html" title="previous chapter">Guidelines on creating API Endpoints</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/resourceread.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, sohaib farooqi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/resourceread.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -15,4 +15,5 @@ User's guide
    installation
    quickstart
    usageguide
-   collectionfilteration
+   resourceread
+   responseformat

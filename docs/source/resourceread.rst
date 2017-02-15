@@ -1,6 +1,6 @@
-=====================
-Filtering Collections
-=====================
+===========================
+REST Resources Read Options
+===========================
 
 Collection filteration is supported in following format
 

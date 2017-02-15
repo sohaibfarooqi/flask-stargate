@@ -15,3 +15,4 @@ User's guide
    installation
    quickstart
    usageguide
+   resourceread
