@@ -4,7 +4,7 @@ from flask import request, json, jsonify
 from .exception import NotAcceptable, MediaTypeNotSupported, ProcessingException
 from werkzeug import parse_options_header
 
-CONTENT_TYPE = 'application/vnd.api+json'
+CONTENT_TYPE = 'application/json'
 
 JSONAPI_VERSION = '1.0'
 

@@ -19,9 +19,8 @@ class TestResource(unittest.TestCase):
 			self.client = app.test_client()
 			self.db = init_db(app)
 
-		def test_resource_registration(self):
-			manager = ResourceManager(self.app, flask_sqlalchemy_db = self.db)
-			manager.register_resource(User, methods = ['GET'])
+		def test_manager_creation(self):
+			manager = ResourceManager(self.app, self.db)
 			self.assertIsInstance(manager, ResourceManager)
 
 

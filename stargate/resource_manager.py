@@ -8,19 +8,18 @@ from .deserializer import Deserializer
 from functools import partial
 from .exception import IllegalArgumentError, StargateException
 from werkzeug.exceptions import HTTPException
-from .views.resource import ResourceAPI
+from .views import ResourceAPI
 from flask.testing import FlaskClient
 
 READONLY_METHODS = frozenset(('GET', ))
 WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE'))
 ALL_METHODS = READONLY_METHODS | WRITEONLY_METHODS
 DEFAULT_URL_PREFIX = '/api'
-RESOURCE_API_INFO = namedtuple('RESOURCE_API_INFO', ['collection','blueprint','serializer','deserialier', 'pk'])
+RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serializer','deserialier', 'pk'])
 
 class ResourceManager():
 	
-	def __init__(self, app, flask_sqlalchemy_db = None,
-				_decorators = None, url_prefix = None):
+	def __init__(self, app, db, _decorators = None, url_prefix = None):
 
 		if isinstance(app, Flask):
 			self.app = app
@@ -33,19 +32,13 @@ class ResourceManager():
 			msg = "Provided app instance should be `Flask` or `FlaskClient` instance instead of %s" %str(type(app))
 			raise IllegalArgumentError(msg)
 
-		if flask_sqlalchemy_db is not None:
-			self.session = flask_sqlalchemy_db.session
-		else:
-			msg = 'must specify either `flask_sqlalchemy_db` or `sqlalchemy_session`'
-			raise IllegalArgumentError(msg)
-
-		self.decorators = _decorators or []
+		self.session = db.session
+		self.url_prefix = url_prefix
 		
+		self.decorators = _decorators or []
 		self.registerd_blueprints = []
-
 		self.registered_apis = {}
 
-		self.url_prefix = url_prefix
 
 		url_for.register(self)
 		serializer_for.register(self)
@@ -116,7 +109,7 @@ class ResourceManager():
 		return blueprint
 
 	def _add_resource(self, model, collection_name, blueprint, serializer, deserializer, primary_key):
-		self.registered_apis[model] = RESOURCE_API_INFO(collection_name, blueprint.name, serializer, deserializer, primary_key)
+		self.registered_apis[model] = RESOURCE_INFO(collection_name, blueprint.name, serializer, deserializer, primary_key)
 
 	def _add_endpoint(self, blueprint, endpoint, view_func, methods=READONLY_METHODS):
 		add_rule = blueprint.add_url_rule
