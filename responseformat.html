@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Response Style &#8212; stargate 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="REST Resources Read Options" href="resourceread.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="response-style">
+<h1>Response Style<a class="headerlink" href="#response-style" title="Permalink to this headline">¶</a></h1>
+<p>Response format are grouped in collection and instance response. Both will have a different
+respresentation for client. All request options can be applied to either collection resource or
+instance resource, provided it make sense to it. For example pagination params don&#8217;t make any
+sense if you are requesting for a resource with a specified id. So pagination params will be ignored
+in case of instance resoure.</p>
+<div class="section" id="collection-representation">
+<h2>Collection Representation<a class="headerlink" href="#collection-representation" title="Permalink to this headline">¶</a></h2>
+<p>By default GET request to any resource will yield response in following format.</p>
+<div class="section" id="simple-collection">
+<h3>Simple collection<a class="headerlink" href="#simple-collection" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+<span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+        <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Ok.&quot;</span>
+<span class="p">},</span>
+<span class="nt">&quot;_links&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;self&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users?page=1&amp;perpage=10&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;first&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users?page=1&amp;perpage=10&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;last&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users?page=10&amp;perpage=10&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;next&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users?page=2&amp;perpage=10&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;previous&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users?page=0&amp;perpage=10&quot;</span>
+<span class="p">},</span>
+<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="s2">&quot;19&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;John91&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;sex&quot;</span><span class="p">:</span> <span class="s2">&quot;M&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_ONE&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/user/1/city&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;images&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_MANY&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/user/1/images&quot;</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">},</span> <span class="p">{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John Agha&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="s2">&quot;23&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;John92&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;sex&quot;</span><span class="p">:</span> <span class="s2">&quot;M&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_ONE&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/user/1/city&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;images&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_MANY&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/user/1/images&quot;</span>
+                <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;num_results&quot;</span><span class="p">:</span> <span class="mi">2</span>
+<span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">meta</span></code> will include the response code and message. <code class="docutils literal"><span class="pre">_links</span></code> contains pagination links.
+<code class="docutils literal"><span class="pre">data</span></code> contains the array of <code class="docutils literal"><span class="pre">User</span></code> objects. Each object has <code class="docutils literal"><span class="pre">attributes</span></code> and <code class="docutils literal"><span class="pre">id</span></code> keys.
+It further includes <code class="docutils literal"><span class="pre">_embedded</span></code> keys which represents all resources that are related to <code class="docutils literal"><span class="pre">User</span></code>.
+Each related resource will <code class="docutils literal"><span class="pre">type</span></code> key which represent relationship type and <code class="docutils literal"><span class="pre">_link</span></code> key to get
+the full resource.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All related resources will only have relationship type and link to get the full resource.
+If you want to get full resource representation in <code class="docutils literal"><span class="pre">/user</span></code> endpoint, Please specify
+<code class="docutils literal"><span class="pre">expand=images,city</span></code> in request query string. For more information see resource expansion.</p>
+</div>
+</div>
+<div class="section" id="related-collection">
+<h3>Related Collection<a class="headerlink" href="#related-collection" title="Permalink to this headline">¶</a></h3>
+<p>Related collection will have a url format like <code class="docutils literal"><span class="pre">/&lt;primary_resource&gt;/&lt;id&gt;/&lt;related_resource&gt;</span></code>.
+It will yield a format similar to simple collection except <code class="docutils literal"><span class="pre">_embedded</span></code> will now have related collections&#8217;
+relationships.</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user/1/images</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+<span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+        <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Ok.&quot;</span>
+<span class="p">},</span>
+<span class="nt">&quot;_links&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;self&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users/1/images?page=1&amp;perpage=10&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;first&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users1/images?page=1&amp;perpage=10&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;last&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users1/images?page=10&amp;perpage=10&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;next&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users1/images?page=2&amp;perpage=10&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;previous&quot;</span><span class="p">:</span> <span class="s2">&quot;/api/users1/images?page=0&amp;perpage=10&quot;</span>
+<span class="p">},</span>
+<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;profile_pic&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/cdnserver/getprofilepic&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;width&quot;</span><span class="p">:</span> <span class="s2">&quot;19&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;height&quot;</span><span class="p">:</span> <span class="s2">&quot;20&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;image_details&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_MANY&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/images/2/image_details&quot;</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">},</span> <span class="p">{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;cover_pic&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/cdnserver/getcoverpic&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;width&quot;</span><span class="p">:</span> <span class="s2">&quot;190&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;height&quot;</span><span class="p">:</span> <span class="s2">&quot;80&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;image_details&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_MANY&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/images/2/image_details&quot;</span>
+                <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;num_results&quot;</span><span class="p">:</span> <span class="mi">2</span>
+<span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="instance-representation">
+<h2>Instance Representation<a class="headerlink" href="#instance-representation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="simple-instance">
+<h3>Simple Instance<a class="headerlink" href="#simple-instance" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user/1</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+<span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+        <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Ok.&quot;</span>
+<span class="p">},</span>
+<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="s2">&quot;19&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;John91&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;sex&quot;</span><span class="p">:</span> <span class="s2">&quot;M&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_ONE&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/user/1/city&quot;</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;images&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_MANY&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/user/1/images&quot;</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Instance representation has no <code class="docutils literal"><span class="pre">_links</span></code> (pagination links) and <code class="docutils literal"><span class="pre">num_results</span></code>.
+Related resources expansion can be done just like in collection resources.</p>
+</div>
+<div class="section" id="related-instance">
+<h3>Related Instance<a class="headerlink" href="#related-instance" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">GET</span> <span class="nn">/api/user/1/city/1</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/json</span>
+
+<span class="p">{</span>
+<span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+        <span class="nt">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Ok.&quot;</span>
+<span class="p">},</span>
+<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Lahore&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;latitude&quot;</span><span class="p">:</span> <span class="s2">&quot;72.81654&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;longitude&quot;</span><span class="p">:</span> <span class="s2">&quot;78.1907866&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;locations&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;TO_MANY&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;_link&quot;</span><span class="p">:</span> <span class="s2">&quot;/city/1/location&quot;</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Response Style</a><ul>
+<li><a class="reference internal" href="#collection-representation">Collection Representation</a><ul>
+<li><a class="reference internal" href="#simple-collection">Simple collection</a></li>
+<li><a class="reference internal" href="#related-collection">Related Collection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#instance-representation">Instance Representation</a><ul>
+<li><a class="reference internal" href="#simple-instance">Simple Instance</a></li>
+<li><a class="reference internal" href="#related-instance">Related Instance</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="resourceread.html" title="previous chapter">REST Resources Read Options</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/responseformat.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, sohaib farooqi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/responseformat.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
