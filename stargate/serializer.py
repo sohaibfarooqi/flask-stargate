@@ -149,49 +149,52 @@ class Serializer():
     
     def __call__(self, result_set, fields = None, exclude = None, expand = None, serialize_rel = True):
         
-        instance = result_set[0] if isinstance(result_set, list) else result_set
-        model = type(instance)
+        if result_set:
+            instance = result_set[0] if isinstance(result_set, list) else result_set
+            model = type(instance)
         
-        columns = set()
-        
-        if fields  and exclude:
-            raise IllegalArgumentError('Cannot specify both `fields` and `exclude` keyword'
-                             ' arguments simultaneously')
-        if self.allowed_fields:
-            columns = self.allowed_fields
-        
-        else:
-            try:
-                inspected_instance = inspect(model)
-            except NoInspectionAvailable:
-                raise IllegalArgumentError(msg="No inspection available for class{0}".format(model.__class__))
-            column_attrs = inspected_instance.column_attrs.keys()
-            descriptors = inspected_instance.all_orm_descriptors.items()
-            hybrid_columns = [k for k, d in descriptors if d.extension_type == HYBRID_PROPERTY]
-            columns = column_attrs + hybrid_columns
-            foreign_key_columns = foreign_keys(model)
-            columns = (c for c in columns if c not in foreign_key_columns)
+            columns = set()
             
-        if self.exclude:
-            columns = (c for c in columns if c not in self.exclude)
+            if fields  and exclude:
+                raise IllegalArgumentError('Cannot specify both `fields` and `exclude` keyword'
+                                 ' arguments simultaneously')
+            if self.allowed_fields:
+                columns = self.allowed_fields
+            
+            else:
+                try:
+                    inspected_instance = inspect(model)
+                except NoInspectionAvailable:
+                    raise IllegalArgumentError(msg="No inspection available for class{0}".format(model.__class__))
+                column_attrs = inspected_instance.column_attrs.keys()
+                descriptors = inspected_instance.all_orm_descriptors.items()
+                hybrid_columns = [k for k, d in descriptors if d.extension_type == HYBRID_PROPERTY]
+                columns = column_attrs + hybrid_columns
+                foreign_key_columns = foreign_keys(model)
+                columns = (c for c in columns if c not in foreign_key_columns)
+                
+            if self.exclude:
+                columns = (c for c in columns if c not in self.exclude)
 
-        pk_name = primary_key_for(model)
-        
-        if fields:
-            fields.add(pk_name)
-            columns = (c for c in columns if c in fields)
+            pk_name = primary_key_for(model)
+            
+            if fields:
+                fields.add(pk_name)
+                columns = (c for c in columns if c in fields)
 
-        if exclude:
-            columns = (c for c in columns if c not in fields)
-        
-        if expand:
-            expand = Inclusions.parse_expansions(model, expand)
-        
-        if isinstance(result_set, list):
-            return self._serialize_many(columns, result_set, expand = expand, serialize_rel = serialize_rel)
-        
+            if exclude:
+                columns = (c for c in columns if c not in fields)
+            
+            if expand:
+                expand = Inclusions.parse_expansions(model, expand)
+            
+            if isinstance(result_set, list):
+                return self._serialize_many(columns, result_set, expand = expand, serialize_rel = serialize_rel)
+            
+            else:
+                return self._serialize_one(columns, result_set, expand = expand, serialize_rel = serialize_rel)
         else:
-            return self._serialize_one(columns, result_set, expand = expand, serialize_rel = serialize_rel)
+            return None
 
     def _serialize_many(self, columns, result_set, expand = None, serialize_rel = False):
         

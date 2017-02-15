@@ -1,9 +1,8 @@
-from .models import User, Location, City
+from .app.models import User, Location, City
 from .stargate import ResourceManager
-from .app import init_app, init_db
+from .app import init_app, db
 
 app = init_app()
-db = init_db(app)
 
 manager = ResourceManager(app, db)
 manager.register_resource(User, methods = ['GET', 'POST', 'DELETE'])

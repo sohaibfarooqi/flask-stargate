@@ -4,11 +4,9 @@ from flask import Flask
 import sys
 import os
 sys.path.insert(0,'..')
-from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 from stargate.stargate import ResourceManager
-from stargate.models import User, City, Location
-from stargate.app import init_app, init_db
+from stargate.app.models import User, City, Location
+from stargate.app import init_app, db
 
 class TestResource(unittest.TestCase):
 
@@ -17,7 +15,7 @@ class TestResource(unittest.TestCase):
 			app.config['TESTING'] = True
 			self.app = app
 			self.client = app.test_client()
-			self.db = init_db(app)
+			self.db = db
 
 		def test_manager_creation(self):
 			manager = ResourceManager(self.app, self.db)

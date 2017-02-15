@@ -1,11 +1,9 @@
 import datetime
 from sqlalchemy import func
-from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.orm
-
-db = SQLAlchemy()
+from . import db
 
 class Entity:
     
