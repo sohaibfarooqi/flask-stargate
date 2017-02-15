@@ -73,7 +73,7 @@ class Search():
 		elif pk_id is not None:
 			return self._search_one(query, pk_id, None)
 		else:
-			raise Exception("Unprocessiable entity")
+			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
 	
 	def _search_one(self, query, pk_value, related_id):
 		

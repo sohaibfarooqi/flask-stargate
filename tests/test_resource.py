@@ -7,7 +7,7 @@ sys.path.insert(0,'..')
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from stargate.stargate import ResourceManager
-from stargate.models import User
+from stargate.models import User, City, Location
 from stargate.app import init_app, init_db
 
 class TestResource(unittest.TestCase):
@@ -22,6 +22,17 @@ class TestResource(unittest.TestCase):
 		def test_manager_creation(self):
 			manager = ResourceManager(self.app, self.db)
 			self.assertIsInstance(manager, ResourceManager)
+
+		def test_resource_creation(self):
+			manager = ResourceManager(self.app, self.db)
+			
+			manager.register_resource(User, methods = ['GET'])
+			manager.register_resource(Location, methods = ['GET'])
+			manager.register_resource(City, methods = ['GET'])
+			
+			response = self.client.get('/api/user', headers={"Content-Type": "application/json"})
+			self.assertEqual(response._status_code, 200)
+
 
 
 if __name__ == '__main__':
