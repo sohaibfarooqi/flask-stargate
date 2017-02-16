@@ -1,8 +1,8 @@
-from flask import Flask, Blueprint, url_for as flask_url_for, json, make_response
+from flask import Flask, Blueprint, url_for, json, make_response
 from six import string_types
 from uuid import uuid1
 from collections import namedtuple, defaultdict
-from .proxy import url_for, serializer_for, primary_key_for, collection_name_for, model_for
+from .proxy import manager_info
 from .serializer import Serializer
 from .deserializer import Deserializer
 from functools import partial
@@ -40,11 +40,7 @@ class ResourceManager():
 		self.registered_apis = {}
 
 
-		url_for.register(self)
-		serializer_for.register(self)
-		primary_key_for.register(self)
-		model_for.register(self)
-		collection_name_for.register(self)
+		manager_info.register(self)
 
 	@staticmethod
 	def api_name(collection_name):
@@ -164,7 +160,7 @@ class ResourceManager():
 		blueprint_name = self.registered_apis[model].blueprint
 		api_name = ResourceManager.api_name(collection_name)
 		parts = [blueprint_name, api_name]
-		url = flask_url_for('.'.join(parts), **kw)
+		url = url_for('.'.join(parts), **kw)
 		return url
 
 	def collection_name(self, model):

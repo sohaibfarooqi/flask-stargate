@@ -4,6 +4,11 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm import ColumnProperty
 
+PRIMARY_KEY_FOR = 'primary_key_for'
+SERIALIZER_FOR = 'serializer_for'
+URL_FOR = 'url_for'
+COLLECTION_NAME_FOR = 'collection_name_for'
+
 def primary_key_names(model):
     return [key for key, field in inspect.getmembers(model)
             if isinstance(field, QueryableAttribute)
@@ -20,7 +25,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class ResourceManagerProxy:
+class RegisteredManagers():
     def __init__(self):
         self.created_managers = set()
 
@@ -28,23 +33,29 @@ class ResourceManagerProxy:
         self.created_managers.add(resmanager)
 
 
-class FindModel(with_metaclass(Singleton, ResourceManagerProxy)):
+class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
 
-    def __call__(self, resource_type, _resmanager=None, **kw):
-        if _resmanager is not None:
-            return _resmanager.model_for(resource_type, **kw)
-        for manager in self.created_managers:
-            try:
-                return self(resource_type, _resmanager=manager, **kw)
-            except ValueError:
-                pass
-        message = ('Collection Name: {0} not registed with ResourceManager. Hence FindModel failed').format(resource_type)
-        raise ValueError(message)
+    def __call__(self, key, model, **kw):
+        
+        if self.created_managers:
+            
+            if key == PRIMARY_KEY_FOR:
+                self._get_primary_key(primary_resource, kw)
+            
+            elif key == COLLECTION_NAME_FOR:
+                self._get_collection_name(primary_resource, kw)
 
+            elif key == SERIALIZER_FOR:
+                self._get_serializer(primary_resource, kw)
+            
+            elif key == URL_FOR:
+                self._get_url(primary_resource, kw)
+            else:
+                raise ValueError("Unknown resource manager attribute: {0}".format(key))    
+        else:
+            raise RuntimeError("No Manager Instance registered")
 
-class FindCollection(with_metaclass(Singleton, ResourceManagerProxy)):
-
-    def __call__(self, model, _resmanager=None, **kw):
+    def _get_collection_name(self, model):
         if _resmanager is not None:
             if model not in _resmanager.registered_apis:
                 message = ('ResourceManager {0} has not registered API for model {1}').format(_resmanager, model)
@@ -58,11 +69,7 @@ class FindCollection(with_metaclass(Singleton, ResourceManagerProxy)):
         message = ('Model: {0} not registed with ResourceManager. Hence FindCollection failed').format(model)
         raise ValueError(message)
 
-
-class FindUrl(with_metaclass(Singleton, ResourceManagerProxy)):
-
-    def __call__(self, model, pk_id=None, relation=None,
-                 related_id=None, _resmanager=None, **kw):
+    def _get_url(self, model, pk_id = None, relation = None, related_id = None):
 
         if _resmanager is not None:
             if model not in _resmanager.registered_apis:
@@ -81,10 +88,7 @@ class FindUrl(with_metaclass(Singleton, ResourceManagerProxy)):
         message = ('Model: {0} is not registered to any ResourceManager object. Hence FindUrl failed').format(model)
         raise ValueError(message)
 
-
-class FindSerializer(with_metaclass(Singleton, ResourceManagerProxy)):
-
-    def __call__(self, model, _apimanager=None, **kw):
+    def _get_serializer(self, model):
         if _apimanager is not None:
             if model not in _apimanager.registered_apis:
                 message = ('ResourceManager {0} has not registered API for model {1}').format(_apimanager, model)
@@ -98,10 +102,7 @@ class FindSerializer(with_metaclass(Singleton, ResourceManagerProxy)):
         message = ('Model {0} is not registered to any ResourceManager object. Hence FindSerializer failed').format(model)
         raise ValueError(message)
 
-
-class FindPrimaryKey(with_metaclass(Singleton, ResourceManagerProxy)):
-
-    def __call__(self, instance_or_model, _resmanager=None, **kw):
+    def _get_primary_key(self, model):
         if isinstance(instance_or_model, type):
             model = instance_or_model
         else:
@@ -129,13 +130,4 @@ class FindPrimaryKey(with_metaclass(Singleton, ResourceManagerProxy)):
             primary_key = 'id' if 'id' in pk_names else pk_names[0]
         return primary_key
 
-
-url_for = FindUrl()
-
-collection_name_for = FindCollection()
-
-serializer_for = FindSerializer()
-
-model_for = FindModel()
-
-primary_key_for = FindPrimaryKey()
+manager_info = ManagerInfo()
