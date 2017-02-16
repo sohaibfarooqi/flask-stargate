@@ -15,12 +15,11 @@ class TestResource(unittest.TestCase):
 			#Initilize Flask test client
 			self.app = init_app(test=True)
 			self.client = self.app.test_client()
-			#Register Model with manager instance
+			#Register Models with manager instance
 			self.manager = ResourceManager(self.app, db)
 			self.manager.register_resource(User, methods = ['GET'])
 			self.manager.register_resource(Location, methods = ['GET'])
 			self.manager.register_resource(City, methods = ['GET'])
-
 			#Insert Dummy data for testing
 			city = City()
 			location = Location()
@@ -65,6 +64,14 @@ class TestResource(unittest.TestCase):
 		
 		def test_get_instance(self):
 			response = self.client.get('/api/user/1', headers={"Content-Type": "application/json"})
+			self.assertEqual(response._status_code, 200)
+
+		def test_get_related_instance(self):
+			response = self.client.get('/api/user/1/location/1', headers={"Content-Type": "application/json"})
+			self.assertEqual(response._status_code, 200)
+
+		def test_get_related_collection(self):
+			response = self.client.get('/api/city/1/location', headers={"Content-Type": "application/json"})
 			self.assertEqual(response._status_code, 200)
 
 		@classmethod
