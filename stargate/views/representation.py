@@ -27,21 +27,19 @@ class Representation():
 
 class InstanceRepresentation(Representation):
     
-    def __init__(self, model, pk_id, instance, *args, **kw):
+    def __init__(self, model, pk_id, data, *args, **kw):
         
         super(InstanceRepresentation, self).__init__(*args, **kw)
         self.model = model
         self.pk_id = pk_id
-        self.instance = instance
+        self.data = data
 
     def to_response(self):
 
         self_link = url_for(self.model, self.pk_id)
-        serializer = serializer_for(self.model)
-        data = serializer(self.instance)
         
         self.__base_repr__['meta']['_HEADERS']['rel'] = self_link
-        self.__base_repr__['data'] = data
+        self.__base_repr__['data'] = self.data
         return super(InstanceRepresentation,self).to_response()
                
 

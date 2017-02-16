@@ -86,7 +86,6 @@ class ResourceAPI(MethodView):
 		result_set = search_obj.search_resource(pk_id, related_id, filters = filters,sort = sort, 
 												group_by = group_by, page_size = page_size, 
 												page_number = page_number)
-		
 		if relation is None:
 			serializer = serializer_for(self.model)
 		else:
@@ -98,6 +97,6 @@ class ResourceAPI(MethodView):
 
 		else:
 			data = serializer(result_set, fields = fields, exclude = exclude, expand = expand)
-			representation = InstanceRepresentation(self.model, pk_id, result_set,200)
+			representation = InstanceRepresentation(self.model, pk_id, data,200)
 
 		return representation.to_response()

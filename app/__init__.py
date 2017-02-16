@@ -9,8 +9,10 @@ def configure_db_extention(app):
 	db.init_app(app)
 	Migrate(app, db)
 
-def init_app():
+def init_app(test=False):
 	app = Flask(__name__)
 	app.config.from_object(ApplicationConfig)
+	if test:
+		app.config['TESTING'] = True
 	configure_db_extention(app)
 	return app

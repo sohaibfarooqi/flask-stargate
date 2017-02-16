@@ -88,7 +88,8 @@ class ResourceManager():
 			prefix = self.url_prefix
 		else:
 			prefix = DEFAULT_URL_PREFIX
-			blueprint = Blueprint(name, __name__, url_prefix=prefix)
+		
+		blueprint = Blueprint(name, __name__, url_prefix=prefix)
 
 		collection_url = '/{0}'.format(collection_name)
 		collection_methods = ALL_METHODS & methods
@@ -132,10 +133,9 @@ class ResourceManager():
 	def _make_response(self, data, code, headers=None):
     	
 		settings = {}
-		
-		if current_app.debug:
-			settings.setdefault('indent', 4)
-			settings.setdefault('sort_keys', True)
+	
+		settings.setdefault('indent', 4)
+		settings.setdefault('sort_keys', True)
 
 		data = json.dumps(data, **settings)
 

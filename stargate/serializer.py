@@ -53,9 +53,9 @@ def create_relationship(model, instance, relation, expand = None):
         EXPAND = False
     
     else:
-        
         if  relation in expand['expand_full']:
             pass
+        
         else:
             relation_ = [t[0] for t in expand['expand_partial'] if t[0] == relation]
             if relation_:
@@ -148,7 +148,7 @@ class Serializer():
         self.exclude = exclude
     
     def __call__(self, result_set, fields = None, exclude = None, expand = None, serialize_rel = True):
-        
+
         if result_set:
             instance = result_set[0] if isinstance(result_set, list) else result_set
             model = type(instance)
@@ -197,7 +197,7 @@ class Serializer():
             return None
 
     def _serialize_many(self, columns, result_set, expand = None, serialize_rel = False):
-        
+
         result = []
         for instance in result_set:
             try:
