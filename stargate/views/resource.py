@@ -1,6 +1,6 @@
 from flask import request
 from flask.views import MethodView
-from ..proxy import url_for, serializer_for, collection_name_for
+from ..proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR
 from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
 from ..exception import StargateException
 from ..query_helper.search import Search
@@ -35,7 +35,7 @@ class ResourceAPI(MethodView):
         
 		super(ResourceAPI, self).__init__()
 
-		self.collection_name = collection_name_for(model)
+		self.collection_name = manager_info(COLLECTION_NAME_FOR, model)
 		
 		self.session = session
 		self.model = model
@@ -87,9 +87,9 @@ class ResourceAPI(MethodView):
 												group_by = group_by, page_size = page_size, 
 												page_number = page_number)
 		if relation is None:
-			serializer = serializer_for(self.model)
+			serializer = manager_info(SERIALIZER_FOR, self.model)
 		else:
-			serializer	= serializer_for(Inclusions.get_related_model(self.model, relation))
+			serializer	= manager_info(SERIALIZER_FOR, Inclusions.get_related_model(self.model, relation))
 		
 		if isinstance(result_set, Pagination):
 			data = serializer(result_set.items, fields = fields, exclude = exclude, expand = expand)

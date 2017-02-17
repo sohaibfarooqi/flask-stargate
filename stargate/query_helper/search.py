@@ -2,7 +2,7 @@ import inspect
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm import ColumnProperty, joinedload
 from .filter import Filter, create_filter
-from ..proxy import primary_key_for
+from ..proxy import manager_info, PRIMARY_KEY_FOR
 from .inclusion import Inclusions
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.exc import NoResultFound
@@ -59,7 +59,7 @@ class Search():
 		
 		elif pk_id is not None and self.relation is not None:
 			
-			pk_name = primary_key_for(self.model)
+			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
 			primary_resource = query.filter(getattr(self.model, pk_name) == pk_id).first()
 			related_model = getattr(primary_resource, self.relation)
 
@@ -78,7 +78,7 @@ class Search():
 	def _search_one(self, query, pk_value, related_id):
 		
 		try:
-			pk_name = primary_key_for(self.model)
+			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
 			query = session_query(self.session, self.model)
 			query = query.filter(getattr(self.model, pk_name) == pk_value)
 			resource = query.first()
