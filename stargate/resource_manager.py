@@ -13,7 +13,7 @@ from .views import ResourceAPI
 from flask.testing import FlaskClient
 
 READONLY_METHODS = frozenset(('GET', ))
-WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE'))
+WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE',))
 ALL_METHODS = READONLY_METHODS | WRITEONLY_METHODS
 DEFAULT_URL_PREFIX = '/api'
 RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serializer','deserialier', 'pk','apiname'])
@@ -34,15 +34,14 @@ class ResourceManager():
 			msg = "Provided app instance should be `Flask` or `FlaskClient` instance instead of %s" %str(type(app))
 			raise IllegalArgumentError(msg)
 
+		manager_info.register(self)
+
 		self.session = db.session
 		self.url_prefix = url_prefix
 		
 		self.decorators = _decorators or []
 		self.registerd_blueprints = []
 		self.registered_apis = {}
-
-
-		manager_info.register(self)
 
 	@staticmethod
 	def api_name(collection_name):
@@ -58,12 +57,12 @@ class ResourceManager():
 			self.app.register_blueprint(blueprint)
 
 		else:
-			msg = "Application not initilized"
+			msg = "`Flask App` not initilized"
 			raise RuntimeError(msg)
 	
 	def create_resource_blueprint(self, name, model, methods=READONLY_METHODS,
                              url_prefix=None, collection_name=None,fields=None, 
-                             includes = None, exclude=None, decorators=[], primary_key=None):
+                             expand = None, exclude=None, decorators=[], primary_key=None):
 		
 		if collection_name is None or collection_name == '':
 			collection_name = model.__table__.name
@@ -74,7 +73,13 @@ class ResourceManager():
 		decorators_ = self.decorators
 		decorators_.append(decorators)
 		
-		serializer = Serializer(model, fields=fields, exclude=exclude)
+		if primary_key is None:
+			if hasattr(model, DEFAULT_PRIMARY_KEY_COLUMN):
+				primary_key = DEFAULT_PRIMARY_KEY_COLUMN  
+			else: 
+				raise ValueError("Model {0} has no specified primary_key".format(model.__class__))
+		
+		serializer = Serializer(model, primary_key, fields=fields, exclude=exclude)
 
 		deserializer = Deserializer(self.session, model)
 
@@ -86,12 +91,6 @@ class ResourceManager():
 			prefix = self.url_prefix
 		else:
 			prefix = DEFAULT_URL_PREFIX
-		
-		if primary_key is None:
-			if hasattr(model, DEFAULT_PRIMARY_KEY_COLUMN):
-				primary_key = DEFAULT_PRIMARY_KEY_COLUMN  
-			else: 
-				raise ValueError("Model {0} has no specified primary_key".format(model.__class__))
 
 		blueprint = Blueprint(name, __name__, url_prefix=prefix)
 
@@ -161,20 +160,3 @@ class ResourceManager():
 			raise IllegalArgumentError(msg)
 
 		return True
-    
-	def url_for(self, model, **kw):
-		collection_name = self.registered_apis[model].collection
-		blueprint_name = self.registered_apis[model].blueprint
-		api_name = ResourceManager.api_name(collection_name)
-		parts = [blueprint_name, api_name]
-		url = url_for('.'.join(parts), **kw)
-		return url
-
-	def collection_name(self, model):
-		return self.registered_apis[model].collection
-
-	def serializer_for(self, model):
-		return self.registered_apis[model].serializer
-
-	def primary_key_for(self, model):
-		return self.registered_apis[model].pk

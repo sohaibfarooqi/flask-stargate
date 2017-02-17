@@ -1,6 +1,6 @@
 import os
 import unittest
-from flask import Flask
+from flask import json
 import sys
 import os
 sys.path.insert(0,'..')
@@ -22,8 +22,8 @@ class TestResourceManager(unittest.TestCase):
 
 			manager = ResourceManager(self.app, db)
 			manager.register_resource(User, collection_name = 'mycustomcollection')
-			manager.register_resource(Location)
-			manager.register_resource(City, url_prefix = '/v1')
+			manager.register_resource(Location, fields = ['latitude','longitude'])
+			manager.register_resource(City, url_prefix = '/v1', exclude = ['latitude','longitude'])
 			
 			with self.app.test_request_context():
 				db.create_all()
@@ -66,6 +66,50 @@ class TestResourceManager(unittest.TestCase):
 			response = self.client.get('/v1/city', headers={"Content-Type": "application/json"})
 			self.assertEqual(response._status_code, 200)
 
+		def test_resource_fields(self):
+			response = self.client.get('/api/location', headers={"Content-Type": "application/json"})
+			content_length = int(response.headers['Content-Length'] )
 
+			if content_length > 0:
+				data = json.loads(response.get_data())
+				data = data['data']
+			
+				for key in data:
+					keys = list(key['attributes'].keys())
+					self.assertCountEqual(keys, ['latitude','longitude'])
+			else:
+				raise ValueError("No-Content")
+
+		def test_resource_exclude(self):
+			response = self.client.get('/v1/city', headers={"Content-Type": "application/json"})
+			content_length = int(response.headers['Content-Length'] )
+
+			if content_length > 0:
+				data = json.loads(response.get_data())
+				data = data['data']
+				
+				for key in data:
+					keys = list(key['attributes'].keys())
+					self.assertNotIn(['latitude','longitude'], keys)
+			else:
+				raise ValueError("No-Content")
+		
+		def test_resource_expansion(self):
+			pass
+		
+		def test_view_decorators(self):
+			pass
+		
+		def test_resource_http_methods(self):
+			pass
+		
+		def test_custom_primary_key_field(self):
+			pass
+			
+		@classmethod
+		def tearDownClass(self):
+			with self.app.test_request_context():
+				db.session.remove()
+				db.drop_all()
 if __name__ == '__main__':
     unittest.main()

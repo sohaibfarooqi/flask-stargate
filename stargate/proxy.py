@@ -30,7 +30,6 @@ class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
 
     def __call__(self, key, instance_or_model, **kw):
         if self.created_managers:
-
             if isinstance(instance_or_model, type):
                 model = instance_or_model
 
@@ -38,6 +37,7 @@ class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
                 model = instance_or_model.__class__
 
             for manager in self.created_managers:
+
                 try:
                     if key == PRIMARY_KEY_FOR:
                         primary_key = manager.registered_apis[model].pk

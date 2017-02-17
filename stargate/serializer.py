@@ -129,7 +129,7 @@ def primary_key_value(instance, as_string=False):
 
 class Serializer():
 
-    def __init__(self, model, fields = None, exclude = None, expand = None):
+    def __init__(self, model, primary_key, fields = None, exclude = None, expand = None):
         
         self.model = model
         
@@ -138,8 +138,7 @@ class Serializer():
                              ' arguments simultaneously')
         if fields is not None:
             fields = set(get_column_name(column) for column in fields)
-            pk_name = primary_key_for(self.model)
-            include.add(pk_name)
+            fields.add(primary_key)
         
         if exclude is not None:
             exclude = set(get_column_name(column) for column in exclude)
