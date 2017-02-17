@@ -1,4 +1,4 @@
-from .proxy import url_for, serializer_for, primary_key_for, collection_name_for, model_for
+from .proxy import manager_info
 
 """Deserialization Exception Classes"""
 

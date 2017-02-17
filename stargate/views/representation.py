@@ -1,5 +1,5 @@
 from flask import request, make_response, jsonify, json
-from ..proxy import serializer_for, url_for
+from ..proxy import manager_info, URL_FOR, SERIALIZER_FOR
 import math
 
 class Representation():
@@ -36,7 +36,7 @@ class InstanceRepresentation(Representation):
 
     def to_response(self):
 
-        self_link = url_for(self.model, self.pk_id)
+        self_link = manager_info(URL_FOR, self.model, pk_id = self.pk_id)
         
         self.__base_repr__['meta']['_HEADERS']['rel'] = self_link
         self.__base_repr__['data'] = self.data
@@ -60,7 +60,7 @@ class CollectionRepresentation(Representation):
         self.model = model
 
     def to_response(self):
-        self_link = url_for(self.model)
+        self_link = manager_info(URL_FOR, self.model)
         
         
         self.__base_repr__['data'] = self.data

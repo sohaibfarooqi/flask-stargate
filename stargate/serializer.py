@@ -4,7 +4,7 @@ from sqlalchemy.exc import NoInspectionAvailable
 from urllib.parse import urljoin
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy import Column
-from .proxy import url_for, serializer_for, primary_key_for, collection_name_for, model_for
+from .proxy import manager_info, URL_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from datetime import date, datetime, time, timedelta
 from werkzeug.routing import BuildError
@@ -70,30 +70,30 @@ def create_relationship(model, instance, relation, expand = None):
     related_model = Inclusions.get_related_model(model, relation)
     related_value = getattr(instance, relation)
     
-    pk_value = getattr(instance, primary_key_for(model))
+    pk_value = getattr(instance, manager_info(PRIMARY_KEY_FOR,model))
     if is_like_list(instance, relation):
         related_class = related_value[0].__class__
-        nested_url = url_for(model, pk_id = pk_value, relation = relation)
+        nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
         result['meta']['_links'] = {'self': nested_url, 'next': nested_url, 'prev': nested_url, 'first': nested_url, 'last': nested_url}
         result['meta']['_type'] = 'TO_MANY'
         if EXPAND:
-            serializer = serializer_for(related_class)
+            serializer = manager_info(SERIALIZER_FOR, related_class)
             result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
 
-            pk_id_ = getattr(related_value[0], primary_key_for(related_class))
-            self_link = url_for(related_model, pk_id = pk_id_)
+            pk_id_ = getattr(related_value[0], manager_info(PRIMARY_KEY_FOR,related_class))
+            self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
             result['data'][0]['_link'] = dict(self = self_link)
     
     elif related_value is not None:
-        related_id = getattr(related_value, primary_key_for(related_model))
-        nested_url = url_for(model, pk_id = pk_value, relation = relation, related_id = related_id)
+        related_id = getattr(related_value, manager_info(PRIMARY_KEY_FOR,related_model))
+        nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation, related_id = related_id)
         result['meta']['_type'] = 'TO_ONE'
         result['meta']['_links'] = {'self': nested_url}
-        serializer = serializer_for(related_model)
+        serializer = manager_info(SERIALIZER_FOR,related_model)
         if EXPAND:
             result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
             pk_id_ = getattr(related_value, primary_key_for(related_model))
-            self_link = url_for(related_model, pk_id = pk_id_)
+            self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
             result['data']['_link'] = dict(self = self_link)
     else:
         result['data'] = {}
@@ -117,7 +117,7 @@ def is_like_list(instance, relation):
     return False
 
 def primary_key_value(instance, as_string=False):
-    result = getattr(instance, primary_key_for(instance))
+    result = getattr(instance, manager_info(PRIMARY_KEY_FOR, instance))
     if not as_string:
         return result
     try:
@@ -176,7 +176,7 @@ class Serializer():
             if self.exclude:
                 columns = (c for c in columns if c not in self.exclude)
 
-            pk_name = primary_key_for(model)
+            pk_name = manager_info(PRIMARY_KEY_FOR, model)
             
             if fields:
                 fields.add(pk_name)
@@ -211,7 +211,7 @@ class Serializer():
 
         result = {}
         model = get_model(instance)
-        pk_name = primary_key_for(model)
+        pk_name = manager_info(PRIMARY_KEY_FOR, model)
         attributes = dict((column, getattr(instance, column))
                           for column in columns)
         attributes = dict((k, (v() if callable(v) else v))

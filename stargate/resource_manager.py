@@ -1,8 +1,9 @@
+import inspect
 from flask import Flask, Blueprint, url_for, json, make_response
 from six import string_types
 from uuid import uuid1
 from collections import namedtuple, defaultdict
-from .proxy import manager_info
+from .proxy import manager_info, PRIMARY_KEY_FOR
 from .serializer import Serializer
 from .deserializer import Deserializer
 from functools import partial
@@ -15,7 +16,8 @@ READONLY_METHODS = frozenset(('GET', ))
 WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE'))
 ALL_METHODS = READONLY_METHODS | WRITEONLY_METHODS
 DEFAULT_URL_PREFIX = '/api'
-RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serializer','deserialier', 'pk'])
+RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serializer','deserialier', 'pk','apiname'])
+DEFAULT_PRIMARY_KEY_COLUMN = 'id'
 
 class ResourceManager():
 	
@@ -85,6 +87,12 @@ class ResourceManager():
 		else:
 			prefix = DEFAULT_URL_PREFIX
 		
+		if primary_key is None:
+			if hasattr(model, DEFAULT_PRIMARY_KEY_COLUMN):
+				primary_key = DEFAULT_PRIMARY_KEY_COLUMN  
+			else: 
+				raise ValueError("Model {0} has no specified primary_key".format(model.__class__))
+
 		blueprint = Blueprint(name, __name__, url_prefix=prefix)
 
 		collection_url = '/{0}'.format(collection_name)
@@ -101,12 +109,12 @@ class ResourceManager():
 		nested_instance_url = '{0}/<related_id>'.format(nested_collection_url)
 		self._add_endpoint(blueprint, nested_instance_url, resource_api_view ,methods=resource_methods)
 
-		self._add_resource(model, collection_name, blueprint, serializer, deserializer, primary_key)
+		self._add_resource(model, collection_name, blueprint, serializer, deserializer, primary_key, apiname)
 
 		return blueprint
 
-	def _add_resource(self, model, collection_name, blueprint, serializer, deserializer, primary_key):
-		self.registered_apis[model] = RESOURCE_INFO(collection_name, blueprint.name, serializer, deserializer, primary_key)
+	def _add_resource(self, model, collection_name, blueprint, serializer, deserializer, primary_key, apiname):
+		self.registered_apis[model] = RESOURCE_INFO(collection_name, blueprint.name, serializer, deserializer, primary_key, apiname)
 
 	def _add_endpoint(self, blueprint, endpoint, view_func, methods=READONLY_METHODS):
 		add_rule = blueprint.add_url_rule
@@ -129,7 +137,6 @@ class ResourceManager():
 	def _make_response(self, data, code, headers=None):
     	
 		settings = {}
-	
 		settings.setdefault('indent', 4)
 		settings.setdefault('sort_keys', True)
 
