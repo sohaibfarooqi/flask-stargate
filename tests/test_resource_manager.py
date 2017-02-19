@@ -60,6 +60,7 @@ class TestResourceManager(unittest.TestCase):
 
 				user.name = "John Baptist"
 				user.username = "John91"
+				user.age = 19
 				user.password = "abcdefg"
 				user.email = "johnbaptist@gmail.com"
 				user.phone = "923349725618"
