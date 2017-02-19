@@ -41,6 +41,7 @@ class User(db.Model,Entity,TimestampMixin):
     email = db.Column(db.String)
     phone = db.Column(db.String)
     pic_url = db.Column(db.String)
+    age = db.Column(db.Integer)
     city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
     city = db.relationship('City')
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))

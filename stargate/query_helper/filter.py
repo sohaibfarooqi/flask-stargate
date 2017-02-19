@@ -1,14 +1,31 @@
 import inspect
 from ..exception import UnknownField, ComparisonToNull
-from sqlalchemy import Date
-from sqlalchemy import DateTime
-from sqlalchemy import Interval
-from sqlalchemy import Time
+from sqlalchemy import Date, DateTime, Interval, Time, and_, or_
 from dateutil.parser import parse as parse_datetime
 import datetime
 from sqlalchemy.sql.expression import ColumnElement
 from sqlalchemy.orm import RelationshipProperty as RelProperty
 from sqlalchemy.ext.associationproxy import AssociationProxy
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+
+def get_related_association_proxy_model(attr):
+    prop = attr.remote_attr.property
+    for attribute in ('mapper', 'parent'):
+        if hasattr(prop, attribute):
+            return getattr(prop, attribute).class_
+    return None
+
+def _sub_operator(model, argument, fieldname):
+    print(argument, fieldname)
+    if isinstance(model, InstrumentedAttribute):
+        submodel = model.property
+    elif isinstance(model, AssociationProxy):
+        submodel = get_related_association_proxy_model(model)
+    fieldname = argument['name']
+    operator = argument['op']
+    argument = argument.get('val')
+    return create_operation(submodel, fieldname, operator, argument)
+
 
 OPERATORS = {
     # Operators which accept a single argument.
@@ -98,7 +115,6 @@ class Filter:
 
     @staticmethod
     def from_dictionary(model, dictionary):
-        
         if 'or' not in dictionary and 'and' not in dictionary:
             fieldname = dictionary.get('name')
             if not hasattr(model, fieldname):
@@ -139,7 +155,7 @@ class DisjunctionFilter(JunctionFilter):
 def create_operation(model, fieldname, operator, argument):
     
     opfunc = OPERATORS[operator]
-    numargs = len(inspect.getargspec(opfunc).args)
+    numargs = len(inspect.signature(opfunc).parameters)
     field = getattr(model, fieldname)
     if numargs == 1:
         return opfunc(field)

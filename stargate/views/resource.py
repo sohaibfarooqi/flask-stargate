@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, json
 from flask.views import MethodView
 from ..proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR
 from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
@@ -55,10 +55,9 @@ class ResourceAPI(MethodView):
 		fields = query_string[FIELDS_PARAM] if FIELDS_PARAM in query_string else []
 		exclude = query_string[EXCLUDE_PARAM] if EXCLUDE_PARAM in query_string else []
 		expand = query_string[EXPAND_PARAM] if EXPAND_PARAM in query_string else None
-
-        
+		
 		if filters:
-			filters = json.loads(query_string)
+			filters = json.loads(filters)
 
 		if sort:
 			sort = [('-', value[1:]) if value.startswith('-') else ('+', value)
