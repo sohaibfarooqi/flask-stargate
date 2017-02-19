@@ -19,3 +19,4 @@ script:
   - python tests/test_routes.py
   - python tests/test_resource_manager.py
   - python tests/test_filters.py
+  - python tests/test_sorting.py

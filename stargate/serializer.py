@@ -170,19 +170,19 @@ class Serializer():
                 hybrid_columns = [k for k, d in descriptors if d.extension_type == HYBRID_PROPERTY]
                 columns = column_attrs + hybrid_columns
                 foreign_key_columns = foreign_keys(model)
-                columns = (c for c in columns if c not in foreign_key_columns)
+                columns = [c for c in columns if c not in foreign_key_columns]
                 
             if self.exclude:
-                columns = (c for c in columns if c not in self.exclude)
+                columns = [c for c in columns if c not in self.exclude]
 
             pk_name = manager_info(PRIMARY_KEY_FOR, model)
             
             if fields:
                 fields.add(pk_name)
-                columns = (c for c in columns if c in fields)
+                columns = [c for c in columns if c in fields]
 
             if exclude:
-                columns = (c for c in columns if c not in fields)
+                columns = [c for c in columns if c not in fields]
             
             if expand:
                 expand = Inclusions.parse_expansions(model, expand)
@@ -224,7 +224,7 @@ class Serializer():
         if attributes:
             result[pk_name] = attributes.pop(pk_name)
             result['attributes'] = attributes
-        
+
         if serialize_rel:
             relations = Inclusions.get_relations(model)
             cr = create_relationship

@@ -8,7 +8,7 @@ from stargate.stargate import ResourceManager
 from stargate.app.models import User, City, Location
 from stargate.app import init_app, db
 
-class TestResource(unittest.TestCase):
+class TestFilters(unittest.TestCase):
 		
 		@classmethod
 		def setUpClass(self):
