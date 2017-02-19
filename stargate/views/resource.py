@@ -30,8 +30,7 @@ class ResourceAPI(MethodView):
                     catch_processing_exceptions
                  ]
 
-	def __init__(self, session, model, primary_key = None,validation_exceptions = None, 
-				includes = None,fields = None,exclude = None,*args,**kw):
+	def __init__(self, session, model, validation_exceptions = None, primary_key = None,*args,**kw):
         
 		super(ResourceAPI, self).__init__()
 
@@ -39,9 +38,6 @@ class ResourceAPI(MethodView):
 		
 		self.session = session
 		self.model = model
-
-		self.fields = fields
-		self .exclude = exclude
 
 		self.validation_exceptions = tuple(validation_exceptions or ())
 

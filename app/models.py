@@ -46,3 +46,6 @@ class User(db.Model,Entity,TimestampMixin):
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location')
 
+class TestPrimaryKey(db.Model):
+    ser_id = db.Column(db.Integer, primary_key = True, autoincrement = True)    
+

@@ -1,12 +1,25 @@
+from sqlalchemy import inspect
 import os
 import unittest
-from flask import json
+from flask import json, request
 import sys
 import os
 sys.path.insert(0,'..')
 from stargate.stargate import ResourceManager
-from stargate.app.models import User, City, Location
+from stargate.stargate.proxy import manager_info, PRIMARY_KEY_FOR
+from stargate.app.models import User, City, Location, TestPrimaryKey
 from stargate.app import init_app, db
+from functools import wraps, partial
+
+"""Test Decorator"""
+def auth_key_header(func):
+    @wraps(func)
+    def new_func(*args, **kw):
+        header = request.headers.get('X-AUTH_KEY')
+        if header != '1234567':
+        	raise ValueError("Invalid AUTH_KEY")
+        return func(*args, **kw)
+    return new_func
 
 class TestResourceManager(unittest.TestCase):
 		
@@ -21,9 +34,10 @@ class TestResourceManager(unittest.TestCase):
 			user = User()
 
 			manager = ResourceManager(self.app, db)
-			manager.register_resource(User, collection_name = 'mycustomcollection')
+			manager.register_resource(User, collection_name = 'mycustomcollection', methods = ['GET'])
 			manager.register_resource(Location, fields = ['latitude','longitude'])
 			manager.register_resource(City, url_prefix = '/v1', exclude = ['latitude','longitude'])
+			manager.register_resource(TestPrimaryKey, collection_name = 'testprimarykey', decorators = [auth_key_header], primary_key = 'ser_id')
 			
 			with self.app.test_request_context():
 				db.create_all()
@@ -62,6 +76,9 @@ class TestResourceManager(unittest.TestCase):
 			response = self.client.get('/api/mycustomcollection', headers={"Content-Type": "application/json"})
 			self.assertEqual(response._status_code, 200)
 
+			response = self.client.get('/api/mycustomcollection', headers={"Content-Type": "application/json"})
+			self.assertEqual(response._status_code, 200)
+
 		def test_url_prefix(self):
 			response = self.client.get('/v1/city', headers={"Content-Type": "application/json"})
 			self.assertEqual(response._status_code, 200)
@@ -94,18 +111,25 @@ class TestResourceManager(unittest.TestCase):
 			else:
 				raise ValueError("No-Content")
 		
-		def test_resource_expansion(self):
-			pass
 		
 		def test_view_decorators(self):
-			pass
+			response = self.client.get('/api/testprimarykey', headers={"Content-Type": "application/json", "X_AUTH_KEY":"1234567"})
+			self.assertEqual(response._status_code, 200)
+			
+			func = partial(self.client.get, '/api/testprimarykey', headers={"Content-Type": "application/json"})
+			self.assertRaises(ValueError, func)
 		
 		def test_resource_http_methods(self):
-			pass
+			response = self.client.get('/api/mycustomcollection', headers={"Content-Type": "application/json"})
+			self.assertEqual(response._status_code, 200)
+
+			response = self.client.post('/api/mycustomcollection', headers={"Content-Type": "application/json"})
+			self.assertEqual(response._status_code, 405)
 		
 		def test_custom_primary_key_field(self):
-			pass
-			
+			primary_key = manager_info(PRIMARY_KEY_FOR, TestPrimaryKey)
+			self.assertEqual(primary_key, 'ser_id')
+		
 		@classmethod
 		def tearDownClass(self):
 			with self.app.test_request_context():

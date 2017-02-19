@@ -129,7 +129,7 @@ def primary_key_value(instance, as_string=False):
 
 class Serializer():
 
-    def __init__(self, model, primary_key, fields = None, exclude = None, expand = None):
+    def __init__(self, model, primary_key, fields = None, exclude = None):
         
         self.model = model
         

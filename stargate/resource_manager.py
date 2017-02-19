@@ -3,7 +3,7 @@ from flask import Flask, Blueprint, url_for, json, make_response
 from six import string_types
 from uuid import uuid1
 from collections import namedtuple, defaultdict
-from .proxy import manager_info, PRIMARY_KEY_FOR
+from .proxy import manager_info
 from .serializer import Serializer
 from .deserializer import Deserializer
 from functools import partial
@@ -60,9 +60,10 @@ class ResourceManager():
 			msg = "`Flask App` not initilized"
 			raise RuntimeError(msg)
 	
-	def create_resource_blueprint(self, name, model, methods=READONLY_METHODS,
-                             url_prefix=None, collection_name=None,fields=None, 
-                             expand = None, exclude=None, decorators=[], primary_key=None):
+	def create_resource_blueprint(self, name, model, methods = READONLY_METHODS,
+                             url_prefix = None, collection_name = None,fields = None, 
+                             validation_exceptions = (),exclude = None, 
+                             decorators = [], primary_key = None):
 		
 		if collection_name is None or collection_name == '':
 			collection_name = model.__table__.name
@@ -71,8 +72,8 @@ class ResourceManager():
 		apiname = self.api_name(collection_name)
 
 		decorators_ = self.decorators
-		decorators_.append(decorators)
-		
+		decorators_.extend(decorators)
+
 		if primary_key is None:
 			if hasattr(model, DEFAULT_PRIMARY_KEY_COLUMN):
 				primary_key = DEFAULT_PRIMARY_KEY_COLUMN  
@@ -83,7 +84,10 @@ class ResourceManager():
 
 		deserializer = Deserializer(self.session, model)
 
-		resource_api_view = ResourceAPI.as_view( apiname, self.session, model, decorators, primary_key)
+		resource_api_view = ResourceAPI.as_view( apiname, self.session, model, validation_exceptions, primary_key)
+
+		for decorator in decorators_:
+			resource_api_view = decorator(resource_api_view)
 
 		if url_prefix is not None:
 			prefix = url_prefix
@@ -145,7 +149,7 @@ class ResourceManager():
 		resp.headers.extend(headers or {})
 		return resp
 
-	def _params_sanity_checks(self, *args, **kwargs):
+	def _args_sanity_checks(self, *args, **kwargs):
 
 		if fields is not None and exclude is not None:
 			msg = 'Cannot simultaneously specify both `only` and `exclude`'
