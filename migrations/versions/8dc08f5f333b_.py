@@ -48,6 +48,7 @@ def upgrade():
     sa.Column('phone', sa.String(), nullable=True),
     sa.Column('pic_url', sa.String(), nullable=True),
     sa.Column('city_id', sa.Integer(), nullable=True),
+    sa.Column('age', sa.Integer(), nullable=True),
     sa.Column('location_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['city_id'], ['city.id'], ),
     sa.ForeignKeyConstraint(['location_id'], ['location.id'], ),
