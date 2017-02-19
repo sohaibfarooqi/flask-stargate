@@ -16,6 +16,6 @@ before_script:
   - flask db upgrade
 
 script: 
-  - python tests/test_resource.py
+  - python tests/test_routes.py
   - python tests/test_resource_manager.py
   - python tests/test_filters.py
