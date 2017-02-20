@@ -1,6 +1,6 @@
 from flask import request, json
 from flask.views import MethodView
-from ..proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR
+from ..proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR
 from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
 from ..exception import StargateException
 from ..query_helper.search import Search
@@ -65,6 +65,7 @@ class ResourceAPI(MethodView):
 		
 		if group_by:
 			group_by = group_by.split(',')
+			group_by.append(manager_info(PRIMARY_KEY_FOR, self.model))
 		
 		if fields:
 			fields = fields.split(',')

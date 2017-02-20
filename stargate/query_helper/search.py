@@ -107,7 +107,7 @@ class Search():
 				direction_name = 'asc' if symbol == '+' else 'desc'
 				if '.' in field_name:
 					field_name, field_name_in_relation = field_name.split('.')
-					relation_model = aliased(get_related_model(self.model, field_name))
+					relation_model = aliased(Inclusions.get_related_model(self.model, field_name))
 					field = getattr(relation_model, field_name_in_relation)
 					direction = getattr(field, direction_name)
 					query = query.join(relation_model)
@@ -121,7 +121,7 @@ class Search():
 			for field_name in group_by:
 				if '.' in field_name:
 					field_name, field_name_in_relation = field_name.split('.')
-					relation_model = get_related_model(model, field_name)
+					relation_model = Inclusions.get_related_model(self.model, field_name)
 					field = getattr(relation_model, field_name_in_relation)
 					query = query.join(relation_model)
 					query = query.group_by(field)
