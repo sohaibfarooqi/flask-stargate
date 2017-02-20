@@ -21,3 +21,4 @@ script:
   - python tests/test_filteration.py
   - python tests/test_sorting.py
   - python tests/test_grouping.py
+  - python tests/test_query_string_options.py

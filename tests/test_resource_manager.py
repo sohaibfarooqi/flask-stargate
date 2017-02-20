@@ -1,4 +1,3 @@
-from sqlalchemy import inspect
 import os
 import unittest
 from flask import json, request

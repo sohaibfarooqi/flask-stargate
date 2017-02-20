@@ -1,3 +1,5 @@
+from sqlalchemy import inspect
+from sqlalchemy.exc import NoInspectionAvailable
 import os
 import datetime
 import unittest
@@ -8,6 +10,16 @@ sys.path.insert(0,'..')
 from stargate.stargate import ResourceManager
 from stargate.app.models import User, City, Location
 from stargate.app import init_app, db
+
+
+def foreign_key_columns(model):
+    try:
+        inspector = inspect(model)
+    except NoInspectionAvailable:
+        inspector = class_mapper(model)
+    all_columns = inspector.columns
+    all_fks = [c for c in all_columns if c.foreign_keys]
+    return [column.name for column in all_fks]
 
 class TestSorting(unittest.TestCase):
 		
@@ -112,37 +124,54 @@ class TestSorting(unittest.TestCase):
 				db.session.flush()
 		
 		
-		def test_single_group(self):
-			response = self.client.get('/api/user?group=age', headers={"Content-Type": "application/json"})
+		def test_field_selection(self):
+			fields = ['name', 'age']
+			response = self.client.get('/api/user?field=name,age', headers={"Content-Type": "application/json"})
 			content_length = int(response.headers['Content-Length'])
 
 			if content_length > 0:
 				data = json.loads(response.get_data())
 				data = data['data']
-				age_groups = [user['attributes']['age'] for user in data]
-				self.assertTrue(len(age_groups) == len(set(age_groups)))
-
-		def test_multiple_groups(self):
-			response = self.client.get('/api/user?group=age,created_at', headers={"Content-Type": "application/json"})
+				for key in data:
+					keys = list(key['attributes'].keys())
+					self.assertCountEqual(keys, fields)
+				
+		def test_field_exclusion(self):
+			exclude = ['name', 'age']
+			response = self.client.get('/api/user?exclude=name,age', headers={"Content-Type": "application/json"})
 			content_length = int(response.headers['Content-Length'])
 
 			if content_length > 0:
 				data = json.loads(response.get_data())
 				data = data['data']
-				age_groups = [user['attributes']['age'] for user in data]
-				time_created = [user['attributes']['created_at'] for user in data]
-				time_created_set = set(time_created)
-				self.assertTrue(len(age_groups) == len(set(age_groups)) and (len(time_created_set)== 1 or len(time_created) == len(time_created_set)))
+				for key in data:
+					keys = list(key['attributes'].keys())
+					self.assertNotIn(exclude, keys)
 
-		def test_related_model_grouping(self):
-			response = self.client.get('/api/user?group=city.id', headers={"Content-Type": "application/json"})
+		def test_resource_expansion(self):
+			response = self.client.get('/api/user?expand=location', headers={"Content-Type": "application/json"})
 			content_length = int(response.headers['Content-Length'])
 
 			if content_length > 0:
 				data = json.loads(response.get_data())
 				data = data['data']
-				age_groups = [user['attributes']['age'] for user in data]
-				self.assertTrue(len(age_groups) == len(set(age_groups)))
+				all_attrs = [key for key in Location.__table__.columns.keys() if key != 'id' and key not in foreign_key_columns(Location)]
+				for key in data:
+					keys = list(key['_embedded']['location']['data']['attributes'].keys())
+					self.assertCountEqual(all_attrs, keys)
+
+		def test_resource_expansion_with_fields(self):
+			fields = ['latitude', 'longitude']
+			response = self.client.get('/api/user?expand=location(latitude, longitude)', headers={"Content-Type": "application/json"})
+			content_length = int(response.headers['Content-Length'])
+
+			if content_length > 0:
+				data = json.loads(response.get_data())
+				data = data['data']
+				for key in data:
+					keys = list(key['_embedded']['location']['data']['attributes'].keys())
+					for attr in keys:
+						self.assertIn(attr, fields)
 
 		@classmethod
 		def tearDownClass(self):

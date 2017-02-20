@@ -11,6 +11,7 @@ from werkzeug.routing import BuildError
 from flask import request
 from .exception import IllegalArgumentError, ResourceNotFound, SerializationException
 from .query_helper.inclusion import Inclusions
+from sqlalchemy.orm import class_mapper
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
 
@@ -92,7 +93,7 @@ def create_relationship(model, instance, relation, expand = None):
         serializer = manager_info(SERIALIZER_FOR,related_model)
         if EXPAND:
             result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
-            pk_id_ = getattr(related_value, primary_key_for(related_model))
+            pk_id_ = getattr(related_value, manager_info(PRIMARY_KEY_FOR,related_model))
             self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
             result['data']['_link'] = dict(self = self_link)
     else:
@@ -178,6 +179,7 @@ class Serializer():
             pk_name = manager_info(PRIMARY_KEY_FOR, model)
             
             if fields:
+                fields = set(fields)
                 fields.add(pk_name)
                 columns = [c for c in columns if c in fields]
 
