@@ -61,8 +61,13 @@ class CollectionRepresentation(Representation):
 
     def to_response(self):
         self_link = manager_info(URL_FOR, self.model)
+        self_link = self._url_without_pagination_params()
         
-        
+        if self_link.endswith('?'):
+            self_link = "{0}page_number={1}&page_size={2}".format(self_link, self.page_number, self.page_size)
+        else:
+            self_link = "{0}&page_number={1}&page_size={2}".format(self_link, self.page_number, self.page_size)
+
         self.__base_repr__['data'] = self.data
         self.__base_repr__['num_results'] = self.num_results
         self.__base_repr__['links'] = self._pagination_links()

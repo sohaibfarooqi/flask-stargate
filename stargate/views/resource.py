@@ -50,12 +50,13 @@ class ResourceAPI(MethodView):
 		filters = query_string[FILTER_PARAM] if FILTER_PARAM in query_string else []
 		sort = query_string[SORT_PARAM] if SORT_PARAM in query_string else []
 		group_by = query_string[GROUP_PARAM] if GROUP_PARAM in query_string else []
-		page_size = query_string[PAGE_SIZE_PARAM] if PAGE_SIZE_PARAM in query_string else STARGATE_DEFAULT_PAGE_SIZE
-		page_number = query_string[PAGE_NUMBER_PARAM] if PAGE_NUMBER_PARAM in query_string else STARGATE_DEFAULT_PAGE_NUMBER
 		fields = query_string[FIELDS_PARAM] if FIELDS_PARAM in query_string else []
 		exclude = query_string[EXCLUDE_PARAM] if EXCLUDE_PARAM in query_string else []
 		expand = query_string[EXPAND_PARAM] if EXPAND_PARAM in query_string else None
-		
+		page_number = int(query_string[PAGE_NUMBER_PARAM]) if PAGE_NUMBER_PARAM in query_string else STARGATE_DEFAULT_PAGE_NUMBER
+		page_size = int(query_string[PAGE_SIZE_PARAM]) if PAGE_SIZE_PARAM in query_string else STARGATE_DEFAULT_PAGE_SIZE
+		page_size = page_size if page_size <= STARGATE_DEFAULT_MAX_PAGE_SIZE else STARGATE_DEFAULT_MAX_PAGE_SIZE
+
 		if filters:
 			filters = json.loads(filters)
 

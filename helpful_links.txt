@@ -13,4 +13,6 @@ http://flask.pocoo.org/docs/0.11/config/#builtin-configuration-values
 http://postgresql-audit.readthedocs.io/en/latest/flask.html
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 https://jeffknupp.com/blog/2014/01/29/productionizing-a-flask-application/
+https://coveralls.io/
+https://landscape.io/
 
