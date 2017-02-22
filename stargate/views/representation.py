@@ -62,12 +62,7 @@ class CollectionRepresentation(Representation):
     def to_response(self):
         self_link = manager_info(URL_FOR, self.model)
         self_link = self._url_without_pagination_params()
-        
-        if self_link.endswith('?'):
-            self_link = "{0}page_number={1}&page_size={2}".format(self_link, self.page_number, self.page_size)
-        else:
-            self_link = "{0}&page_number={1}&page_size={2}".format(self_link, self.page_number, self.page_size)
-
+        self_link = self._get_paginated_url(self_link, self.page_number, self.page_size)
         self.__base_repr__['data'] = self.data
         self.__base_repr__['num_results'] = self.num_results
         self.__base_repr__['links'] = self._pagination_links()
@@ -89,13 +84,14 @@ class CollectionRepresentation(Representation):
         prev = self.page_number - 1 if self.page_number > 1 else None
         next = self.page_number + 1 if self.page_number < last else None
             
-        first = "{0}&page_number={1}&page_size={2}".format(link_url,self.first,self.page_size)
-        last = "{0}&page_number={1}&page_size={2}".format(link_url,self.last,self.page_size)
+        first = self._get_paginated_url(link_url,self.first,self.page_size)
+        last = self._get_paginated_url(link_url,self.last,self.page_size)
         
         if next is not None:
-            next = "{0}&page_number={1}&page_size={2}".format(link_url,self.next,self.page_size)
+            next = self._get_paginated_url(link_url,self.next,self.page_size)
+        
         if prev is not None:
-            prev = "{0}&page_number={1}&page_size={2}".format(link_url,self.prev,self.page_size)
+            prev = self._get_paginated_url(link_url,self.prev,self.page_size)
 
         return {'first': first, 'last': last, 'next': next, 'prev': prev}
 
@@ -106,3 +102,11 @@ class CollectionRepresentation(Representation):
                          if k not in ('page_number', 'page_size'))
         new_query_string = '&'.join(map('='.join, new_query.items()))
         return '{0}?{1}'.format(base_url, new_query_string)
+
+    def _get_paginated_url(self, link, page_number, page_size):
+        
+        if link.endswith('?'):
+            return "{0}page_number={1}&page_size={2}".format(link, page_number, page_size)
+        
+        else:
+            return "{0}&page_number={1}&page_size={2}".format(link, page_number, page_size)
