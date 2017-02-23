@@ -12,6 +12,9 @@ from flask import request
 from .exception import IllegalArgumentError, ResourceNotFound, SerializationException
 from .query_helper.inclusion import Inclusions
 from sqlalchemy.orm import class_mapper
+from flask_sqlalchemy import BaseQuery
+from .views.resource import STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE
+from .pagination_links import PaginationLinks
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
 
@@ -67,30 +70,53 @@ def create_relationship(model, instance, relation, expand = None):
                 EXPAND = False
                 
 
-    result = {'meta':{}}
+    result = {'meta':{'_links':{}}}
     related_model = Inclusions.get_related_model(model, relation)
     related_value = getattr(instance, relation)
-    
-    pk_value = getattr(instance, manager_info(PRIMARY_KEY_FOR,model))
-    if is_like_list(instance, relation):
-        related_class = related_value[0].__class__
-        nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
-        result['meta']['_links'] = {'self': nested_url, 'next': nested_url, 'prev': nested_url, 'first': nested_url, 'last': nested_url}
-        result['meta']['_type'] = 'TO_MANY'
-        if EXPAND:
-            serializer = manager_info(SERIALIZER_FOR, related_class)
-            result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
+    pagination_links = {}
 
-            pk_id_ = getattr(related_value[0], manager_info(PRIMARY_KEY_FOR,related_class))
+    pk_value = getattr(instance, manager_info(PRIMARY_KEY_FOR,model))
+    
+    if isinstance(related_value, BaseQuery):
+        related_value_paginated = related_value.paginate(STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE,error_out=False)
+        related_value = related_value_paginated.items
+        nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
+        result['meta']['_links'].update(PaginationLinks.get_pagination_links(STARGATE_DEFAULT_PAGE_SIZE, STARGATE_DEFAULT_PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = nested_url))
+        self_link = "{0}{1}?".format(request.url_root, nested_url.lstrip('/'))
+        self_link = PaginationLinks.get_paginated_url(self_link, STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE)
+        result['meta']['_links'].update({'self': self_link})
+        result['meta']['_type'] = 'TO_MANY'
+        result['meta']['_evaluation_type'] = 'LAZY'
+
+        if EXPAND:
+            serializer = manager_info(SERIALIZER_FOR, related_model)
+            result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
+            pk_id_ = getattr(related_value[0], manager_info(PRIMARY_KEY_FOR,related_model))
             self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
-            result['data'][0]['_link'] = dict(self = self_link)
+    
+    
+    elif isinstance(related_value, list):
+        nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
+        self_link = "{0}{1}".format(request.url_root, nested_url.lstrip('/'))
+        result['meta']['_links'].update({'self': self_link})
+        result['meta']['_type'] = 'TO_MANY'
+        result['meta']['_evaluation_type'] = 'EAGER'
+        
+        if EXPAND:
+            serializer = manager_info(SERIALIZER_FOR, related_model)
+            result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
+            pk_id_ = getattr(related_value[0], manager_info(PRIMARY_KEY_FOR,related_model))
+            self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
     
     elif related_value is not None:
-        related_id = getattr(related_value, manager_info(PRIMARY_KEY_FOR,related_model))
+        
+        related_id = getattr(related_value, manager_info(PRIMARY_KEY_FOR, related_model))
         nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation, related_id = related_id)
         result['meta']['_type'] = 'TO_ONE'
-        result['meta']['_links'] = {'self': nested_url}
+        self_link = "{0}{1}".format(request.url_root, nested_url.lstrip('/'))
+        result['meta']['_links'] = {'self': self_link}
         serializer = manager_info(SERIALIZER_FOR,related_model)
+        
         if EXPAND:
             result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
             pk_id_ = getattr(related_value, manager_info(PRIMARY_KEY_FOR,related_model))

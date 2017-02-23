@@ -64,103 +64,61 @@ class TestSorting(unittest.TestCase):
 				db.session.flush()
 		
 		
-		def test_defualt_pagination(self):
-			response = self.client.get('/api/user', headers={"Content-Type": "application/json"})
+		def test_to_many_type(self):
+			response = self.client.get('/api/city/1', headers={"Content-Type": "application/json"})
 			content_length = int(response.headers['Content-Length'])
 
 			if content_length > 0:
 				data = json.loads(response.get_data())
-				objects = data['data']
-				
-				link_header = response.headers['rel']
-				params = link_header.split('?')[1]
-				params = params.split('&')
-				
-				PAGE_NUMBER= False
-				PAGE_SIZE = False
-				
-				for param in params:
-					key, value = param.split('=')
-					if key == 'page_number':
-						self.assertTrue(int(value) == STARGATE_DEFAULT_PAGE_NUMBER)
-						PAGE_NUMBER = True
-					
-					elif key == 'page_size':
-						self.assertTrue(int(value) == STARGATE_DEFAULT_PAGE_SIZE)	
-						PAGE_SIZE = True
+				relation_type = data['data']['_embedded']['user']['meta']['_type']
+				self.assertEqual(relation_type, 'TO_MANY')
 
-				self.assertTrue(PAGE_NUMBER == True and PAGE_SIZE == True)
-				self.assertTrue(len(objects) == STARGATE_DEFAULT_PAGE_SIZE)
-
-		def test_pagination_params(self):
-			response = self.client.get('/api/user?page_number=5&page_size=20', headers={"Content-Type": "application/json"})
+		def test_to_one_type(self):
+			response = self.client.get('/api/user/1', headers={"Content-Type": "application/json"})
 			content_length = int(response.headers['Content-Length'])
 
 			if content_length > 0:
 				data = json.loads(response.get_data())
-				objects = data['data']
-				
-				link_header = response.headers['rel']
-				params = link_header.split('?')[1]
-				params = params.split('&')
-				
-				PAGE_NUMBER= False
-				PAGE_SIZE = False
-				
-				for param in params:
-					key, value = param.split('=')
-					if key == 'page_number':
-						self.assertTrue(int(value) == 5)
-						PAGE_NUMBER = True
-					
-					elif key == 'page_size':
-						self.assertTrue(int(value) == 20)	
-						PAGE_SIZE = True
+				relation_type = data['data']['_embedded']['city']['meta']['_type']
+				self.assertEqual(relation_type, 'TO_ONE')
 
-				self.assertTrue(PAGE_NUMBER == True and PAGE_SIZE == True)
-				self.assertTrue(len(objects) == 20)
-
-		def test_page_size_limit(self):
-			response = self.client.get('/api/user?page_number=1&page_size=120', headers={"Content-Type": "application/json"})
+		def test_embedded_self_link(self):
+			#TO_ONE
+			response = self.client.get('/api/user/1', headers={"Content-Type": "application/json"})
 			content_length = int(response.headers['Content-Length'])
 
 			if content_length > 0:
 				data = json.loads(response.get_data())
-				objects = data['data']
-				
-				link_header = response.headers['rel']
-				params = link_header.split('?')[1]
-				params = params.split('&')
-				
-				PAGE_NUMBER= False
-				PAGE_SIZE = False
-				
-				for param in params:
-					key, value = param.split('=')
-					if key == 'page_number':
-						self.assertTrue(int(value) == 1)
-						PAGE_NUMBER = True
-					
-					elif key == 'page_size':
-						self.assertTrue(int(value) == STARGATE_DEFAULT_MAX_PAGE_SIZE)	
-						PAGE_SIZE = True
+				self_rel = data['data']['_embedded']['city']['meta']['_links']['self']
+				self.assertEqual(self_rel, 'http://localhost/api/user/1/city/1')
 
-				self.assertTrue(PAGE_NUMBER == True and PAGE_SIZE == True)
-				self.assertTrue(len(objects) == STARGATE_DEFAULT_MAX_PAGE_SIZE)
-
-		def test_pagination_links(self):
-			response = self.client.get('/api/user?page_number=1&page_size=20', headers={"Content-Type": "application/json"})
+			#TO_MANY
+			response = self.client.get('/api/city/1', headers={"Content-Type": "application/json"})
 			content_length = int(response.headers['Content-Length'])
 
 			if content_length > 0:
-				
 				data = json.loads(response.get_data())
-				links = data['links']
+				self_rel = data['data']['_embedded']['user']['meta']['_links']['self']
+				#LAZY
+				self.assertEqual(self_rel, 'http://localhost/api/city/1/user?page_number=1&page_size=10')
+				#EAGER
+				self_rel = data['data']['_embedded']['location']['meta']['_links']['self']
+				self.assertEqual(self_rel, 'http://localhost/api/city/1/location')
+				
+		def test_embedded_pagination_links(self):
+			response = self.client.get('/api/city/1?expand=user', headers={"Content-Type": "application/json"})
+			content_length = int(response.headers['Content-Length'])
+
+			if content_length > 0:
+				data = json.loads(response.get_data())
+				pagination_links = data['data']['_embedded']['user']['meta']['_links']
+				pagination_link_keys = [link for link in pagination_links.keys() if link != 'self']
+				
 				link_keys = ['first', 'last', 'next', 'prev']
 				
-				self.assertCountEqual(link_keys, links.keys())
-				
-				link_values = [val for val in links.values() if val is not None]
+				self.assertCountEqual(link_keys, pagination_link_keys)
+
+				link_values = [val for val in pagination_links.values() if val is not None]
 
 				for link in link_values:
 					params = link.split('?')[1]

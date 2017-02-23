@@ -23,3 +23,4 @@ script:
   - python tests/test_grouping.py
   - python tests/test_query_string_options.py
   - python tests/test_pagination.py
+  - python tests/test_embedded_resource.py

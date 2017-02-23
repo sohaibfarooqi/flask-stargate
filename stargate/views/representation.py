@@ -1,6 +1,6 @@
 from flask import request, make_response, jsonify, json
 from ..proxy import manager_info, URL_FOR, SERIALIZER_FOR
-import math
+from ..pagination_links import PaginationLinks
 
 class Representation():
         
@@ -15,11 +15,14 @@ class Representation():
     def to_response(self):
         
         headers = self.__base_repr__['meta'].pop('_HEADERS', {}) if 'meta' in self.__base_repr__ else {}
+        
         settings = {}
         settings.setdefault('indent', 4)
         settings.setdefault('sort_keys', True)
+        
         response_doc = json.dumps(self.__base_repr__, **settings)
         response = make_response(response_doc)
+        
         if headers:
             for key, value in headers.items():
                 response.headers.set(key, value)
@@ -60,53 +63,12 @@ class CollectionRepresentation(Representation):
         self.model = model
 
     def to_response(self):
-        self_link = manager_info(URL_FOR, self.model)
-        self_link = self._url_without_pagination_params()
-        self_link = self._get_paginated_url(self_link, self.page_number, self.page_size)
+        
+        self_link = "{0}{1}?".format(request.url_root, manager_info(URL_FOR, self.model).lstrip('/'))
+        self_link = PaginationLinks.get_paginated_url(self_link, self.page_number, self.page_size)
         self.__base_repr__['data'] = self.data
         self.__base_repr__['num_results'] = self.num_results
-        self.__base_repr__['links'] = self._pagination_links()
+        self.__base_repr__['links'] = PaginationLinks.get_pagination_links(self.page_size, self.page_number, self.num_results, self.first, self.last, self.next, self.prev)
         self.__base_repr__['meta']['_HEADERS']['rel'] = self_link
+        
         return super(CollectionRepresentation,self).to_response()
-
-    def _pagination_links(self):
-
-        LINK_NAMES = ('first', 'last', 'prev', 'next')
-        
-        link_url = self._url_without_pagination_params()
-        
-        if self.num_results == 0:
-            last = 1
-        
-        else:
-            last = int(math.ceil(self.num_results / self.page_size))
-        
-        prev = self.page_number - 1 if self.page_number > 1 else None
-        next = self.page_number + 1 if self.page_number < last else None
-            
-        first = self._get_paginated_url(link_url,self.first,self.page_size)
-        last = self._get_paginated_url(link_url,self.last,self.page_size)
-        
-        if next is not None:
-            next = self._get_paginated_url(link_url,self.next,self.page_size)
-        
-        if prev is not None:
-            prev = self._get_paginated_url(link_url,self.prev,self.page_size)
-
-        return {'first': first, 'last': last, 'next': next, 'prev': prev}
-
-    def _url_without_pagination_params(self):
-        base_url = request.base_url
-        query_params = request.args
-        new_query = dict((k, v) for k, v in query_params.items()
-                         if k not in ('page_number', 'page_size'))
-        new_query_string = '&'.join(map('='.join, new_query.items()))
-        return '{0}?{1}'.format(base_url, new_query_string)
-
-    def _get_paginated_url(self, link, page_number, page_size):
-        
-        if link.endswith('?'):
-            return "{0}page_number={1}&page_size={2}".format(link, page_number, page_size)
-        
-        else:
-            return "{0}&page_number={1}&page_size={2}".format(link, page_number, page_size)

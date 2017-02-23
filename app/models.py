@@ -33,6 +33,7 @@ class City(db.Model,Entity,TimestampMixin):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     location = db.relationship('Location')    
+    user = db.relationship('User', lazy = 'dynamic')    
 
 class User(db.Model,Entity,TimestampMixin):
     name = db.Column(db.String)
