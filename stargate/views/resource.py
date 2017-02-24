@@ -97,3 +97,24 @@ class ResourceAPI(MethodView):
 			representation = InstanceRepresentation(self.model, pk_id, data,200)
 
 		return representation.to_response()
+
+	def post(self):
+		#TODO: Modify deserializer to support list, create resource utiity in query_helper, representation accordingly
+		try:
+			data = json.loads(request.get_data()) or {}
+		except Exception as exception:
+			raise StargateException(msg=detail.format(exception))
+
+		try:
+			deserializer = manager_info(DESERIALIZER_FOR, self.model)
+			instance = deserializer(data)
+			self.session.add(instance)
+			self.session.commit()
+		except Exception as ex:
+			raise StargateException(msg=detail.format(ex))
+
+		serializer = manager_info(SERIALIZER_FOR, self.model)
+		result = serializer(data)
+
+		representation = InstanceRepresentation(self.model, pk_id, result, 201)
+
