@@ -1,6 +1,6 @@
 from flask import request, json
 from flask.views import MethodView
-from ..proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR
+from ..proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR, DESERIALIZER_FOR
 from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
 from ..exception import StargateException
 from ..query_helper.search import Search
@@ -99,22 +99,29 @@ class ResourceAPI(MethodView):
 		return representation.to_response()
 
 	def post(self):
-		#TODO: Modify deserializer to support list, create resource utiity in query_helper, representation accordingly
+
 		try:
 			data = json.loads(request.get_data()) or {}
+		
 		except Exception as exception:
-			raise StargateException(msg=detail.format(exception))
+			raise StargateException("Unable to decode Request Body : ".format(str(exception)))
 
 		try:
 			deserializer = manager_info(DESERIALIZER_FOR, self.model)
 			instance = deserializer(data)
 			self.session.add(instance)
 			self.session.commit()
+		
 		except Exception as ex:
-			raise StargateException(msg=detail.format(ex))
+			raise StargateException("Unable to save object {0}".format(str(ex)))
 
 		serializer = manager_info(SERIALIZER_FOR, self.model)
-		result = serializer(data)
+		result = serializer(instance)
+		
+		if isinstance(instance, list):
+			representation = CollectionRepresentation(self.model, instance, 201)
+		
+		else:
+			representation = InstanceRepresentation(self.model, pk_id, result, 201)
 
-		representation = InstanceRepresentation(self.model, pk_id, result, 201)
-
+		return representation.to_response()

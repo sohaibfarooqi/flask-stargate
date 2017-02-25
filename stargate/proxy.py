@@ -5,6 +5,7 @@ from flask import url_for
 
 PRIMARY_KEY_FOR = 'primary_key_for'
 SERIALIZER_FOR = 'serializer_for'
+DESERIALIZER_FOR = 'deserializer_for'
 URL_FOR = 'url_for'
 COLLECTION_NAME_FOR = 'collection_name_for'
 
@@ -51,6 +52,9 @@ class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
 
                     elif key == SERIALIZER_FOR:
                         return manager.registered_apis[model].serializer
+
+                    elif key == DESERIALIZER_FOR:
+                        return manager.registered_apis[model].deserializer
 
                     elif key == URL_FOR:
                         collection_name = manager.registered_apis[model].collection

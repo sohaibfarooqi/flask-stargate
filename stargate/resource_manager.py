@@ -16,7 +16,7 @@ READONLY_METHODS = frozenset(('GET', ))
 WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE',))
 ALL_METHODS = READONLY_METHODS | WRITEONLY_METHODS
 DEFAULT_URL_PREFIX = '/api'
-RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serializer','deserialier', 'pk','apiname'])
+RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serializer','deserializer', 'pk','apiname'])
 DEFAULT_PRIMARY_KEY_COLUMN = 'id'
 
 class ResourceManager():
@@ -82,7 +82,7 @@ class ResourceManager():
 		
 		serializer = Serializer(model, primary_key, fields=fields, exclude=exclude)
 
-		deserializer = Deserializer(self.session, model)
+		deserializer = Deserializer(model)
 
 		resource_api_view = ResourceAPI.as_view( apiname, self.session, model, validation_exceptions, primary_key)
 

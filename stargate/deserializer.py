@@ -1,50 +1,92 @@
+"""Default Deserialization Class for Stargate. It can convert JSONObject or JSONArray representation
+of a resource to respective class object or list of objects."""
+
 from .proxy import manager_info
+from .query_helper.inclusion import Inclusions
+from .query_helper.filter import string_to_datetime
 
-"""Deserialization Exception Classes"""
-
-
-class Deserializer(object):
-    def __init__(self, session, model):
-        self.session = session
+class Deserializer:
+    
+    def __init__(self, model):
         self.model = model
 
     def __call__(self, document):
+        
         if 'data' not in document:
-            raise MissingData
+            raise ValueError("Key Error data")
+        
         data = document['data']
-        if 'type' not in data:
-            raise MissingType
-        if 'id' in data and not self.allow_client_generated_ids:
-            raise ClientGeneratedIDNotAllowed
-        type_ = data.pop('type')
-        expected_type = collection_name_for(self.model)
-        if type_ != expected_type:
-            raise ConflictingType(expected_type, type_)
-        for field in data:
-            if field == 'relationships':
-                for relation in data['relationships']:
+        
+        if isinstance(data, list):
+            return self._deserialize_many(data)
+        
+        else:
+            return self._deserialize_one(data)
+
+    def _deserialize_many(self, data):
+        
+        result = []
+        
+        for instance in data:
+            
+            try:
+                deserialized = self._deserialize_one(instance)
+                result.append(deserialized)
+            
+            except deserializationException as exception:
+                raise DeserializationException(instance,str(exception))
+        
+        return result
+
+    def _deserialize_one(self, instance):
+        
+        for field in instance:
+            
+            if field == '_embedded':
+                for relation in data['_embedded']:
                     if not has_field(self.model, relation):
-                        raise UnknownRelationship(relation)
+                        raise ValueError("No relation found {0}".format(relation))
+            
             elif field == 'attributes':
                 for attribute in data['attributes']:
                     if not has_field(self.model, attribute):
-                        raise UnknownAttribute(attribute)
+                        raise ValueError("No attribute found {0} for model {1}".format(relation, self.model))
         links = {}
-        if 'relationships' in data:
-            links = data.pop('relationships', {})
-            for link_name, link_object in links.items():
-                if 'data' not in link_object:
-                    raise MissingData(link_name)
-                linkage = link_object['data']
-                related_model = get_related_model(self.model, link_name)
-                expected_type = collection_name_for(related_model)
-                DRD = DefaultRelationshipDeserializer
-                deserialize = DRD(self.session, related_model, link_name)
-                links[link_name] = deserialize(linkage)
-        pass
-        data.update(data.pop('attributes', {}))
-        data = strings_to_datetimes(self.model, data)
+        links = instance.pop('_embedded', {})
+        
+        for rel_name, rel_object in links.items():
+            
+            rel_type = link_object['meta']['_type']
+            self_link = link_object['meta']['_link']['self']
+                
+            if rel_type not in ['TO_ONE', 'TO_MANY']:
+                raise ValueError("Unknown relation type {0}".format(rel_type))
+            
+            related_model = Inclusions.get_related_model(self.model, rel_name)
+            deserialize = RelDeserializer(self.session, related_model, rel_type, rel_name)
+            links[rel_name] = deserialize(linkage)
+
+        data = instance.pop('attributes', {})
+        data = dict((k, string_to_datetime(self.model, k, v)) for k, v in data.items)
         instance = self.model(**data)
+        
         for relation_name, related_value in links.items():
             setattr(instance, relation_name, related_value)
         return instance
+
+class RelDeserializer(Deserializer):
+
+    def __init__(self, session, model, type_name, relation_name = None):
+
+        super(DefaultRelationshipDeserializer, self).__init__(session, model)
+        self.model = model
+        self.type_name = type_name
+        self.relation_name = relation_name
+    
+    def __call__(self, data):
+        if not isinstance(data, list):
+            if 'id' not in data:
+                raise ValueError("Missing `id` in {0}".format(self.relation_name))
+            id_ = data['id']
+            return get_by(self.session, self.model, id_)
+        return list(map(self, data))
