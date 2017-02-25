@@ -4,9 +4,10 @@ from ..pagination_links import PaginationLinks
 
 class Representation():
         
-    _response_message={200: 'Ok.'}
+    _response_message = {200: 'Ok.', 201: "Created"}
 
     def __init__(self, code, message = None, content_type=None, headers={}):
+        
         self.__base_repr__ = {'meta':{'status_code':None, 'message':None, '_HEADERS':{'Content-Type':'application/vnd.api+json'}}}
         self.__base_repr__['meta']['status_code'] = code
         self.__base_repr__['meta']['message'] = self._response_message[code] if message is None else message
@@ -48,7 +49,7 @@ class InstanceRepresentation(Representation):
 
 class CollectionRepresentation(Representation):
     
-    def __init__(self, model, page_size, page_number, pagination, data,*args, **kw):
+    def __init__(self, model, page_size, page_number, pagination, data, *args, **kw):
         
         super(CollectionRepresentation, self).__init__(200,*args, **kw)
 

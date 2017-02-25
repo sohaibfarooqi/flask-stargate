@@ -36,16 +36,16 @@ class City(db.Model,Entity,TimestampMixin):
     user = db.relationship('User', lazy = 'dynamic')    
 
 class User(db.Model,Entity,TimestampMixin):
-    name = db.Column(db.String)
-    username = db.Column(db.String)
-    password = db.Column(db.String)
-    email = db.Column(db.String)
+    name = db.Column(db.String, nullable=False)
+    username = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
     phone = db.Column(db.String)
     pic_url = db.Column(db.String)
     age = db.Column(db.Integer)
-    city_id = db.Column(db.Integer, db.ForeignKey('city.id'))
+    city_id = db.Column(db.Integer, db.ForeignKey('city.id'), nullable=False)
     city = db.relationship('City')
-    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
     location = db.relationship('Location')
 
 class TestPrimaryKey(db.Model):

@@ -113,15 +113,19 @@ class ResourceAPI(MethodView):
 			self.session.commit()
 		
 		except Exception as ex:
+			self.session.rollback()
+			self.session.close()
 			raise StargateException("Unable to save object {0}".format(str(ex)))
 
 		serializer = manager_info(SERIALIZER_FOR, self.model)
 		result = serializer(instance)
 		
 		if isinstance(instance, list):
-			representation = CollectionRepresentation(self.model, instance, 201)
+			representation = CollectionRepresentation(self.model, result, 201)
 		
 		else:
-			representation = InstanceRepresentation(self.model, pk_id, result, 201)
+			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
+			pk_val = getattr(instance, pk_name)
+			representation = InstanceRepresentation(self.model, pk_val, result, 201)
 
 		return representation.to_response()

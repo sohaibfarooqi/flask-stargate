@@ -255,7 +255,6 @@ class Serializer():
 
         if serialize_rel:
             relations = Inclusions.get_relations(model)
-            cr = create_relationship
-            result['_embedded'] = dict((rel, cr(model, instance, rel, expand = expand))
+            result['_embedded'] = dict((rel, create_relationship(model, instance, rel, expand = expand))
                                        for rel in relations)
         return result

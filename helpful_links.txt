@@ -16,3 +16,46 @@ https://jeffknupp.com/blog/2014/01/29/productionizing-a-flask-application/
 https://coveralls.io/
 https://landscape.io/
 
+POST_REQUEST_INSTANCE:
+{
+	"data": {
+		"_embedded": {
+			"location": {
+				"meta": {
+					"_type": "TO_ONE",
+					"_links": {
+						"self": "http: //localhost/api/user/1/location/1"
+					}
+				},
+				
+				"data":{
+					"id": 2
+					
+				}
+			},
+			"city": {
+				"meta": {
+					"_type": "TO_ONE",
+					"_links": {
+						"self": "http://localhost/api/user/1/city/1"
+					}
+				},
+				
+				"data":{
+					"id": 1
+				}
+			}
+		},
+		"attributes": {
+			"name": "John B",
+			"username": "John91",
+			"age": 19,
+			"email": "johnbaptist@gmail.com",
+			"password": "abcdefg",
+			"phone": "923349725618",
+			"created_at": "2017-02-24T17:35:24.223328",
+			"pic_url": "/images/pic.jpg"
+		},
+		"id": 1
+	}
+}

@@ -82,7 +82,7 @@ class ResourceManager():
 		
 		serializer = Serializer(model, primary_key, fields=fields, exclude=exclude)
 
-		deserializer = Deserializer(model)
+		deserializer = Deserializer(model, self.session)
 
 		resource_api_view = ResourceAPI.as_view( apiname, self.session, model, validation_exceptions, primary_key)
 
