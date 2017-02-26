@@ -49,9 +49,9 @@ class TestSorting(unittest.TestCase):
 				for i in range(0,120):
 					user = User(name = "John Doe", 
 								age = 19, 
-								username = "John91", 
+								username = "John91{0}".format(i), 
 								password = 'abcdef', 
-								email = "johnbaptist@gmail.com", 
+								email = "johnbaptist{0}@gmail.com".format(i), 
 								phone = "923349725618",
 								pic_url = "/images/john.jpg", 
 								city_id = city.id, 

@@ -59,3 +59,94 @@ POST_REQUEST_INSTANCE:
 		"id": 1
 	}
 }
+
+POST_REQUEST_COLLECTION:
+{
+	"data": [
+				{
+					"_embedded": {
+						"location": {
+							"meta": {
+								"_type": "TO_ONE",
+								"_links": {
+									"self": "http: //localhost/api/user/1/location/1"
+								}
+							},
+							
+							"data":{
+								"id": 1
+								
+							}
+						},
+						"city": {
+							"meta": {
+								"_type": "TO_ONE",
+								"_links": {
+									"self": "http://localhost/api/user/1/city/1"
+								}
+							},
+							
+							"data":{
+								"id": 1
+							}
+						}
+					},
+					"attributes": {
+						"name": "John B",
+						"username": "John92",
+						"age": 19,
+						"email": "johnbapti@gmail.com",
+						"password": "abcdefg",
+						"phone": "923349725618",
+						"created_at": "2017-02-24T17:35:24.223328",
+						"pic_url": "/images/pic.jpg"
+					},
+					"id": 1
+				},
+
+
+				{
+					"_embedded": {
+						"location": {
+							"meta": {
+								"_type": "TO_ONE",
+								"_links": {
+									"self": "http: //localhost/api/user/2/location/1"
+								}
+							},
+							
+							"data":{
+								"id": 1
+								
+							}
+						},
+						"city": {
+							"meta": {
+								"_type": "TO_ONE",
+								"_links": {
+									"self": "http://localhost/api/user/2/city/1"
+								}
+							},
+							
+							"data":{
+								"id": 1
+							}
+						}
+					},
+					"attributes": {
+						"name": "John B",
+						"username": "John93",
+						"age": 19,
+						"email": "sohaibfarooqi@gmail.com",
+						"password": "abcdefg",
+						"phone": "923349725618",
+						"created_at": "2017-02-24T17:35:24.223328",
+						"pic_url": "/images/pic.jpg"
+					},
+					"id": 2
+				}
+
+			]
+
+}
+

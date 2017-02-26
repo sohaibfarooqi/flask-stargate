@@ -38,9 +38,7 @@ class Deserializer:
     def _deserialize_many(self, data):
         
         result = []
-        
         for instance in data:
-            
             try:
                 deserialized = self._deserialize_one(instance)
                 result.append(deserialized)

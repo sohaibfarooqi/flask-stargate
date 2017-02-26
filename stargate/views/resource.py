@@ -109,7 +109,12 @@ class ResourceAPI(MethodView):
 		try:
 			deserializer = manager_info(DESERIALIZER_FOR, self.model)
 			instance = deserializer(data)
-			self.session.add(instance)
+
+			if isinstance(instance, list):
+				self.session.add_all(instance)
+			else:
+				self.session.add(instance)
+			
 			self.session.commit()
 		
 		except Exception as ex:
