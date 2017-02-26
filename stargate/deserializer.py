@@ -69,9 +69,6 @@ class Deserializer:
 
             rel_type = rel_object['meta']['_type']
             self_link = rel_object['meta']['_links']['self']
-                
-            if rel_type not in ['TO_ONE', 'TO_MANY']:
-                raise ValueError("Unknown relation type {0}".format(rel_type))
             
             if 'data' in rel_object:
                 related_model = Inclusions.get_related_model(self.model, rel_name)
@@ -89,11 +86,10 @@ class Deserializer:
 
 class RelDeserializer(Deserializer):
 
-    def __init__(self, session, model, type_name, relation_name = None):
+    def __init__(self, session, model, rel_type, relation_name = None):
 
         super(RelDeserializer, self).__init__(session, model)
-        self.model = model
-        self.type_name = type_name
+        self.rel_type = rel_type
         self.relation_name = relation_name
     
     def __call__(self, data):
@@ -101,16 +97,24 @@ class RelDeserializer(Deserializer):
         if not isinstance(data, list):
             if 'id' not in data:
                 raise ValueError("Missing `id` in {0}".format(self.relation_name))
-            
-            id_ = data['id']
-            pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
-            query = session_query(self.session, self.model)
-            query = query.filter(getattr(self.model, pk_name) == id_)
-            try:
-                return query.one()
-            except MultipleResultsFound as ex:
-                raise RuntimeError("Multiple `{0}` resources found against `id` {1}".format(self.relation_name, id_))
-            except NoResultFound as ex:
-                raise RuntimeError("No Result Found for related Model `{0}` against `id` {1}".format(self.relation_name, id_))
 
-        return list(map(self, data))
+            if self.rel_type == 'TO_ONE':
+                id_ = data['id']
+                pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
+                query = session_query(self.session, self.model)
+                query = query.filter(getattr(self.model, pk_name) == id_)
+                
+                try:
+                    return query.one()
+                
+                except MultipleResultsFound as ex:
+                    raise RuntimeError("Multiple `{0}` resources found against `id` {1}".format(self.relation_name, id_))
+                
+                except NoResultFound as ex:
+                    raise RuntimeError("No Result Found for related Model `{0}` against `id` {1}".format(self.relation_name, id_))
+
+            elif self.rel_type == 'TO_MANY':
+                return list(map(self, data))
+
+            else:
+                raise ValueError("Unknown relation type {0}".format(self.rel_type))

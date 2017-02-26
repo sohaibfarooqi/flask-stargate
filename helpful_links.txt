@@ -16,35 +16,12 @@ https://jeffknupp.com/blog/2014/01/29/productionizing-a-flask-application/
 https://coveralls.io/
 https://landscape.io/
 
-POST_REQUEST_INSTANCE:
+POST_REQUEST_INSTANCE(TO_ONE):
 {
 	"data": {
 		"_embedded": {
-			"location": {
-				"meta": {
-					"_type": "TO_ONE",
-					"_links": {
-						"self": "http: //localhost/api/user/1/location/1"
-					}
-				},
-				
-				"data":{
-					"id": 2
-					
-				}
-			},
-			"city": {
-				"meta": {
-					"_type": "TO_ONE",
-					"_links": {
-						"self": "http://localhost/api/user/1/city/1"
-					}
-				},
-				
-				"data":{
-					"id": 1
-				}
-			}
+			"location": { "data":{"id": 1} },
+			"city": { "data":{"id": 1 } }
 		},
 		"attributes": {
 			"name": "John B",
@@ -55,42 +32,23 @@ POST_REQUEST_INSTANCE:
 			"phone": "923349725618",
 			"created_at": "2017-02-24T17:35:24.223328",
 			"pic_url": "/images/pic.jpg"
-		},
-		"id": 1
+		}
 	}
 }
 
-POST_REQUEST_COLLECTION:
+POST_REQUEST_COLLECTION(TO_ONE):
 {
-	"data": [
-				{
-					"_embedded": {
-						"location": {
-							"meta": {
-								"_type": "TO_ONE",
-								"_links": {
-									"self": "http: //localhost/api/user/1/location/1"
-								}
-							},
-							
-							"data":{
-								"id": 1
-								
+	"data": [{
+				"_embedded": {
+					"location": {"data":{"id": 1}},
+					"city":{
+								"data":{
+											"title": "Faisalabad", 
+											"latitude": "72.8176", 
+											"longitude": "79.555"
+										}
 							}
-						},
-						"city": {
-							"meta": {
-								"_type": "TO_ONE",
-								"_links": {
-									"self": "http://localhost/api/user/1/city/1"
-								}
-							},
-							
-							"data":{
-								"id": 1
-							}
-						}
-					},
+				},
 					"attributes": {
 						"name": "John B",
 						"username": "John92",
@@ -100,38 +58,14 @@ POST_REQUEST_COLLECTION:
 						"phone": "923349725618",
 						"created_at": "2017-02-24T17:35:24.223328",
 						"pic_url": "/images/pic.jpg"
-					},
-					"id": 1
+					}				
 				},
 
 
 				{
 					"_embedded": {
-						"location": {
-							"meta": {
-								"_type": "TO_ONE",
-								"_links": {
-									"self": "http: //localhost/api/user/2/location/1"
-								}
-							},
-							
-							"data":{
-								"id": 1
-								
-							}
-						},
-						"city": {
-							"meta": {
-								"_type": "TO_ONE",
-								"_links": {
-									"self": "http://localhost/api/user/2/city/1"
-								}
-							},
-							
-							"data":{
-								"id": 1
-							}
-						}
+						"location": {"data":{"id": 1}},
+						"city": {"data":{"id": 1}}
 					},
 					"attributes": {
 						"name": "John B",
@@ -142,11 +76,80 @@ POST_REQUEST_COLLECTION:
 						"phone": "923349725618",
 						"created_at": "2017-02-24T17:35:24.223328",
 						"pic_url": "/images/pic.jpg"
-					},
-					"id": 2
-				}
-
-			]
+					}
+				}]
 
 }
 
+POST_REQUEST_INSTANCE(TO_MANY):
+
+{
+	"data": {
+		"_embedded": {
+			"location": { "data":[ {"id": 1} , {"id": 2} ]},
+			"user": { "data":[ {"id": 1 }, {"id": 2} ]}
+		},
+		"attributes": {
+			'title': 'Lahore',
+			'latitude': 72.813,
+			'created_at': '2017-02-26T14:32:20.600568',
+			'updated_at': None,
+			'longitude': 78.1987
+		}
+	}
+}
+
+
+POST_REQUEST_COLLECTION(TO_MANY):
+{
+	"data": [{
+				"_embedded": {
+					"location": { "data":[ {"id": 1} , {"id": 2} ]}, 
+					"user": {"data":
+									[{
+										"name": "John B",
+										"username": "John92",
+										"age": 19,
+										"email": "johnbapti@gmail.com",
+										"password": "abcdefg",
+										"phone": "923349725618",
+										"created_at": "2017-02-24T17:35:24.223328",
+										"pic_url": "/images/pic.jpg"
+									},
+									{
+										"name": "John B",
+										"username": "John92",
+										"age": 19,
+										"email": "johnbapti@gmail.com",
+										"password": "abcdefg",
+										"phone": "923349725618",
+										"created_at": "2017-02-24T17:35:24.223328",
+										"pic_url": "/images/pic.jpg"
+									}]
+						}
+					},
+					"attributes": {
+						'title': 'Faisalabad',
+						'latitude': 72.813,
+						'created_at': '2017-02-26T14:32:20.600568',
+						'updated_at': None,
+						'longitude': 78.1987
+					}
+				},
+
+
+				{
+					"_embedded": {
+						"location": { "data":[ {"id": 1} , {"id": 2} ]},
+						"user": { "data":[ {"id": 1} , {"id": 2} ]}
+					},
+					"attributes": {
+						'title': 'Lahore',
+						'latitude': 72.813,
+						'created_at': '2017-02-26T14:32:20.600568',
+						'updated_at': None,
+						'longitude': 78.1987
+					}				
+				}]
+
+}

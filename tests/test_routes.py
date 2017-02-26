@@ -66,7 +66,6 @@ class TestRoutes(unittest.TestCase):
 		def test_get_instance(self):
 			response = self.client.get('/api/user/1', headers={"Content-Type": "application/json"})
 			data = json.loads(response.get_data())
-			print(data)
 			self.assertEqual(response._status_code, 200)
 
 		def test_get_related_instance(self):
