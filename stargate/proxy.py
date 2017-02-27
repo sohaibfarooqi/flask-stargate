@@ -57,7 +57,6 @@ class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
                         return manager.registered_apis[model].deserializer
 
                     elif key == URL_FOR:
-                        collection_name = manager.registered_apis[model].collection
                         blueprint_name = manager.registered_apis[model].blueprint
                         api_name = manager.registered_apis[model].apiname
                         parts = [blueprint_name, api_name]

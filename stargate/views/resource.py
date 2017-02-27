@@ -90,13 +90,14 @@ class ResourceAPI(MethodView):
 		
 		if isinstance(result_set, Pagination):
 			data = serializer(result_set.items, fields = fields, exclude = exclude, expand = expand)
-			representation = CollectionRepresentation(self.model, page_size, page_number, result_set, data, 200)
-
+			representation = CollectionRepresentation(self.model, data, 200)
+			return representation.to_response(page_size = page_size, page_number = page_number, pagination = result_set)
 		else:
 			data = serializer(result_set, fields = fields, exclude = exclude, expand = expand)
-			representation = InstanceRepresentation(self.model, pk_id, data,200)
+			representation = InstanceRepresentation(self.model, pk_id, data, 200)
+			return representation.to_response()
 
-		return representation.to_response()
+		
 
 	def post(self):
 
@@ -109,6 +110,7 @@ class ResourceAPI(MethodView):
 		try:
 			deserializer = manager_info(DESERIALIZER_FOR, self.model)
 			instance = deserializer(data)
+			
 			if isinstance(instance, list):
 				self.session.add_all(instance)
 			else:
