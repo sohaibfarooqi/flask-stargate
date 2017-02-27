@@ -109,21 +109,23 @@ class ResourceAPI(MethodView):
 		try:
 			deserializer = manager_info(DESERIALIZER_FOR, self.model)
 			instance = deserializer(data)
-
 			if isinstance(instance, list):
 				self.session.add_all(instance)
 			else:
 				self.session.add(instance)
-			
+		
+			self.session.flush()
 			self.session.commit()
 		
 		except Exception as ex:
 			self.session.rollback()
 			self.session.close()
-			raise StargateException("Unable to save object {0}".format(str(ex)))
+			raise StargateException("Unable to save object Error: `{0}`".format(str(ex)))
 
+		relations = Inclusions.get_relations(self.model)
+		relations = ",".join(relations)
 		serializer = manager_info(SERIALIZER_FOR, self.model)
-		result = serializer(instance)
+		result = serializer(instance, expand = relations)
 		
 		if isinstance(instance, list):
 			representation = CollectionRepresentation(self.model, result, 201)

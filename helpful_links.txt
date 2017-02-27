@@ -86,15 +86,22 @@ POST_REQUEST_INSTANCE(TO_MANY):
 {
 	"data": {
 		"_embedded": {
-			"location": { "data":[ {"id": 1} , {"id": 2} ]},
-			"user": { "data":[ {"id": 1 }, {"id": 2} ]}
+			"location": { "data":[ {"id": 1} ]},
+			"user": { "data":[ {"name": "John B",
+								"username": "John94",
+								"age": 19,
+								"location_id": 1,
+								"email": "sohaibfarooqi@gmail.com",
+								"password": "abcdefg",
+								"phone": "923349725618",
+								"created_at": "2017-02-24T17:35:24.223328",
+								"pic_url": "/images/pic.jpg"} ]}
 		},
 		"attributes": {
-			'title': 'Lahore',
-			'latitude': 72.813,
-			'created_at': '2017-02-26T14:32:20.600568',
-			'updated_at': None,
-			'longitude': 78.1987
+			"title": "Lahore",
+			"latitude": 72.813,
+			"created_at": "2017-02-26T14:32:20.600568",
+			"longitude": 78.1987
 		}
 	}
 }

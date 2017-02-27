@@ -67,13 +67,12 @@ class Deserializer:
 
         for rel_name, rel_object in links.items():
 
-            rel_type = rel_object['meta']['_type']
-            self_link = rel_object['meta']['_links']['self']
-            
             if 'data' in rel_object:
                 related_model = Inclusions.get_related_model(self.model, rel_name)
-                deserialize = RelDeserializer(self.session, related_model, rel_type, rel_name)
+                deserialize = RelDeserializer(self.session, related_model, rel_name)
                 related_resources[rel_name] = deserialize(rel_object['data'])
+            else:
+                raise KeyError("Missing data in relation {0}".format(rel_name))
         
         data = instance.pop('attributes', {})
         data = dict((k, string_to_datetime(self.model, k, v)) for k, v in data.items())
@@ -86,35 +85,27 @@ class Deserializer:
 
 class RelDeserializer(Deserializer):
 
-    def __init__(self, session, model, rel_type, relation_name = None):
+    def __init__(self, session, model, relation_name = None):
 
-        super(RelDeserializer, self).__init__(session, model)
-        self.rel_type = rel_type
+        super(RelDeserializer, self).__init__(model, session)
         self.relation_name = relation_name
     
     def __call__(self, data):
 
         if not isinstance(data, list):
-            if 'id' not in data:
-                raise ValueError("Missing `id` in {0}".format(self.relation_name))
-
-            if self.rel_type == 'TO_ONE':
+            if 'id' in data:
                 id_ = data['id']
                 pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
                 query = session_query(self.session, self.model)
                 query = query.filter(getattr(self.model, pk_name) == id_)
-                
                 try:
                     return query.one()
-                
                 except MultipleResultsFound as ex:
                     raise RuntimeError("Multiple `{0}` resources found against `id` {1}".format(self.relation_name, id_))
-                
                 except NoResultFound as ex:
                     raise RuntimeError("No Result Found for related Model `{0}` against `id` {1}".format(self.relation_name, id_))
-
-            elif self.rel_type == 'TO_MANY':
-                return list(map(self, data))
-
+            
             else:
-                raise ValueError("Unknown relation type {0}".format(self.rel_type))
+                return self.model(**data)
+        else:
+            return list(map(self, data))
