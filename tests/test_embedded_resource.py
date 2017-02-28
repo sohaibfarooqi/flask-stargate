@@ -70,7 +70,6 @@ class TestSorting(unittest.TestCase):
 
 			if content_length > 0:
 				data = json.loads(response.get_data())
-				print(data)
 				relation_type = data['data']['_embedded']['user']['meta']['_type']
 				self.assertEqual(relation_type, 'TO_MANY')
 

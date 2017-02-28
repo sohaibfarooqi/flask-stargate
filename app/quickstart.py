@@ -25,7 +25,7 @@ class User(db.Model,Entity,TimestampMixin):
     email = db.Column(db.String)
 
 #Resource Manager creation
-manager = ResourceManager(app, flask_sqlalchemy_db = db)
+manager = ResourceManager(app, db)
 #Registering `User` model with `manager` instance.
 manager.register_resource(User, methods = ['GET'])
 

@@ -97,7 +97,7 @@ class ResourceManager():
 			prefix = DEFAULT_URL_PREFIX
 
 		blueprint = Blueprint(name, __name__, url_prefix=prefix)
-
+		#Segregate collection and resource methods
 		collection_url = '/{0}'.format(collection_name)
 		collection_methods = ALL_METHODS & methods
 		self._add_endpoint(blueprint, collection_url, resource_api_view, methods=collection_methods)

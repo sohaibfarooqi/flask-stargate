@@ -69,9 +69,10 @@ class Search():
 		
 			else:
 				return related_model
-
+		
 		elif pk_id is not None:
 			return self._search_one(query, pk_id, None)
+		
 		else:
 			return self._search_collection(query, filters, sort, group_by, page_size, page_number)
 	
@@ -82,7 +83,7 @@ class Search():
 			query = session_query(self.session, self.model)
 			query = query.filter(getattr(self.model, pk_name) == pk_value)
 			resource = query.first()
-			
+
 			if self.relation is not None:
 				resource = getattr(resource, self.relation)	
 			return resource

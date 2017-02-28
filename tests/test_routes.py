@@ -30,9 +30,11 @@ class TestRoutes(unittest.TestCase):
 				city.title = "Lahore"
 				city.latitude = 72.813
 				city.longitude = 78.1987
+
 				db.session.add(city)
-				db.session.commit()
 				db.session.flush()
+				db.session.commit()
+				
 
 				location.title = "Johar Town"
 				location.latitude = 72.813
@@ -41,8 +43,9 @@ class TestRoutes(unittest.TestCase):
 				location.city_id = city.id
 			
 				db.session.add(location)
-				db.session.commit()
 				db.session.flush()
+				db.session.commit()
+				
 
 				user.name = "John Baptist"
 				user.username = "John91"
@@ -55,8 +58,9 @@ class TestRoutes(unittest.TestCase):
 				user.location_id = location.id
 
 				db.session.add(user)
-				db.session.commit()
 				db.session.flush()
+				db.session.commit()
+				
 		
 		
 		def test_get_collection(self):
