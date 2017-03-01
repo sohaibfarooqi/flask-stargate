@@ -1,13 +1,15 @@
-from flask import request, json
+from flask import request, json, jsonify
 from flask.views import MethodView
 from ..proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR, DESERIALIZER_FOR
 from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
-from ..exception import StargateException
-from ..query_helper.search import Search
+from ..exception import StargateException, ResourceNotFound
+from ..query_helper.search import Search, session_query
 from ..query_helper.inclusion import Inclusions
 from .representation import InstanceRepresentation, CollectionRepresentation
 from sqlalchemy import inspect
 from flask_sqlalchemy import Pagination
+from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
 
 FILTER_PARAM = 'filters'
 SORT_PARAM = 'sort'
@@ -215,18 +217,21 @@ class ResourceAPI(MethodView):
 
 	def delete(self, pk_id):
 	
-		was_deleted = False
-		instance = get_by(self.session, self.model, resource_id,self.primary_key)
-		
-		if instance is None:
-			detail = 'No resource found with ID {0}'.format(resource_id)
-			return error_response(404, detail=detail)
-		
-		self.session.delete(instance)
-		was_deleted = len(self.session.deleted) > 0
-		self.session.commit()
-		
-		if not was_deleted:
-			detail = 'There was no instance to delete.'
-			return error_response(404, detail=detail)
-		return {}, 204
+		try:
+			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
+			query = session_query(self.session, self.model)
+			query = query.filter(getattr(self.model, pk_name) == pk_id)
+			resource = query.one()
+			print(resource)
+			self.session.delete(resource)
+			self.session.commit()
+
+		except NoResultFound as exception:
+			detail = 'No result found'
+			raise ResourceNotFound(self.model.__name__, msg=detail)
+
+		except MultipleResultsFound as exception:
+			detail = 'Multiple results found'
+			raise StargateException(msg=detail)
+
+		return jsonify({'status_code': 204, 'message': 'No Content'})
