@@ -167,70 +167,66 @@ class ResourceAPI(MethodView):
 			raise StargateException(msg=detail)
 
 		links = data.pop('_embedded', {})
-        for linkname, link in links.items():
-            
-            if 'data' not in link:
-                detail = 'relationship "{0}" is missing resource linkage'
-                detail = detail.format(linkname)
-                return error_response(400, detail=detail)
-            linkage = link['data']
-            related_model = get_related_model(self.model, linkname)
-            
-            if is_like_list(instance, linkname):
-            
-                newvalue = []
-                not_found = []
-                
-                for rel in linkage:
-                    
-                    id_ = rel['id']
-                    inst = get_by(self.session, related_model, id_)
-                    
-                    if inst is None:
-                        not_found.append((id_, type_))
-                    else:
-                        newvalue.append(inst)
-            else:
-                if linkage is None:
-                    newvalue = None
-                else:
-                    
-                    id_ = linkage['id']
-                    inst = get_by(self.session, related_model, id_)
-                    newvalue = inst
-            try:
-                setattr(instance, linkname, newvalue)
-            except self.validation_exceptions as exception:
-                return self._handle_validation_exception(exception)
+		for linkname, link in links.items():
 
-        data = data.pop('attributes', {})
-        
-        for field in data:
-            if not has_field(self.model, field):
-                detail = "Model does not have field '{0}'".format(field)
-                return error_response(400, detail=detail)
-        
-       data = strings_to_datetimes(self.model, data)
-       
-       if data:
-            for field, value in data.items():
-                setattr(instance, field, value)
-        self.session.commit()
+			if 'data' not in link:
+				detail = 'relationship "{0}" is missing resource linkage'
+				detail = detail.format(linkname)
+			return error_response(400, detail=detail)
+			linkage = link['data']
+			related_model = get_related_model(self.model, linkname)
+            
+			if is_like_list(instance, linkname):
+
+				newvalue = []
+				not_found = []
+
+				for rel in linkage:
+
+					id_ = rel['id']
+					inst = get_by(self.session, related_model, id_)
+
+					if inst is None:
+						not_found.append((id_, type_))
+					else:
+						newvalue.append(inst)
+			else:
+				if linkage is None:
+					newvalue = None
+				else:
+					id_ = linkage['id']
+					inst = get_by(self.session, related_model, id_)
+					newvalue = inst
+					setattr(instance, linkname, newvalue)
+
+			data = data.pop('attributes', {})
+
+			for field in data:
+				if not has_field(self.model, field):
+					detail = "Model does not have field '{0}'".format(field)
+					return error_response(400, detail=detail)
+
+			data = strings_to_datetimes(self.model, data)
+
+			if data:
+				for field, value in data.items():
+					setattr(instance, field, value)
+			self.session.commit()
 
 	def delete(self, pk_id):
 	
-	was_deleted = False
-	instance = get_by(self.session, self.model, resource_id,self.primary_key)
-	
-	if instance is None:
-		detail = 'No resource found with ID {0}'.format(resource_id)
-		return error_response(404, detail=detail)
-	
-	self.session.delete(instance)
-	was_deleted = len(self.session.deleted) > 0
-	self.session.commit()
-	
-	if not was_deleted:
-		detail = 'There was no instance to delete.'
-		return error_response(404, detail=detail)
-	return {}, 204
+		was_deleted = False
+		instance = get_by(self.session, self.model, resource_id,self.primary_key)
+		
+		if instance is None:
+			detail = 'No resource found with ID {0}'.format(resource_id)
+			return error_response(404, detail=detail)
+		
+		self.session.delete(instance)
+		was_deleted = len(self.session.deleted) > 0
+		self.session.commit()
+		
+		if not was_deleted:
+			detail = 'There was no instance to delete.'
+			return error_response(404, detail=detail)
+		return {}, 204
