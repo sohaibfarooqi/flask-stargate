@@ -8,13 +8,7 @@ from .query_helper.search import session_query
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
-
-def has_field(model, fieldname):
-    descriptors = sqlalchemy_inspect(model).all_orm_descriptors._data
-    if fieldname in descriptors and hasattr(descriptors[fieldname], 'fset'):
-        return descriptors[fieldname].fset is not None
-    return hasattr(model, fieldname)
-
+from .utils import has_field
 
 class Deserializer:
     

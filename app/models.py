@@ -44,9 +44,9 @@ class User(db.Model,Entity,TimestampMixin):
     pic_url = db.Column(db.String)
     age = db.Column(db.Integer)
     city_id = db.Column(db.Integer, db.ForeignKey('city.id'), nullable=False)
-    city = db.relationship('City', cascade="all")
+    city = db.relationship('City')
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'), nullable=False)
-    location = db.relationship('Location', cascade="all")
+    location = db.relationship('Location')
 
 class TestPrimaryKey(db.Model):
     ser_id = db.Column(db.Integer, primary_key = True, autoincrement = True)    

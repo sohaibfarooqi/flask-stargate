@@ -15,6 +15,7 @@ from sqlalchemy.orm import class_mapper
 from flask_sqlalchemy import BaseQuery
 from .views.resource import STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE
 from .pagination_links import PaginationLinks
+from .utils import is_like_list
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
 
@@ -128,20 +129,6 @@ def create_relationship(model, instance, relation, expand = None):
 
 def foreign_keys(model):
     return [column.name for column in foreign_key_columns(model)]
-
-def is_like_list(instance, relation):
-    if relation in instance._sa_class_manager:
-        return instance._sa_class_manager[relation].property.uselist
-    elif hasattr(instance, relation):
-        attr = getattr(instance._sa_instance_state.class_, relation)
-        if hasattr(attr, 'property'):
-            return attr.property.uselist
-    related_value = getattr(type(instance), relation, None)
-    if isinstance(related_value, AssociationProxy):
-        local_prop = related_value.local_attr.prop
-        if isinstance(local_prop, RelProperty):
-            return local_prop.uselist
-    return False
 
 def primary_key_value(instance, as_string=False):
     result = getattr(instance, manager_info(PRIMARY_KEY_FOR, instance))

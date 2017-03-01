@@ -27,7 +27,7 @@ class StargateException(Exception):
 class ResourceNotFound(StargateException):
     werkzeug_exception = NotFound
 
-    def __init__(self, resource, msg = None, id = None):
+    def __init__(self, resource, id = None, msg = None):
         super(ResourceNotFound, self).__init__()
         self.resource = resource
         self.msg = msg

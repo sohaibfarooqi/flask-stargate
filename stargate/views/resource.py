@@ -8,8 +8,7 @@ from ..query_helper.inclusion import Inclusions
 from .representation import InstanceRepresentation, CollectionRepresentation
 from sqlalchemy import inspect
 from flask_sqlalchemy import Pagination
-from sqlalchemy.orm.exc import MultipleResultsFound
-from sqlalchemy.orm.exc import NoResultFound
+from ..utils import get_resource, is_like_list, has_field, string_to_datetime
 
 FILTER_PARAM = 'filters'
 SORT_PARAM = 'sort'
@@ -142,43 +141,24 @@ class ResourceAPI(MethodView):
 		return representation.to_response()
 
 	def patch(self, pk_id):
+		
 		try:
 			data = json.loads(request.get_data()) or {}
 		
 		except Exception as exception:
 			raise StargateException("Unable to decode Request Body : ".format(str(exception)))
 		
-		try:
-			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
-			query = session_query(self.session, self.model)
-			query = query.filter(getattr(self.model, pk_name) == pk_value)
-			resource = query.first()
-
-		except NoResultFound as exception:
-			detail = 'No result found'
-			raise ResourceNotFound(self.model.__name__(), msg=detail)
-
-		except MultipleResultsFound as exception:
-			detail = 'Multiple results found'
-			raise StargateException(msg=detail)
-
+		primary_resource = get_resource(self.session, self.model, pk_id)
 		data = data.pop('data', {})
-
-		if 'id' not in data:
-			detail = 'Missing id in payload'
-			raise StargateException(msg=detail)
-
+		
 		links = data.pop('_embedded', {})
+		
 		for linkname, link in links.items():
 
-			if 'data' not in link:
-				detail = 'relationship "{0}" is missing resource linkage'
-				detail = detail.format(linkname)
-			return error_response(400, detail=detail)
 			linkage = link['data']
-			related_model = get_related_model(self.model, linkname)
+			related_model = Inclusions.get_related_model(self.model, linkname)
             
-			if is_like_list(instance, linkname):
+			if is_like_list(primary_resource, linkname):
 
 				newvalue = []
 				not_found = []
@@ -186,34 +166,40 @@ class ResourceAPI(MethodView):
 				for rel in linkage:
 
 					id_ = rel['id']
-					inst = get_by(self.session, related_model, id_)
+					inst = get_resource(self.session, related_model, id_)
 
 					if inst is None:
 						not_found.append((id_, type_))
 					else:
 						newvalue.append(inst)
 			else:
+				
 				if linkage is None:
 					newvalue = None
 				else:
 					id_ = linkage['id']
-					inst = get_by(self.session, related_model, id_)
+					inst = get_resource(self.session, related_model, id_)
 					newvalue = inst
-					setattr(instance, linkname, newvalue)
+					setattr(primary_resource, linkname, newvalue)
 
 			data = data.pop('attributes', {})
 
 			for field in data:
 				if not has_field(self.model, field):
 					detail = "Model does not have field '{0}'".format(field)
-					return error_response(400, detail=detail)
+					raise StargateException(detail=detail)
 
-			data = strings_to_datetimes(self.model, data)
+			data = dict((k, string_to_datetime(self.model, k, v)) for k, v in data.items())
 
 			if data:
 				for field, value in data.items():
-					setattr(instance, field, value)
+					setattr(primary_resource, field, value)
+			self.session.add(primary_resource)
 			self.session.commit()
+			serializer = manager_info(SERIALIZER_FOR, self.model)
+			result = serializer(primary_resource)
+			repr = InstanceRepresentation(self.model, pk_id, result, 200)
+			return repr.to_response()
 
 	def delete(self, pk_id):
 	
