@@ -6,7 +6,6 @@ from ..exception import StargateException, ResourceNotFound
 from ..query_helper.search import Search, session_query
 from ..query_helper.inclusion import Inclusions
 from .representation import InstanceRepresentation, CollectionRepresentation
-from sqlalchemy import inspect
 from flask_sqlalchemy import Pagination
 from ..utils import get_resource, is_like_list, has_field, string_to_datetime
 
@@ -33,7 +32,7 @@ class ResourceAPI(MethodView):
 
 	def __init__(self, session, model, validation_exceptions = None, primary_key = None,*args,**kw):
         
-		super(ResourceAPI, self).__init__()
+		super(ResourceAPI, self).__init__(*args,**kw)
 
 		self.collection_name = manager_info(COLLECTION_NAME_FOR, model)
 		
@@ -81,7 +80,7 @@ class ResourceAPI(MethodView):
 			detail = 'Unable to construct query {0}'
 			raise StargateException(msg=detail.format(exception))
 
-		result_set = search_obj.search_resource(pk_id, related_id, filters = filters,sort = sort, 
+		result_set = search_obj.search_resource(pk_id, related_id, filters = filters, sort = sort, 
 												group_by = group_by, page_size = page_size, 
 												page_number = page_number)
 		if relation is None:

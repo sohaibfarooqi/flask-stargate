@@ -3,7 +3,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 from sqlalchemy import func
-from ..stargate import ResourceManager
+from ..stargate import Manager
 
 #Create Flask application
 app = Flask(__name__)
@@ -25,7 +25,7 @@ class User(db.Model,Entity,TimestampMixin):
     email = db.Column(db.String)
 
 #Resource Manager creation
-manager = ResourceManager(app, db)
+manager = Manager(app, db)
 #Registering `User` model with `manager` instance.
 manager.register_resource(User, methods = ['GET'])
 

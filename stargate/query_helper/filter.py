@@ -32,8 +32,6 @@ OPERATORS = {
     # Operators which accept a single argument.
     'is_null': lambda f: f == None,
     'is_not_null': lambda f: f != None,
-    # 'desc': lambda f: f.desc,
-    # 'asc': lambda f: f.asc,
     # Operators which accept two arguments.
     '==': lambda f, a: f == a,
     'eq': lambda f, a: f == a,

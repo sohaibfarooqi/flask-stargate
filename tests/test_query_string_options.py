@@ -7,7 +7,7 @@ from flask import Flask, json
 import sys
 import os
 sys.path.insert(0,'..')
-from stargate.stargate import ResourceManager
+from stargate.stargate import Manager
 from stargate.app.models import User, City, Location
 from stargate.app import init_app, db
 
@@ -29,7 +29,7 @@ class TestSorting(unittest.TestCase):
 			self.app = init_app(test=True)
 			self.client = self.app.test_client()
 			#Register Models with manager instance
-			self.manager = ResourceManager(self.app, db)
+			self.manager = Manager(self.app, db)
 			self.manager.register_resource(User, methods = ['GET'])
 			self.manager.register_resource(Location, methods = ['GET'])
 			self.manager.register_resource(City, methods = ['GET'])

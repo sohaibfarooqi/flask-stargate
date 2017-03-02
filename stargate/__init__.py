@@ -4,4 +4,4 @@ Stargate is a framework for exposing RESTFul JSON APIs in Flask framework. It is
 Feature includes: resource based endpoints, custom validations, support for view decorators, pagination, filters, sorting,
 grouping, resource expansion and partial responses. 
 """
-from .resource_manager import ResourceManager
+from .manager import Manager

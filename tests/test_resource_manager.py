@@ -4,7 +4,7 @@ from flask import json, request
 import sys
 import os
 sys.path.insert(0,'..')
-from stargate.stargate import ResourceManager
+from stargate.stargate import Manager
 from stargate.stargate.proxy import manager_info, PRIMARY_KEY_FOR
 from stargate.app.models import User, City, Location, TestPrimaryKey
 from stargate.app import init_app, db
@@ -32,7 +32,7 @@ class TestResourceManager(unittest.TestCase):
 			location = Location()
 			user = User()
 
-			manager = ResourceManager(self.app, db)
+			manager = Manager(self.app, db)
 			manager.register_resource(User, collection_name = 'mycustomcollection', methods = ['GET'])
 			manager.register_resource(Location, fields = ['latitude','longitude'])
 			manager.register_resource(City, url_prefix = '/v1', exclude = ['latitude','longitude'])

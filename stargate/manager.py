@@ -1,8 +1,6 @@
-import inspect
 from flask import Flask, Blueprint, url_for, json, make_response
-from six import string_types
 from uuid import uuid1
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 from .proxy import manager_info
 from .serializer import Serializer
 from .deserializer import Deserializer
@@ -11,6 +9,8 @@ from .exception import IllegalArgumentError, StargateException
 from werkzeug.exceptions import HTTPException
 from .views import ResourceAPI
 from flask.testing import FlaskClient
+from sqlalchemy.inspection import inspect as sqlalchemy_inspect
+from sqlalchemy.exc import NoInspectionAvailable
 
 READONLY_METHODS = frozenset(('GET', ))
 WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE',))
@@ -19,7 +19,7 @@ DEFAULT_URL_PREFIX = '/api'
 RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serializer','deserializer', 'pk','apiname'])
 DEFAULT_PRIMARY_KEY_COLUMN = 'id'
 
-class ResourceManager():
+class Manager():
 	
 	def __init__(self, app, db, _decorators = None, url_prefix = None):
 
@@ -40,8 +40,8 @@ class ResourceManager():
 		self.url_prefix = url_prefix
 		
 		self.decorators = _decorators or []
-		self.registerd_blueprints = []
 		self.registered_apis = {}
+		self.registerd_blueprints = []
 
 	@staticmethod
 	def api_name(collection_name):
@@ -50,15 +50,17 @@ class ResourceManager():
 	def register_resource(self, *args, **kwargs):
     
 		blueprint_name = str(uuid1())
-		blueprint = self.create_resource_blueprint(blueprint_name, *args, **kwargs)
-		self.registerd_blueprints.append(blueprint)
+		
+		if self._args_sanity_checks(blueprint_name, *args, **kwargs):
+			blueprint = self.create_resource_blueprint(blueprint_name, *args, **kwargs)
+			self.registerd_blueprints.append(blueprint)
 
-		if self.app is not None:
-			self.app.register_blueprint(blueprint)
+			if self.app is not None:
+				self.app.register_blueprint(blueprint)
 
-		else:
-			msg = "`Flask App` not initilized"
-			raise RuntimeError(msg)
+			else:
+				msg = "`Flask App` not initilized"
+				raise RuntimeError(msg)
 	
 	def create_resource_blueprint(self, name, model, methods = READONLY_METHODS,
                              url_prefix = None, collection_name = None,fields = None, 
@@ -97,7 +99,7 @@ class ResourceManager():
 			prefix = DEFAULT_URL_PREFIX
 
 		blueprint = Blueprint(name, __name__, url_prefix=prefix)
-		#Segregate collection and resource methods
+		#TODO: Segregate collection and resource methods
 		collection_url = '/{0}'.format(collection_name)
 		collection_methods = ALL_METHODS & methods
 		self._add_endpoint(blueprint, collection_url, resource_api_view, methods=collection_methods)
@@ -121,8 +123,7 @@ class ResourceManager():
 
 	def _add_endpoint(self, blueprint, endpoint, view_func, methods=READONLY_METHODS):
 		add_rule = blueprint.add_url_rule
-		add_rule(endpoint, view_func=view_func,
-					methods=methods)
+		add_rule(endpoint, view_func=view_func, methods=methods)
 
 	def register_exception_handler(self, app):
 		app.handle_exception = partial(self._exception_handler, app.handle_exception)
@@ -149,18 +150,43 @@ class ResourceManager():
 		resp.headers.extend(headers or {})
 		return resp
 
-	def _args_sanity_checks(self, *args, **kwargs):
+	def _args_sanity_checks(self, name, model, methods = None,
+                             url_prefix = None, collection_name = None,fields = None, 
+                             validation_exceptions = (), exclude = None, 
+                             decorators = [], primary_key = None):
 
 		if fields is not None and exclude is not None:
 			msg = 'Cannot simultaneously specify both `only` and `exclude`'
 			raise IllegalArgumentError(msg)
 
-		if not hasattr(model, 'id'):
-			msg = 'Provided model must have an `id` attribute'
-			raise IllegalArgumentError(msg)
+		if primary_key is None and not hasattr(model, DEFAULT_PRIMARY_KEY_COLUMN):
+			msg = 'Provided model is missing `id` attribute and no default primary key provided model {0}'
+			raise IllegalArgumentError(msg.format(model))
 
 		if collection_name == '':
 			msg = 'Collection name must be nonempty'
 			raise IllegalArgumentError(msg)
 
+		if name in self.registerd_blueprints:
+			msg = 'Duplicate Blueprint hash'
+			raise RuntimeError("{0}: Error {1}".format(name, msg))
+		try:
+			instance = sqlalchemy_inspect(model)
+		except NoInspectionAvailable as e:
+			msg = "No Inspection available for model {0}"
+			raise IllegalArgumentError(msg.format(model.__name__))
+		
+		if url_prefix is not None and not url_prefix.startswith('/'):
+			msg = "Malformed url_prefix for model {0}, prefix {1}"
+			raise IllegalArgumentError(msg.format(model.__name__, url_prefix))
+		
+		if methods is not None and not all(meth in ALL_METHODS for meth in methods):
+			msg = "Invalid HTTP method in list {0} for model {1}"
+			raise IllegalArgumentError(msg.format(methods, model.__name__)) 
+		
+		for decorator in decorators:
+			if not callable(decorator):
+				msg = "Decorator should be callable model {0} decorator {1}"
+				raise IllegalArgumentError(msg.format(model.__name__, decorator))
+		
 		return True
