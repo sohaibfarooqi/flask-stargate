@@ -60,7 +60,7 @@ class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
                         blueprint_name = manager.registered_apis[model].blueprint
                         api_name = manager.registered_apis[model].apiname
                         parts = [blueprint_name, api_name]
-                        url = url_for('.'.join(parts), **kw)
+                        url = url_for('.'.join(parts), _external = True, **kw)
                         return url
 
                     else:

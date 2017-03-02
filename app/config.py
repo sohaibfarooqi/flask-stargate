@@ -11,3 +11,4 @@ class ApplicationConfig:
     DEBUG = os.environ.get('FLASK_DEBUG', False)
     SECRET_KEY = 'qi8H8R7OM4xMUNMPuRAZxlY'
     TOKEN_EXPIRATION = 30 #Time in minutes
+    SERVER_NAME = 'localhost:5000'

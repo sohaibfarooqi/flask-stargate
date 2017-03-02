@@ -2,7 +2,7 @@
 of a resource to respective class object or list of objects."""
 
 from .proxy import manager_info, PRIMARY_KEY_FOR
-from .query_helper.inclusion import Inclusions
+from .utils import get_related_model
 from .query_helper.filter import string_to_datetime
 from .query_helper.search import session_query
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
@@ -62,7 +62,7 @@ class Deserializer:
         for rel_name, rel_object in links.items():
 
             if 'data' in rel_object:
-                related_model = Inclusions.get_related_model(self.model, rel_name)
+                related_model = get_related_model(self.model, rel_name)
                 deserialize = RelDeserializer(self.session, related_model, rel_name)
                 related_resources[rel_name] = deserialize(rel_object['data'])
             else:

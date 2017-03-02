@@ -1,6 +1,6 @@
 from flask import request, make_response, jsonify, json
 from .proxy import manager_info, URL_FOR, SERIALIZER_FOR
-from .pagination_links import PaginationLinks
+from .utils import get_paginated_url, get_pagination_links
 
 class Representation():
         
@@ -8,7 +8,7 @@ class Representation():
 
     def __init__(self, code, message = None, content_type=None, headers={}):
         
-        self.__base_repr__ = {'meta':{'status_code':None, 'message':None, '_HEADERS':{'Content-Type':'application/vnd.api+json'}}}
+        self.__base_repr__ = {'meta':{'status_code':None, 'message':None, '_HEADERS':{'Content-Type':'application/json'}}}
         self.__base_repr__['meta']['status_code'] = code
         self.__base_repr__['meta']['message'] = self._response_message[code] if message is None else message
         self.__base_repr__['meta']['_HEADERS'].update(headers)
@@ -57,8 +57,8 @@ class CollectionRepresentation(Representation):
 
     def to_response(self, page_size = None, page_number = None, pagination = None):
         
-        self_link = "{0}{1}?".format(request.url_root, manager_info(URL_FOR, self.model).lstrip('/'))
-            
+        self_link =  manager_info(URL_FOR, self.model)
+        
         if pagination is not None and page_number is not None and page_size is not None:
             num_results = pagination.total
             first = 1
@@ -68,12 +68,11 @@ class CollectionRepresentation(Representation):
             page_size = page_size
             page_number = page_number
         
-            self_link = PaginationLinks.get_paginated_url(self_link, page_number, page_size)
+            self_link = get_paginated_url(self_link, page_number, page_size)
             self.__base_repr__['num_results'] = num_results
-            self.__base_repr__['links'] = PaginationLinks.get_pagination_links(page_size, page_number, num_results, first, last, next, prev)
+            self.__base_repr__['links'] = get_pagination_links(page_size, page_number, num_results, first, last, next, prev)
         
         self.__base_repr__['meta']['_HEADERS']['rel'] = self_link
         self.__base_repr__['data'] = self.data
-        
         
         return super(CollectionRepresentation,self).to_response()

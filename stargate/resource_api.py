@@ -4,7 +4,7 @@ from .proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR, PRIMARY_KE
 from .decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
 from .exception import StargateException, ResourceNotFound
 from .query_helper.search import Search, session_query
-from .query_helper.inclusion import Inclusions
+from .utils import get_related_model, get_relations
 from .representation import InstanceRepresentation, CollectionRepresentation
 from flask_sqlalchemy import Pagination
 from .utils import get_resource, is_like_list, has_field, string_to_datetime
@@ -86,7 +86,7 @@ class ResourceAPI(MethodView):
 		if relation is None:
 			serializer = manager_info(SERIALIZER_FOR, self.model)
 		else:
-			serializer	= manager_info(SERIALIZER_FOR, Inclusions.get_related_model(self.model, relation))
+			serializer	= manager_info(SERIALIZER_FOR, get_related_model(self.model, relation))
 		
 		if isinstance(result_set, Pagination):
 			data = serializer(result_set.items, fields = fields, exclude = exclude, expand = expand)
@@ -124,7 +124,7 @@ class ResourceAPI(MethodView):
 			self.session.close()
 			raise StargateException("Unable to save object Error: `{0}`".format(str(ex)))
 
-		relations = Inclusions.get_relations(self.model)
+		relations = get_relations(self.model)
 		relations = ",".join(relations)
 		serializer = manager_info(SERIALIZER_FOR, self.model)
 		result = serializer(instance, expand = relations)

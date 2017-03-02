@@ -90,7 +90,7 @@ class TestSorting(unittest.TestCase):
 			if content_length > 0:
 				data = json.loads(response.get_data())
 				self_rel = data['data']['_embedded']['city']['meta']['_links']['self']
-				self.assertEqual(self_rel, 'http://localhost/api/user/1/city/1')
+				self.assertEqual(self_rel, 'http://localhost:5000/api/user/1/city/1')
 
 			#TO_MANY
 			response = self.client.get('/api/city/1', headers={"Content-Type": "application/json"})
@@ -100,10 +100,10 @@ class TestSorting(unittest.TestCase):
 				data = json.loads(response.get_data())
 				self_rel = data['data']['_embedded']['user']['meta']['_links']['self']
 				#LAZY
-				self.assertEqual(self_rel, 'http://localhost/api/city/1/user?page_number=1&page_size=10')
+				self.assertEqual(self_rel, 'http://localhost:5000/api/city/1/user?page_number=1&page_size=10')
 				#EAGER
 				self_rel = data['data']['_embedded']['location']['meta']['_links']['self']
-				self.assertEqual(self_rel, 'http://localhost/api/city/1/location')
+				self.assertEqual(self_rel, 'http://localhost:5000/api/city/1/location')
 				
 		def test_embedded_pagination_links(self):
 			response = self.client.get('/api/city/1?expand=user', headers={"Content-Type": "application/json"})
@@ -117,7 +117,6 @@ class TestSorting(unittest.TestCase):
 				link_keys = ['first', 'last', 'next', 'prev']
 				
 				self.assertCountEqual(link_keys, pagination_link_keys)
-
 				link_values = [val for val in pagination_links.values() if val is not None]
 
 				for link in link_values:

@@ -10,12 +10,11 @@ from datetime import date, datetime, time, timedelta
 from werkzeug.routing import BuildError
 from flask import request
 from .exception import IllegalArgumentError, ResourceNotFound, SerializationException
-from .query_helper.inclusion import Inclusions
+from .utils import get_relations, get_related_model, parse_expansions
 from sqlalchemy.orm import class_mapper
 from flask_sqlalchemy import BaseQuery
 from .resource_api import STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE
-from .pagination_links import PaginationLinks
-from .utils import is_like_list
+from .utils import is_like_list, get_pagination_links, get_paginated_url
 
 COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
 
@@ -50,6 +49,18 @@ def foreign_key_columns(model):
     all_columns = inspector.columns
     return [c for c in all_columns if c.foreign_keys]
 
+def expand_resource(related_value, fields, serialize_rel = False):
+    
+    if isinstance(related_value, list):
+        related_model = related_value[0]
+    
+    serializer = manager_info(SERIALIZER_FOR, related_model)
+    data = serializer(related_value, fields = fields, serialize_rel = False)
+    
+    pk_id_ = getattr(related_model, manager_info(PRIMARY_KEY_FOR,related_model))
+    self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
+    return data, self_link
+
 def create_relationship(model, instance, relation, expand = None):
     EXPAND = True
     fields = None
@@ -58,7 +69,7 @@ def create_relationship(model, instance, relation, expand = None):
         EXPAND = False
     
     else:
-        if  relation in expand['expand_full']:
+        if  relation in expand['expand']:
             pass
         
         else:
@@ -72,57 +83,46 @@ def create_relationship(model, instance, relation, expand = None):
                 
 
     result = {'meta':{'_links':{}}}
-    related_model = Inclusions.get_related_model(model, relation)
+    related_model = get_related_model(model, relation)
     related_value = getattr(instance, relation)
     pagination_links = {}
 
     pk_value = getattr(instance, manager_info(PRIMARY_KEY_FOR,model))
-    
+    #Lazy Loading
     if isinstance(related_value, BaseQuery):
-        related_value_paginated = related_value.paginate(STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE,error_out=False)
+        related_value_paginated = related_value.paginate(STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE, error_out=False)
         related_value = related_value_paginated.items
-        nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
-        result['meta']['_links'].update(PaginationLinks.get_pagination_links(STARGATE_DEFAULT_PAGE_SIZE, STARGATE_DEFAULT_PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = nested_url))
-        self_link = "{0}{1}?".format(request.url_root, nested_url.lstrip('/'))
-        self_link = PaginationLinks.get_paginated_url(self_link, STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE)
+        
+        self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
+        result['meta']['_links'].update(get_pagination_links(STARGATE_DEFAULT_PAGE_SIZE, STARGATE_DEFAULT_PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = self_link))
+        self_link = get_paginated_url(self_link, STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE)
         result['meta']['_links'].update({'self': self_link})
         result['meta']['_type'] = 'TO_MANY'
-        result['meta']['_evaluation_type'] = 'LAZY'
-
-        if EXPAND:
-            serializer = manager_info(SERIALIZER_FOR, related_model)
-            result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
-            pk_id_ = getattr(related_value[0], manager_info(PRIMARY_KEY_FOR,related_model))
-            self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
-    
-    
-    elif isinstance(related_value, list):
-        nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
-        self_link = "{0}{1}".format(request.url_root, nested_url.lstrip('/'))
-        result['meta']['_links'].update({'self': self_link})
-        result['meta']['_type'] = 'TO_MANY'
-        result['meta']['_evaluation_type'] = 'EAGER'
+        result['meta']['_evaluation'] = 'LAZY'
         
         if EXPAND:
-            serializer = manager_info(SERIALIZER_FOR, related_model)
-            result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
-            pk_id_ = getattr(related_value[0], manager_info(PRIMARY_KEY_FOR,related_model))
-            self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
+            result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
+    
+    #Eager Loading
+    elif isinstance(related_value, list):
+        self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
+        result['meta']['_links'].update({'self': self_link})
+        result['meta']['_type'] = 'TO_MANY'
+        result['meta']['_evaluation'] = 'EAGER'
+
+        if EXPAND:
+            result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
     
     elif related_value is not None:
         
         related_id = getattr(related_value, manager_info(PRIMARY_KEY_FOR, related_model))
-        nested_url = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation, related_id = related_id)
+        self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation, related_id = related_id)
         result['meta']['_type'] = 'TO_ONE'
-        self_link = "{0}{1}".format(request.url_root, nested_url.lstrip('/'))
         result['meta']['_links'] = {'self': self_link}
         serializer = manager_info(SERIALIZER_FOR,related_model)
         
         if EXPAND:
-            result['data'] = serializer(related_value, fields = fields, serialize_rel = False)
-            pk_id_ = getattr(related_value, manager_info(PRIMARY_KEY_FOR,related_model))
-            self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
-            result['data']['_link'] = dict(self = self_link)
+            result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
     else:
         result['data'] = {}
     return result
@@ -200,7 +200,7 @@ class Serializer():
                 columns = [c for c in columns if c not in fields]
             
             if expand:
-                expand = Inclusions.parse_expansions(model, expand)
+                expand = parse_expansions(model, expand)
             
             if isinstance(result_set, list):
                 return self._serialize_many(columns, result_set, expand = expand, serialize_rel = serialize_rel)
@@ -241,7 +241,7 @@ class Serializer():
             result['attributes'] = attributes
 
         if serialize_rel:
-            relations = Inclusions.get_relations(model)
+            relations = get_relations(model)
             result['_embedded'] = dict((rel, create_relationship(model, instance, rel, expand = expand))
                                        for rel in relations)
         return result
