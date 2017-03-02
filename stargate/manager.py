@@ -11,13 +11,13 @@ from .resource_api import ResourceAPI
 from flask.testing import FlaskClient
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from sqlalchemy.exc import NoInspectionAvailable
+from .const import ResourceConst
 
 READONLY_METHODS = frozenset(('GET', ))
 WRITEONLY_METHODS = frozenset(('PATCH', 'POST', 'DELETE',))
 ALL_METHODS = READONLY_METHODS | WRITEONLY_METHODS
 DEFAULT_URL_PREFIX = '/api'
 RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serializer','deserializer', 'pk','apiname'])
-DEFAULT_PRIMARY_KEY_COLUMN = 'id'
 
 class Manager():
 	
@@ -77,8 +77,8 @@ class Manager():
 		decorators_.extend(decorators)
 
 		if primary_key is None:
-			if hasattr(model, DEFAULT_PRIMARY_KEY_COLUMN):
-				primary_key = DEFAULT_PRIMARY_KEY_COLUMN  
+			if hasattr(model, ResourceConst.PRIMARY_KEY_COLUMN):
+				primary_key = ResourceConst.PRIMARY_KEY_COLUMN  
 			else: 
 				raise ValueError("Model {0} has no specified primary_key".format(model.__class__))
 		
@@ -156,7 +156,7 @@ class Manager():
 			msg = 'Cannot simultaneously specify both `fields` and `exclude`'
 			raise IllegalArgumentError(msg)
 
-		if primary_key is None and not hasattr(model, DEFAULT_PRIMARY_KEY_COLUMN):
+		if primary_key is None and not hasattr(model, ResourceConst.PRIMARY_KEY_COLUMN):
 			msg = 'Provided model is missing `id` attribute and no default primary key provided model {0}'
 			raise IllegalArgumentError(msg.format(model))
 

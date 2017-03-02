@@ -8,19 +8,7 @@ from .utils import get_related_model, get_relations
 from .representation import InstanceRepresentation, CollectionRepresentation
 from flask_sqlalchemy import Pagination
 from .utils import get_resource, is_like_list, has_field, string_to_datetime
-
-FILTER_PARAM = 'filters'
-SORT_PARAM = 'sort'
-GROUP_PARAM = 'group'
-FIELDS_PARAM = 'field'
-EXPAND_PARAM = 'expand'
-EXCLUDE_PARAM = 'exclude'
-PAGE_SIZE_PARAM = 'page_size'
-PAGE_NUMBER_PARAM = 'page_number'
-
-STARGATE_DEFAULT_PAGE_NUMBER = 1
-STARGATE_DEFAULT_PAGE_SIZE = 10
-STARGATE_DEFAULT_MAX_PAGE_SIZE = 100
+from .const import PaginationConst, QueryStringConst
 
 class ResourceAPI(MethodView):
 
@@ -47,15 +35,15 @@ class ResourceAPI(MethodView):
 		
 		query_string = request.args.to_dict()
 
-		filters = query_string[FILTER_PARAM] if FILTER_PARAM in query_string else []
-		sort = query_string[SORT_PARAM] if SORT_PARAM in query_string else []
-		group_by = query_string[GROUP_PARAM] if GROUP_PARAM in query_string else []
-		fields = query_string[FIELDS_PARAM] if FIELDS_PARAM in query_string else []
-		exclude = query_string[EXCLUDE_PARAM] if EXCLUDE_PARAM in query_string else []
-		expand = query_string[EXPAND_PARAM] if EXPAND_PARAM in query_string else None
-		page_number = int(query_string[PAGE_NUMBER_PARAM]) if PAGE_NUMBER_PARAM in query_string else STARGATE_DEFAULT_PAGE_NUMBER
-		page_size = int(query_string[PAGE_SIZE_PARAM]) if PAGE_SIZE_PARAM in query_string else STARGATE_DEFAULT_PAGE_SIZE
-		page_size = page_size if page_size <= STARGATE_DEFAULT_MAX_PAGE_SIZE else STARGATE_DEFAULT_MAX_PAGE_SIZE
+		filters = query_string[QueryStringConst.FILTER] if QueryStringConst.FILTER in query_string else []
+		sort = query_string[QueryStringConst.SORT] if QueryStringConst.SORT in query_string else []
+		group_by = query_string[QueryStringConst.GROUP] if QueryStringConst.GROUP in query_string else []
+		fields = query_string[QueryStringConst.FIELDS] if QueryStringConst.FIELDS in query_string else []
+		exclude = query_string[QueryStringConst.EXCLUDE] if QueryStringConst.EXCLUDE in query_string else []
+		expand = query_string[QueryStringConst.EXPAND] if QueryStringConst.EXPAND in query_string else None
+		page_number = int(query_string[QueryStringConst.PAGE_NUMBER]) if QueryStringConst.PAGE_NUMBER in query_string else PaginationConst.PAGE_NUMBER
+		page_size = int(query_string[QueryStringConst.PAGE_SIZE]) if QueryStringConst.PAGE_SIZE in query_string else PaginationConst.PAGE_SIZE
+		page_size = page_size if page_size <= PaginationConst.MAX_PAGE_SIZE else PaginationConst.MAX_PAGE_SIZE
 
 		if filters:
 			filters = json.loads(filters)

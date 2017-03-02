@@ -9,6 +9,7 @@ from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
 from .utils import has_field
+from .const import SerializationConst
 
 class Deserializer:
     
@@ -46,29 +47,29 @@ class Deserializer:
         
         for field in instance:
             
-            if field == '_embedded':
-                for relation in instance['_embedded']:
+            if field == SerializationConst._EMBEDDED:
+                for relation in instance[SerializationConst._EMBEDDED]:
                     if not has_field(self.model, relation):
                         raise ValueError("No relation found {0}".format(relation))
             
-            elif field == 'attributes':
-                for attribute in instance['attributes']:
+            elif field == SerializationConst.ATTRIBUTES:
+                for attribute in instance[SerializationConst.ATTRIBUTES]:
                     if not has_field(self.model, attribute):
                         raise ValueError("No attribute found {0} for model {1}".format(relation, self.model))
         links = {}
-        links = instance.pop('_embedded', {})
+        links = instance.pop(SerializationConst._EMBEDDED, {})
         related_resources = {}
 
         for rel_name, rel_object in links.items():
 
-            if 'data' in rel_object:
+            if SerializationConst.DATA in rel_object:
                 related_model = get_related_model(self.model, rel_name)
                 deserialize = RelDeserializer(self.session, related_model, rel_name)
-                related_resources[rel_name] = deserialize(rel_object['data'])
+                related_resources[rel_name] = deserialize(rel_object[SerializationConst.DATA])
             else:
                 raise KeyError("Missing data in relation {0}".format(rel_name))
         
-        data = instance.pop('attributes', {})
+        data = instance.pop(SerializationConst.ATTRIBUTES, {})
         data = dict((k, string_to_datetime(self.model, k, v)) for k, v in data.items())
         
         instance = self.model(**data)
@@ -87,15 +88,19 @@ class RelDeserializer(Deserializer):
     def __call__(self, data):
 
         if not isinstance(data, list):
-            if 'id' in data:
-                id_ = data['id']
+            pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
+            if pk_name in data:
+                id_ = data[pk_name]
                 pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
                 query = session_query(self.session, self.model)
                 query = query.filter(getattr(self.model, pk_name) == id_)
+                
                 try:
                     return query.one()
+                
                 except MultipleResultsFound as ex:
                     raise RuntimeError("Multiple `{0}` resources found against `id` {1}".format(self.relation_name, id_))
+                
                 except NoResultFound as ex:
                     raise RuntimeError("No Result Found for related Model `{0}` against `id` {1}".format(self.relation_name, id_))
             

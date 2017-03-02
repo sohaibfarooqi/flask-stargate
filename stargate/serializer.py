@@ -13,13 +13,8 @@ from .exception import IllegalArgumentError, ResourceNotFound, SerializationExce
 from .utils import get_relations, get_related_model, parse_expansions
 from sqlalchemy.orm import class_mapper
 from flask_sqlalchemy import BaseQuery
-from .resource_api import STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE
+from .const import PaginationConst, SerializationConst, RelTypeConst, CollectionEvaluationConst
 from .utils import is_like_list, get_pagination_links, get_paginated_url
-
-COLUMN_BLACKLIST = ('_sa_polymorphic_on', )
-
-RELATION_BLACKLIST = ('query', 'query_class', '_sa_class_manager',
-                      '_decl_class_registry')
 
 """Serialization Helper Methods"""
 def get_column_name(column):
@@ -49,10 +44,15 @@ def foreign_key_columns(model):
     all_columns = inspector.columns
     return [c for c in all_columns if c.foreign_keys]
 
+def foreign_keys(model):
+    return [column.name for column in foreign_key_columns(model)]
+
 def expand_resource(related_value, fields, serialize_rel = False):
     
     if isinstance(related_value, list):
         related_model = related_value[0]
+    else:
+        related_model = related_value
     
     serializer = manager_info(SERIALIZER_FOR, related_model)
     data = serializer(related_value, fields = fields, serialize_rel = False)
@@ -90,15 +90,15 @@ def create_relationship(model, instance, relation, expand = None):
     pk_value = getattr(instance, manager_info(PRIMARY_KEY_FOR,model))
     #Lazy Loading
     if isinstance(related_value, BaseQuery):
-        related_value_paginated = related_value.paginate(STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE, error_out=False)
+        related_value_paginated = related_value.paginate(PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE, error_out=False)
         related_value = related_value_paginated.items
         
         self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
-        result['meta']['_links'].update(get_pagination_links(STARGATE_DEFAULT_PAGE_SIZE, STARGATE_DEFAULT_PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = self_link))
-        self_link = get_paginated_url(self_link, STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE)
+        result['meta']['_links'].update(get_pagination_links(PaginationConst.PAGE_SIZE, PaginationConst.PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = self_link))
+        self_link = get_paginated_url(self_link, PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE)
         result['meta']['_links'].update({'self': self_link})
-        result['meta']['_type'] = 'TO_MANY'
-        result['meta']['_evaluation'] = 'LAZY'
+        result['meta']['_type'] = RelTypeConst.TO_MANY
+        result['meta']['_evaluation'] = CollectionEvaluationConst.LAZY
         
         if EXPAND:
             result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
@@ -107,8 +107,8 @@ def create_relationship(model, instance, relation, expand = None):
     elif isinstance(related_value, list):
         self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
         result['meta']['_links'].update({'self': self_link})
-        result['meta']['_type'] = 'TO_MANY'
-        result['meta']['_evaluation'] = 'EAGER'
+        result['meta']['_type'] = RelTypeConst.TO_MANY
+        result['meta']['_evaluation'] = CollectionEvaluationConst.EAGER
 
         if EXPAND:
             result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
@@ -117,7 +117,7 @@ def create_relationship(model, instance, relation, expand = None):
         
         related_id = getattr(related_value, manager_info(PRIMARY_KEY_FOR, related_model))
         self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation, related_id = related_id)
-        result['meta']['_type'] = 'TO_ONE'
+        result['meta']['_type'] = RelTypeConst.TO_ONE
         result['meta']['_links'] = {'self': self_link}
         serializer = manager_info(SERIALIZER_FOR,related_model)
         
@@ -126,18 +126,6 @@ def create_relationship(model, instance, relation, expand = None):
     else:
         result['data'] = {}
     return result
-
-def foreign_keys(model):
-    return [column.name for column in foreign_key_columns(model)]
-
-def primary_key_value(instance, as_string=False):
-    result = getattr(instance, manager_info(PRIMARY_KEY_FOR, instance))
-    if not as_string:
-        return result
-    try:
-        return str(result)
-    except UnicodeEncodeError:
-        return url_quote_plus(result.encode('utf-8'))
 
 #####################################################################################################
 
@@ -238,10 +226,10 @@ class Serializer():
         
         if attributes:
             result[pk_name] = attributes.pop(pk_name)
-            result['attributes'] = attributes
+            result[SerializationConst.ATTRIBUTES] = attributes
 
         if serialize_rel:
             relations = get_relations(model)
-            result['_embedded'] = dict((rel, create_relationship(model, instance, rel, expand = expand))
-                                       for rel in relations)
+            result[SerializationConst._EMBEDDED] = dict((rel, create_relationship(model, instance, rel, expand = expand))
+                                                    for rel in relations)
         return result

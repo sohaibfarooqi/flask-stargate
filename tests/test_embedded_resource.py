@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.insert(0,'..')
 from stargate.stargate import Manager
-from stargate.stargate.resource_api import STARGATE_DEFAULT_PAGE_SIZE, STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_MAX_PAGE_SIZE
+from stargate.stargate.const import RelTypeConst
 from stargate.app.models import User, City, Location
 from stargate.app import init_app, db
 
@@ -71,7 +71,7 @@ class TestSorting(unittest.TestCase):
 			if content_length > 0:
 				data = json.loads(response.get_data())
 				relation_type = data['data']['_embedded']['user']['meta']['_type']
-				self.assertEqual(relation_type, 'TO_MANY')
+				self.assertEqual(relation_type, RelTypeConst.TO_MANY)
 
 		def test_to_one_type(self):
 			response = self.client.get('/api/user/1', headers={"Content-Type": "application/json"})
@@ -80,7 +80,7 @@ class TestSorting(unittest.TestCase):
 			if content_length > 0:
 				data = json.loads(response.get_data())
 				relation_type = data['data']['_embedded']['city']['meta']['_type']
-				self.assertEqual(relation_type, 'TO_ONE')
+				self.assertEqual(relation_type, RelTypeConst.TO_ONE)
 
 		def test_embedded_self_link(self):
 			#TO_ONE

@@ -6,8 +6,6 @@ from werkzeug import parse_options_header
 
 CONTENT_TYPE = 'application/json'
 
-JSONAPI_VERSION = '1.0'
-
 ACCEPT_RE = re.compile(
     r'''(                       # media-range capturing-parenthesis
           [^\s;,]+              # type/subtype
