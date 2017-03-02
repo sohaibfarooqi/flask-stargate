@@ -1,13 +1,13 @@
 from flask import request, json, jsonify
 from flask.views import MethodView
-from ..proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR, DESERIALIZER_FOR
-from ..decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
-from ..exception import StargateException, ResourceNotFound
-from ..query_helper.search import Search, session_query
-from ..query_helper.inclusion import Inclusions
+from .proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR, DESERIALIZER_FOR
+from .decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
+from .exception import StargateException, ResourceNotFound
+from .query_helper.search import Search, session_query
+from .query_helper.inclusion import Inclusions
 from .representation import InstanceRepresentation, CollectionRepresentation
 from flask_sqlalchemy import Pagination
-from ..utils import get_resource, is_like_list, has_field, string_to_datetime
+from .utils import get_resource, is_like_list, has_field, string_to_datetime
 
 FILTER_PARAM = 'filters'
 SORT_PARAM = 'sort'

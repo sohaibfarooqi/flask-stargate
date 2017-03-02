@@ -1,7 +1,7 @@
 import re
 from functools import wraps
 from flask import request, json, jsonify
-from .exception import NotAcceptable, MediaTypeNotSupported, ProcessingException
+from .exception import NotAcceptable, MediaTypeNotSupported, ProcessingException, ConflictException, ValidationException
 from werkzeug import parse_options_header
 
 CONTENT_TYPE = 'application/json'
@@ -82,10 +82,6 @@ ERROR_FIELDS = ('id_', 'links', 'status', 'code_', 'title', 'detail', 'source',
 
 CONFLICT_INDICATORS = ('conflicts with', 'UNIQUE constraint failed',
                         'is not unique')
-
-
-def un_camel_case(s):
-    return re.sub(r'(?<=\w)([A-Z])', r' \1', s)
 
 """View Function Error handling Decorators"""
 def catch_processing_exceptions(func):

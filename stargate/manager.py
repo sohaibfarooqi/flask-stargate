@@ -7,7 +7,7 @@ from .deserializer import Deserializer
 from functools import partial
 from .exception import IllegalArgumentError, StargateException
 from werkzeug.exceptions import HTTPException
-from .views import ResourceAPI
+from .resource_api import ResourceAPI
 from flask.testing import FlaskClient
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from sqlalchemy.exc import NoInspectionAvailable
@@ -114,12 +114,9 @@ class Manager():
 		nested_instance_url = '{0}/<related_id>'.format(nested_collection_url)
 		self._add_endpoint(blueprint, nested_instance_url, resource_api_view ,methods=resource_methods)
 
-		self._add_resource(model, collection_name, blueprint, serializer, deserializer, primary_key, apiname)
-
-		return blueprint
-
-	def _add_resource(self, model, collection_name, blueprint, serializer, deserializer, primary_key, apiname):
 		self.registered_apis[model] = RESOURCE_INFO(collection_name, blueprint.name, serializer, deserializer, primary_key, apiname)
+
+		return blueprint		
 
 	def _add_endpoint(self, blueprint, endpoint, view_func, methods=READONLY_METHODS):
 		add_rule = blueprint.add_url_rule
@@ -156,7 +153,7 @@ class Manager():
                              decorators = [], primary_key = None):
 
 		if fields is not None and exclude is not None:
-			msg = 'Cannot simultaneously specify both `only` and `exclude`'
+			msg = 'Cannot simultaneously specify both `fields` and `exclude`'
 			raise IllegalArgumentError(msg)
 
 		if primary_key is None and not hasattr(model, DEFAULT_PRIMARY_KEY_COLUMN):

@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.insert(0,'..')
 from stargate.stargate import Manager
-from stargate.stargate.views.resource import STARGATE_DEFAULT_PAGE_SIZE, STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_MAX_PAGE_SIZE
+from stargate.stargate.resource_api import STARGATE_DEFAULT_PAGE_SIZE, STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_MAX_PAGE_SIZE
 from stargate.app.models import User, City, Location
 from stargate.app import init_app, db
 

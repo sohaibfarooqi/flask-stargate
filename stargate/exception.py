@@ -1,8 +1,8 @@
-from flask import jsonify, current_app
+from flask import jsonify
 from werkzeug.exceptions import NotAcceptable, Conflict, BadRequest, NotFound, InternalServerError, UnsupportedMediaType, UnprocessableEntity
 from werkzeug.http import HTTP_STATUS_CODES
 
-"""Werkzeug Exceptions"""
+############################--MAIN APPLICATION ERROR CLASS--##################################
 class StargateException(Exception):
     werkzeug_exception = InternalServerError
 
@@ -23,7 +23,7 @@ class StargateException(Exception):
         response = jsonify(self.as_dict())
         response.status_code = self.status_code
         return response
-
+############################--NOT-FOUND ERRORS--############################################
 class ResourceNotFound(StargateException):
     werkzeug_exception = NotFound
 
@@ -38,31 +38,23 @@ class ResourceNotFound(StargateException):
         dct['resource'] = self.resource
         dct['primary_key'] = self.id
         return dct   
-
-class MediaTypeNotSupported(StargateException):
-    werkzeug_exception = UnsupportedMediaType
-
-class ValidationException(StargateException):
-    werkzeug_exception = BadRequest
-
+############################--CONFLICT ERRORS--############################################
 class ConflictException(StargateException):
     werkzeug_exception = Conflict
     
     def __init__(self, msg, **kwargs):
         super(IllegalArgumentError, self).__init__()
         self.msg = msg
+############################--MEDIATYPE ERRORS--############################################
+class MediaTypeNotSupported(StargateException):
+    werkzeug_exception = UnsupportedMediaType
+
 class NotAcceptable(StargateException):
     werkzeug_exception = NotAcceptable
 
-class ProcessingException(StargateException):
-    werkzeug_exception = UnprocessableEntity
-
-"""Application Custom Exceptions"""
-class IllegalArgumentError(ValidationException):
-    
-    def __init__(self, msg, **kwargs):
-        super(IllegalArgumentError, self).__init__()
-        self.msg = msg
+############################--VALIDATION ERRORS--############################################
+class ValidationException(StargateException):
+    werkzeug_exception = BadRequest
 
 class ComparisonToNull(ValidationException):
     def __init__(self, msg, **kwargs):
@@ -70,22 +62,25 @@ class ComparisonToNull(ValidationException):
         self.msg = msg
 
 class UnknownField(ValidationException):
-
     def __init__(self, field, resource):
         super(UnknownField, self).__init__()
         self.field = field
         self.msg = "Unknown field {0} in model {1}".format(field, resource)
-
     
     def as_dict(self):
         dct = super(UnknownField, self).as_dict()
         dct['field'] = self.field
         return dct
 
-class SingleKeyError(ValidationException):
+class IllegalArgumentError(ValidationException):
+    
     def __init__(self, msg, **kwargs):
-        super(SingleKeyError, self).__init__()
+        super(IllegalArgumentError, self).__init__()
         self.msg = msg
+
+############################--PROCESSING ERRORS--############################################
+class ProcessingException(StargateException):
+    werkzeug_exception = UnprocessableEntity       
 
 class SerializationException(ProcessingException):
     
@@ -98,13 +93,10 @@ class SerializationException(ProcessingException):
         dct['instance'] = self.instance
         return dct
 
-class PaginationError(ValidationException):
-    def __init__(self, msg, **kwargs):
-        super(PaginationError, self).__init__()
-        self.msg = msg
-
 class DeserializationException(ProcessingException):
     
     def __init__(self, *args, **kw):
         super(DeserializationException, self).__init__(*args, **kw)
         self.msg = kw['msg'] if kw['msg'] else 'Failed to deserialize object'
+
+###############################################################################################

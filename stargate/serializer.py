@@ -13,7 +13,7 @@ from .exception import IllegalArgumentError, ResourceNotFound, SerializationExce
 from .query_helper.inclusion import Inclusions
 from sqlalchemy.orm import class_mapper
 from flask_sqlalchemy import BaseQuery
-from .views.resource import STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE
+from .resource_api import STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_PAGE_SIZE
 from .pagination_links import PaginationLinks
 from .utils import is_like_list
 

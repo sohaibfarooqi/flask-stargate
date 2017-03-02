@@ -1,6 +1,6 @@
 from flask import request, make_response, jsonify, json
-from ..proxy import manager_info, URL_FOR, SERIALIZER_FOR
-from ..pagination_links import PaginationLinks
+from .proxy import manager_info, URL_FOR, SERIALIZER_FOR
+from .pagination_links import PaginationLinks
 
 class Representation():
         
