@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.insert(0,'..')
 from stargate.stargate import Manager
-from stargate.stargate.resource_api import STARGATE_DEFAULT_PAGE_SIZE, STARGATE_DEFAULT_PAGE_NUMBER, STARGATE_DEFAULT_MAX_PAGE_SIZE
+from stargate.stargate.const import PaginationConst
 from stargate.app.models import User, City, Location
 from stargate.app import init_app, db
 
@@ -82,15 +82,15 @@ class TestSorting(unittest.TestCase):
 				for param in params:
 					key, value = param.split('=')
 					if key == 'page_number':
-						self.assertTrue(int(value) == STARGATE_DEFAULT_PAGE_NUMBER)
+						self.assertTrue(int(value) == PaginationConst.PAGE_NUMBER)
 						PAGE_NUMBER = True
 					
 					elif key == 'page_size':
-						self.assertTrue(int(value) == STARGATE_DEFAULT_PAGE_SIZE)	
+						self.assertTrue(int(value) == PaginationConst.PAGE_SIZE)	
 						PAGE_SIZE = True
 
 				self.assertTrue(PAGE_NUMBER == True and PAGE_SIZE == True)
-				self.assertTrue(len(objects) == STARGATE_DEFAULT_PAGE_SIZE)
+				self.assertTrue(len(objects) == PaginationConst.PAGE_SIZE)
 
 		def test_pagination_params(self):
 			response = self.client.get('/api/user?page_number=5&page_size=20', headers={"Content-Type": "application/json"})
@@ -142,11 +142,11 @@ class TestSorting(unittest.TestCase):
 						PAGE_NUMBER = True
 					
 					elif key == 'page_size':
-						self.assertTrue(int(value) == STARGATE_DEFAULT_MAX_PAGE_SIZE)	
+						self.assertTrue(int(value) == PaginationConst.MAX_PAGE_SIZE)	
 						PAGE_SIZE = True
 
 				self.assertTrue(PAGE_NUMBER == True and PAGE_SIZE == True)
-				self.assertTrue(len(objects) == STARGATE_DEFAULT_MAX_PAGE_SIZE)
+				self.assertTrue(len(objects) == PaginationConst.MAX_PAGE_SIZE)
 
 		def test_pagination_links(self):
 			response = self.client.get('/api/user?page_number=1&page_size=20', headers={"Content-Type": "application/json"})
