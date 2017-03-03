@@ -1,8 +1,11 @@
 import datetime
+import re
+import math
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.exc import NoResultFound
-from .exception import StargateException
-from .proxy import manager_info, PRIMARY_KEY_FOR
+from .exception import StargateException, ResourceNotFound
+from .proxy import manager_info
+from .const import ResourceInfoConst
 from sqlalchemy import inspect as sqlalchemy_inspect
 from dateutil.parser import parse as parse_datetime
 from sqlalchemy.sql.expression import ColumnElement
@@ -13,11 +16,7 @@ from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm import RelationshipProperty as RelProperty
 from sqlalchemy.ext.associationproxy import AssociationProxy
 from sqlalchemy.inspection import inspect
-import re
-import math
 from flask import request
-
-CURRENT_TIME_MARKERS = ('CURRENT_TIMESTAMP', 'CURRENT_DATE', 'LOCALTIMESTAMP')
 
 def session_query(session, model):
 	if hasattr(model, 'query'):
@@ -45,7 +44,7 @@ def is_like_list(instance, relation):
 
 def get_resource(session, model, pk_id):
 
-	pk_name = manager_info(PRIMARY_KEY_FOR, model)
+	pk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, model)
 		
 	try:
 		query = session_query(session, model)
@@ -80,27 +79,27 @@ def get_field_type(model, fieldname):
     return None
 
 def string_to_datetime(model, fieldname, value):
-    if value is None:
-        return value
-    field_type = get_field_type(model, fieldname)
-    if isinstance(field_type, (Date, Time, DateTime)):
-        if value.strip() == '':
-            return None
-        if value in CURRENT_TIME_MARKERS:
-            return getattr(func, value.lower())()
-        value_as_datetime = parse_datetime(value)
-        if isinstance(field_type, Date):
-            return value_as_datetime.date()
-        if isinstance(field_type, Time):
-            return value_as_datetime.timetz()
-        return value_as_datetime
-    if isinstance(field_type, Interval) and isinstance(value, int):
-        return datetime.timedelta(seconds=value)
-    return value
+
+	CURRENT_TIME_MARKERS = ('CURRENT_TIMESTAMP', 'CURRENT_DATE', 'LOCALTIMESTAMP')
+	if value is None:
+		return value
+	field_type = get_field_type(model, fieldname)
+	if isinstance(field_type, (Date, Time, DateTime)):
+		if value.strip() == '':
+			return None
+		if value in CURRENT_TIME_MARKERS:
+			return getattr(func, value.lower())()
+		value_as_datetime = parse_datetime(value)
+		if isinstance(field_type, Date):
+			return value_as_datetime.date()
+		if isinstance(field_type, Time):
+			return value_as_datetime.timetz()
+		return value_as_datetime
+	if isinstance(field_type, Interval) and isinstance(value, int):
+		return datetime.timedelta(seconds=value)
+	return value
 
 def get_pagination_links(page_size, page_number, num_results, first, last, next, prev, url = None):
-
-	LINK_NAMES = ('first', 'last', 'prev', 'next')
 
 	if url is not None:
 		link_url =  url	
@@ -145,11 +144,8 @@ def get_paginated_url(link, page_number, page_size):
 		return "{0}?page_number={1}&page_size={2}".format(link, page_number, page_size)
 
 
-NON_RELATION_ATTRS = ('query', 'query_class', '_sa_class_manager','_decl_class_registry')
-
-REGEX_MATCH_FIELD = r'((\w+)\(([\s+\w\s+,\s+.]+)\))'
-
 def get_relations(model):
+		NON_RELATION_ATTRS = ('query', 'query_class', '_sa_class_manager','_decl_class_registry')
 		return [k for k in dir(model) if not (k.startswith('__') or k in NON_RELATION_ATTRS) and get_related_model(model, k)]
 	
 def get_related_model(model, relationname):
@@ -159,7 +155,7 @@ def get_related_model(model, relationname):
 	if hasattr(attr, 'property') and isinstance(attr.property, RelProperty):
 		return attr.property.mapper.class_
 	if isinstance(attr, AssociationProxy):
-		return Inclusions.get_related_association_proxy_model(attr)
+		return get_related_association_proxy_model(attr)
 	return None
 
 def get_related_association_proxy_model(attr):
@@ -171,7 +167,7 @@ def get_related_association_proxy_model(attr):
 
 
 def parse_expansions(model, expand):
-
+	REGEX_MATCH_FIELD = r'((\w+)\(([\s+\w\s+,\s+.]+)\))'
 	nested_fields = re.findall(REGEX_MATCH_FIELD, expand)
 
 	resource = expand

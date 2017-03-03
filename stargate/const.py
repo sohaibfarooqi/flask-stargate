@@ -30,3 +30,12 @@ class SerializationConst:
 	_EMBEDDED = '_embedded'
 	ATTRIBUTES = 'attributes'
 	DATA = 'data'
+	NUM_RESULTS = 'num_results'
+	LINKS = 'links'
+
+class ResourceInfoConst:
+	PRIMARY_KEY_FOR = 'primary_key_for'
+	SERIALIZER_FOR = 'serializer_for'
+	DESERIALIZER_FOR = 'deserializer_for'
+	URL_FOR = 'url_for'
+	COLLECTION_NAME_FOR = 'collection_name_for'

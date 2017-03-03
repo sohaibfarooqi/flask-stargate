@@ -1,5 +1,5 @@
 import inspect
-from ..exception import UnknownField, ComparisonToNull
+from .exception import UnknownField, ComparisonToNull
 from sqlalchemy import Date, DateTime, Interval, Time, and_, or_
 from dateutil.parser import parse as parse_datetime
 import datetime
@@ -7,14 +7,7 @@ from sqlalchemy.sql.expression import ColumnElement
 from sqlalchemy.orm import RelationshipProperty as RelProperty
 from sqlalchemy.ext.associationproxy import AssociationProxy
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from ..utils import string_to_datetime
-
-def get_related_association_proxy_model(attr):
-    prop = attr.remote_attr.property
-    for attribute in ('mapper', 'parent'):
-        if hasattr(prop, attribute):
-            return getattr(prop, attribute).class_
-    return None
+from .utils import string_to_datetime, get_related_association_proxy_model
 
 def _sub_operator(model, argument, fieldname):
     print(argument, fieldname)

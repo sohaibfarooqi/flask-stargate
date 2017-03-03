@@ -2,12 +2,7 @@ import inspect
 from six import with_metaclass
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from flask import url_for
-
-PRIMARY_KEY_FOR = 'primary_key_for'
-SERIALIZER_FOR = 'serializer_for'
-DESERIALIZER_FOR = 'deserializer_for'
-URL_FOR = 'url_for'
-COLLECTION_NAME_FOR = 'collection_name_for'
+from .const import ResourceInfoConst
 
 class Singleton(type):
     _instances = {}
@@ -40,23 +35,23 @@ class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
             for manager in self.created_managers:
 
                 try:
-                    if key == PRIMARY_KEY_FOR:
+                    if key == ResourceInfoConst.PRIMARY_KEY_FOR:
                         primary_key = manager.registered_apis[model].pk
                         if isinstance(primary_key, str):
                             return primary_key
                         else:
                             return primary_key(model)
 
-                    elif key == COLLECTION_NAME_FOR:
+                    elif key == ResourceInfoConst.COLLECTION_NAME_FOR:
                         return manager.registered_apis[model].collection
 
-                    elif key == SERIALIZER_FOR:
+                    elif key == ResourceInfoConst.SERIALIZER_FOR:
                         return manager.registered_apis[model].serializer
 
-                    elif key == DESERIALIZER_FOR:
+                    elif key == ResourceInfoConst.DESERIALIZER_FOR:
                         return manager.registered_apis[model].deserializer
 
-                    elif key == URL_FOR:
+                    elif key == ResourceInfoConst.URL_FOR:
                         blueprint_name = manager.registered_apis[model].blueprint
                         api_name = manager.registered_apis[model].apiname
                         parts = [blueprint_name, api_name]

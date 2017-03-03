@@ -1,6 +1,7 @@
 from flask import request, make_response, jsonify, json
-from .proxy import manager_info, URL_FOR, SERIALIZER_FOR
+from .proxy import manager_info
 from .utils import get_paginated_url, get_pagination_links
+from .const import ResourceInfoConst, SerializationConst
 
 class Representation():
         
@@ -40,10 +41,10 @@ class InstanceRepresentation(Representation):
 
     def to_response(self):
 
-        self_link = manager_info(URL_FOR, self.model, pk_id = self.pk_id)
+        self_link = manager_info(ResourceInfoConst.URL_FOR, self.model, pk_id = self.pk_id)
         
         self.__base_repr__['meta']['_HEADERS']['rel'] = self_link
-        self.__base_repr__['data'] = self.data
+        self.__base_repr__[SerializationConst.DATA] = self.data
         return super(InstanceRepresentation,self).to_response()
                
 
@@ -57,7 +58,7 @@ class CollectionRepresentation(Representation):
 
     def to_response(self, page_size = None, page_number = None, pagination = None):
         
-        self_link =  manager_info(URL_FOR, self.model)
+        self_link =  manager_info(ResourceInfoConst.URL_FOR, self.model)
         
         if pagination is not None and page_number is not None and page_size is not None:
             num_results = pagination.total
@@ -69,10 +70,10 @@ class CollectionRepresentation(Representation):
             page_number = page_number
         
             self_link = get_paginated_url(self_link, page_number, page_size)
-            self.__base_repr__['num_results'] = num_results
-            self.__base_repr__['links'] = get_pagination_links(page_size, page_number, num_results, first, last, next, prev)
+            self.__base_repr__[SerializationConst.NUM_RESULTS] = num_results
+            self.__base_repr__[SerializationConst.LINKS] = get_pagination_links(page_size, page_number, num_results, first, last, next, prev)
         
         self.__base_repr__['meta']['_HEADERS']['rel'] = self_link
-        self.__base_repr__['data'] = self.data
+        self.__base_repr__[SerializationConst.DATA] = self.data
         
         return super(CollectionRepresentation,self).to_response()

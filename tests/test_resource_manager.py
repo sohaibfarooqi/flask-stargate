@@ -5,7 +5,8 @@ import sys
 import os
 sys.path.insert(0,'..')
 from stargate.stargate import Manager
-from stargate.stargate.proxy import manager_info, PRIMARY_KEY_FOR
+from stargate.stargate.proxy import manager_info
+from stargate.stargate.const import ResourceInfoConst
 from stargate.app.models import User, City, Location, TestPrimaryKey
 from stargate.app import init_app, db
 from functools import wraps, partial
@@ -127,7 +128,7 @@ class TestResourceManager(unittest.TestCase):
 			self.assertEqual(response._status_code, 405)
 		
 		def test_custom_primary_key_field(self):
-			primary_key = manager_info(PRIMARY_KEY_FOR, TestPrimaryKey)
+			primary_key = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, TestPrimaryKey)
 			self.assertEqual(primary_key, 'ser_id')
 		
 		@classmethod

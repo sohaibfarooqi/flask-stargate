@@ -1,15 +1,11 @@
 """Default Deserialization Class for Stargate. It can convert JSONObject or JSONArray representation
 of a resource to respective class object or list of objects."""
 
-from .proxy import manager_info, PRIMARY_KEY_FOR
+from .proxy import manager_info
 from .utils import get_related_model
-from .query_helper.filter import string_to_datetime
-from .query_helper.search import session_query
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.exc import MultipleResultsFound
-from .utils import has_field
-from .const import SerializationConst
+from .utils import has_field, string_to_datetime, session_query
+from .const import SerializationConst, ResourceInfoConst
 
 class Deserializer:
     
@@ -19,10 +15,10 @@ class Deserializer:
 
     def __call__(self, document):
         
-        if 'data' not in document:
+        if SerializationConst.DATA not in document:
             raise ValueError("Key Error data")
         
-        data = document['data']
+        data = document[SerializationConst.DATA]
         
         if isinstance(data, list):
             return self._deserialize_many(data)
@@ -88,21 +84,10 @@ class RelDeserializer(Deserializer):
     def __call__(self, data):
 
         if not isinstance(data, list):
-            pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
+            pk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, self.model)
+            
             if pk_name in data:
-                id_ = data[pk_name]
-                pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
-                query = session_query(self.session, self.model)
-                query = query.filter(getattr(self.model, pk_name) == id_)
-                
-                try:
-                    return query.one()
-                
-                except MultipleResultsFound as ex:
-                    raise RuntimeError("Multiple `{0}` resources found against `id` {1}".format(self.relation_name, id_))
-                
-                except NoResultFound as ex:
-                    raise RuntimeError("No Result Found for related Model `{0}` against `id` {1}".format(self.relation_name, id_))
+                return get_resource(self.session, self.model, data[pk_name])
             
             else:
                 return self.model(**data)

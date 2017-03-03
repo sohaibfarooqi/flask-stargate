@@ -1,19 +1,15 @@
 import re
-from sqlalchemy.inspection import inspect
 from sqlalchemy.exc import NoInspectionAvailable
-from urllib.parse import urljoin
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy import Column
-from .proxy import manager_info, URL_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR
+from .proxy import manager_info
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from datetime import date, datetime, time, timedelta
-from werkzeug.routing import BuildError
-from flask import request
-from .exception import IllegalArgumentError, ResourceNotFound, SerializationException
+from .exception import IllegalArgumentError, SerializationException
 from .utils import get_relations, get_related_model, parse_expansions
 from sqlalchemy.orm import class_mapper
 from flask_sqlalchemy import BaseQuery
-from .const import PaginationConst, SerializationConst, RelTypeConst, CollectionEvaluationConst
+from .const import PaginationConst, SerializationConst, RelTypeConst, CollectionEvaluationConst, ResourceInfoConst
 from .utils import is_like_list, get_pagination_links, get_paginated_url
 
 """Serialization Helper Methods"""
@@ -54,11 +50,11 @@ def expand_resource(related_value, fields, serialize_rel = False):
     else:
         related_model = related_value
     
-    serializer = manager_info(SERIALIZER_FOR, related_model)
+    serializer = manager_info(ResourceInfoConst.SERIALIZER_FOR, related_model)
     data = serializer(related_value, fields = fields, serialize_rel = False)
     
-    pk_id_ = getattr(related_model, manager_info(PRIMARY_KEY_FOR,related_model))
-    self_link = manager_info(URL_FOR, related_model, pk_id = pk_id_)
+    pk_id_ = getattr(related_model, manager_info(ResourceInfoConst.PRIMARY_KEY_FOR,related_model))
+    self_link = manager_info(ResourceInfoConst.URL_FOR, related_model, pk_id = pk_id_)
     return data, self_link
 
 def create_relationship(model, instance, relation, expand = None):
@@ -87,13 +83,13 @@ def create_relationship(model, instance, relation, expand = None):
     related_value = getattr(instance, relation)
     pagination_links = {}
 
-    pk_value = getattr(instance, manager_info(PRIMARY_KEY_FOR,model))
+    pk_value = getattr(instance, manager_info(ResourceInfoConst.PRIMARY_KEY_FOR,model))
     #Lazy Loading
     if isinstance(related_value, BaseQuery):
         related_value_paginated = related_value.paginate(PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE, error_out=False)
         related_value = related_value_paginated.items
         
-        self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
+        self_link = manager_info(ResourceInfoConst.URL_FOR, model, pk_id = pk_value, relation = relation)
         result['meta']['_links'].update(get_pagination_links(PaginationConst.PAGE_SIZE, PaginationConst.PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = self_link))
         self_link = get_paginated_url(self_link, PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE)
         result['meta']['_links'].update({'self': self_link})
@@ -105,7 +101,7 @@ def create_relationship(model, instance, relation, expand = None):
     
     #Eager Loading
     elif isinstance(related_value, list):
-        self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation)
+        self_link = manager_info(ResourceInfoConst.URL_FOR, model, pk_id = pk_value, relation = relation)
         result['meta']['_links'].update({'self': self_link})
         result['meta']['_type'] = RelTypeConst.TO_MANY
         result['meta']['_evaluation'] = CollectionEvaluationConst.EAGER
@@ -115,11 +111,11 @@ def create_relationship(model, instance, relation, expand = None):
     
     elif related_value is not None:
         
-        related_id = getattr(related_value, manager_info(PRIMARY_KEY_FOR, related_model))
-        self_link = manager_info(URL_FOR, model, pk_id = pk_value, relation = relation, related_id = related_id)
+        related_id = getattr(related_value, manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, related_model))
+        self_link = manager_info(ResourceInfoConst.URL_FOR, model, pk_id = pk_value, relation = relation, related_id = related_id)
         result['meta']['_type'] = RelTypeConst.TO_ONE
         result['meta']['_links'] = {'self': self_link}
-        serializer = manager_info(SERIALIZER_FOR,related_model)
+        serializer = manager_info(ResourceInfoConst.SERIALIZER_FOR,related_model)
         
         if EXPAND:
             result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
@@ -164,7 +160,7 @@ class Serializer():
             
             else:
                 try:
-                    inspected_instance = inspect(model)
+                    inspected_instance = sqlalchemy_inspect(model)
                 except NoInspectionAvailable:
                     raise IllegalArgumentError(msg="No inspection available for class{0}".format(model.__class__))
                 column_attrs = inspected_instance.column_attrs.keys()
@@ -177,7 +173,7 @@ class Serializer():
             if self.exclude:
                 columns = [c for c in columns if c not in self.exclude]
 
-            pk_name = manager_info(PRIMARY_KEY_FOR, model)
+            pk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, model)
             
             if fields:
                 fields = set(fields)
@@ -213,7 +209,7 @@ class Serializer():
 
         result = {}
         model = get_model(instance)
-        pk_name = manager_info(PRIMARY_KEY_FOR, model)
+        pk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, model)
         attributes = dict((column, getattr(instance, column))
                           for column in columns)
         attributes = dict((k, (v() if callable(v) else v))

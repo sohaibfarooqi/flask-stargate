@@ -1,14 +1,14 @@
 from flask import request, json, jsonify
 from flask.views import MethodView
-from .proxy import manager_info, COLLECTION_NAME_FOR, SERIALIZER_FOR, PRIMARY_KEY_FOR, DESERIALIZER_FOR
+from .proxy import manager_info
 from .decorators import catch_processing_exceptions, catch_integrity_errors, requires_api_accept, requires_api_mimetype
 from .exception import StargateException, ResourceNotFound
-from .query_helper.search import Search, session_query
+from .search import Search, session_query
 from .utils import get_related_model, get_relations
 from .representation import InstanceRepresentation, CollectionRepresentation
 from flask_sqlalchemy import Pagination
 from .utils import get_resource, is_like_list, has_field, string_to_datetime
-from .const import PaginationConst, QueryStringConst
+from .const import PaginationConst, QueryStringConst, ResourceInfoConst, SerializationConst
 
 class ResourceAPI(MethodView):
 
@@ -22,7 +22,7 @@ class ResourceAPI(MethodView):
         
 		super(ResourceAPI, self).__init__(*args,**kw)
 
-		self.collection_name = manager_info(COLLECTION_NAME_FOR, model)
+		self.collection_name = manager_info(ResourceInfoConst.COLLECTION_NAME_FOR, model)
 		
 		self.session = session
 		self.model = model
@@ -54,7 +54,7 @@ class ResourceAPI(MethodView):
 		
 		if group_by:
 			group_by = group_by.split(',')
-			group_by.append(manager_info(PRIMARY_KEY_FOR, self.model))
+			group_by.append(manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, self.model))
 		
 		if fields:
 			fields = fields.split(',')
@@ -72,9 +72,9 @@ class ResourceAPI(MethodView):
 												group_by = group_by, page_size = page_size, 
 												page_number = page_number)
 		if relation is None:
-			serializer = manager_info(SERIALIZER_FOR, self.model)
+			serializer = manager_info(ResourceInfoConst.SERIALIZER_FOR, self.model)
 		else:
-			serializer	= manager_info(SERIALIZER_FOR, get_related_model(self.model, relation))
+			serializer	= manager_info(ResourceInfoConst.SERIALIZER_FOR, get_related_model(self.model, relation))
 		
 		if isinstance(result_set, Pagination):
 			data = serializer(result_set.items, fields = fields, exclude = exclude, expand = expand)
@@ -96,7 +96,7 @@ class ResourceAPI(MethodView):
 			raise StargateException("Unable to decode Request Body : ".format(str(exception)))
 
 		try:
-			deserializer = manager_info(DESERIALIZER_FOR, self.model)
+			deserializer = manager_info(ResourceInfoConst.DESERIALIZER_FOR, self.model)
 			instance = deserializer(data)
 			
 			if isinstance(instance, list):
@@ -114,14 +114,14 @@ class ResourceAPI(MethodView):
 
 		relations = get_relations(self.model)
 		relations = ",".join(relations)
-		serializer = manager_info(SERIALIZER_FOR, self.model)
+		serializer = manager_info(ResourceInfoConst.SERIALIZER_FOR, self.model)
 		result = serializer(instance, expand = relations)
 		
 		if isinstance(instance, list):
 			representation = CollectionRepresentation(self.model, result, 201)
 		
 		else:
-			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
+			pk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, self.model)
 			pk_val = getattr(instance, pk_name)
 			representation = InstanceRepresentation(self.model, pk_val, result, 201)
 
@@ -136,40 +136,36 @@ class ResourceAPI(MethodView):
 			raise StargateException("Unable to decode Request Body : ".format(str(exception)))
 		
 		primary_resource = get_resource(self.session, self.model, pk_id)
-		data = data.pop('data', {})
+		data = data.pop(SerializationConst.DATA, {})
 		
-		links = data.pop('_embedded', {})
+		links = data.pop(SerializationConst._EMBEDDED, {})
 		
 		for linkname, link in links.items():
 
-			linkage = link['data']
-			related_model = Inclusions.get_related_model(self.model, linkname)
+			linkage = link[SerializationConst.DATA]
+			related_model = get_related_model(self.model, linkname)
             
 			if is_like_list(primary_resource, linkname):
 
 				newvalue = []
-				not_found = []
-
+				fk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, related_model)
 				for rel in linkage:
-
-					id_ = rel['id']
-					inst = get_resource(self.session, related_model, id_)
-
-					if inst is None:
-						not_found.append((id_, type_))
-					else:
+					
+					if fk_name in rel:
+						inst = get_resource(self.session, related_model, rel[fk_name])
 						newvalue.append(inst)
 			else:
 				
 				if linkage is None:
 					newvalue = None
 				else:
-					id_ = linkage['id']
-					inst = get_resource(self.session, related_model, id_)
-					newvalue = inst
-					setattr(primary_resource, linkname, newvalue)
+					fk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, related_model)
+					if fk_name in linkage:
+						inst = get_resource(self.session, related_model, linkage[fk_name])
+						newvalue = inst
+						setattr(primary_resource, linkname, newvalue)
 
-			data = data.pop('attributes', {})
+			data = data.pop(SerializationConst.ATTRIBUTES, {})
 
 			for field in data:
 				if not has_field(self.model, field):
@@ -181,30 +177,20 @@ class ResourceAPI(MethodView):
 			if data:
 				for field, value in data.items():
 					setattr(primary_resource, field, value)
+			
 			self.session.add(primary_resource)
 			self.session.commit()
-			serializer = manager_info(SERIALIZER_FOR, self.model)
+			
+			serializer = manager_info(ResourceInfoConst.SERIALIZER_FOR, self.model)
 			result = serializer(primary_resource)
+			
 			repr = InstanceRepresentation(self.model, pk_id, result, 200)
 			return repr.to_response()
 
 	def delete(self, pk_id):
-	
-		try:
-			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
-			query = session_query(self.session, self.model)
-			query = query.filter(getattr(self.model, pk_name) == pk_id)
-			resource = query.one()
-			print(resource)
-			self.session.delete(resource)
-			self.session.commit()
 
-		except NoResultFound as exception:
-			detail = 'No result found'
-			raise ResourceNotFound(self.model.__name__, msg=detail)
-
-		except MultipleResultsFound as exception:
-			detail = 'Multiple results found'
-			raise StargateException(msg=detail)
+		resource = get_resource(self.session, self.model, pk_id)
+		self.session.delete(resource)
+		self.session.commit()
 
 		return jsonify({'status_code': 204, 'message': 'No Content'})

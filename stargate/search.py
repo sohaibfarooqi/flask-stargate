@@ -2,34 +2,10 @@ import inspect
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm import ColumnProperty, joinedload
 from .filter import Filter, create_filter
-from ..proxy import manager_info, PRIMARY_KEY_FOR
-from ..utils import get_related_model
-from sqlalchemy.orm.exc import MultipleResultsFound
-from sqlalchemy.orm.exc import NoResultFound
+from .proxy import manager_info
+from .utils import get_related_model, is_like_list, session_query, get_resource
+from .const import ResourceInfoConst
 
-def is_like_list(instance, relation):
-    if relation in instance._sa_class_manager:
-        return instance._sa_class_manager[relation].property.uselist
-    elif hasattr(instance, relation):
-        attr = getattr(instance._sa_instance_state.class_, relation)
-        if hasattr(attr, 'property'):
-            return attr.property.uselist
-    related_value = getattr(type(instance), relation, None)
-    if isinstance(related_value, AssociationProxy):
-        local_prop = related_value.local_attr.prop
-        if isinstance(local_prop, RelProperty):
-            return local_prop.uselist
-    return False
-
-def session_query(session, model):
-	if hasattr(model, 'query'):
-		if callable(model.query):
-			query = model.query()
-		else:
-			query = model.query
-		if hasattr(query, 'filter'):
-			return query
-	return session.query(model)
 
 def primary_key_names(model):
     return [key for key, field in inspect.getmembers(model)
@@ -59,7 +35,7 @@ class Search():
 		
 		elif pk_id is not None and self.relation is not None:
 			
-			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
+			pk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, self.model)
 			primary_resource = query.filter(getattr(self.model, pk_name) == pk_id).first()
 			related_model = getattr(primary_resource, self.relation)
 
@@ -78,23 +54,10 @@ class Search():
 	
 	def _search_one(self, query, pk_value, related_id):
 		
-		try:
-			pk_name = manager_info(PRIMARY_KEY_FOR, self.model)
-			query = session_query(self.session, self.model)
-			query = query.filter(getattr(self.model, pk_name) == pk_value)
-			resource = query.first()
-
-			if self.relation is not None:
-				resource = getattr(resource, self.relation)	
-			return resource
-
-		except NoResultFound as exception:
-			detail = 'No result found'
-			raise ResourceNotFound(self.model.__name__(), msg=detail)
-
-		except MultipleResultsFound as exception:
-			detail = 'Multiple results found'
-			raise StargateException(msg=detail)
+		resource = get_resource(self.session, self.model, pk_value)
+		if self.relation is not None:
+			resource = getattr(resource, self.relation)	
+		return resource
 
 	def _search_collection(self, query,filters, sort, group_by, page_size, page_number):
 		
