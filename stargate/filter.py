@@ -1,3 +1,8 @@
+"""Collection filteration utility. Convert dict() representation of filters to SQLAlcehmy filter(s). Supports Conjunction 
+and Disjunction Filters. Also contains a list of supported `OPERATORS`(unary, binary, teritary).
+
+"""
+
 import inspect
 from .exception import UnknownField, ComparisonToNull
 from sqlalchemy import Date, DateTime, Interval, Time, and_, or_

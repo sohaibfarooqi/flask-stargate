@@ -1,3 +1,8 @@
+"""Holds information for `models` registered with any `Manager` instance. Can be used within application to 
+get information about a resource at runtime. Supported options are primary_key, serializer, deserializer, url, collection_name
+
+"""
+
 import inspect
 from six import with_metaclass
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -62,7 +67,7 @@ class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
                         raise ValueError("Unknown resource manager attribute: {0}".format(key))
                 except ValueError:
                     pass
-            message = ('Model: {0} is not registered to any ResourceManager instance. So Cannot locate attribute: {1}').format(model, key)
+            message = ('Model: {0} is not registered to any `Manager` instance. Hence Cannot lookup attribute: {1}').format(model, key)
             raise ValueError(message)
         else:
             raise RuntimeError("No Manager Instance Found")

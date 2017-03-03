@@ -1,5 +1,6 @@
-"""Application Constants. Import in different modules and test cases"""
+"""Application Constants. Import in different modules and test cases
 
+"""
 class PaginationConst:
 	PAGE_NUMBER = 1
 	PAGE_SIZE = 10

@@ -1,3 +1,7 @@
+"""Various utility functions used across application. Refer to individual function docs for more details.
+
+"""
+
 import datetime
 import re
 import math

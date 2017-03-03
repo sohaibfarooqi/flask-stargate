@@ -1,3 +1,8 @@
+"""Default serializer class for API. Supports instance and collection serialization. Provide options
+like resource expansion, field selection, field exclusion and skip relationship serialization.
+
+"""
+
 import re
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
@@ -202,7 +207,7 @@ class Serializer():
                 serialized = self._serialize_one(columns, instance, expand = expand, serialize_rel = serialize_rel)
                 result.append(serialized)
             except SerializationException as exception:
-                raise SerializationException(instance,str(exception))
+                raise SerializationException(instance, str(exception))
         return result
 
     def _serialize_one(self, columns, instance, expand = None, serialize_rel = None):

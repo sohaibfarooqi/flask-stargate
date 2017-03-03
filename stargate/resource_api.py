@@ -1,3 +1,8 @@
+"""Main API view for all resources. Provide GET, POST, PATCH, DELETE HTTP method support.
+Endpoint for methods may vary in case of collection and instance. Support all db transction 
+which can result in case of mentioned HTTP methods. More options can be found in docs of individual func.
+
+"""
 from flask import request, json, jsonify
 from flask.views import MethodView
 from .proxy import manager_info
@@ -30,6 +35,7 @@ class ResourceAPI(MethodView):
 		self.validation_exceptions = tuple(validation_exceptions or ())
 
 		self.primary_key = primary_key
+				
 
 	def get(self, pk_id = None, relation = None, related_id = None):
 		

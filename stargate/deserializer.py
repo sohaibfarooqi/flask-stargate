@@ -1,12 +1,14 @@
 """Default Deserialization Class for Stargate. It can convert JSONObject or JSONArray representation
-of a resource to respective class object or list of objects."""
+of a resource to respective class object or list of objects.
+
+"""
 
 from .proxy import manager_info
 from .utils import get_related_model
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from .utils import has_field, string_to_datetime, session_query
 from .const import SerializationConst, ResourceInfoConst
-
+from .exception import DeserializationException, UnknownRelation, MissingDataException
 class Deserializer:
     
     def __init__(self, model, session):
@@ -34,8 +36,8 @@ class Deserializer:
                 deserialized = self._deserialize_one(instance)
                 result.append(deserialized)
             
-            except deserializationException as exception:
-                raise DeserializationException(instance,str(exception))
+            except DeserializationException as exception:
+                raise DeserializationException(instance, str(exception))
         
         return result
 
@@ -46,12 +48,12 @@ class Deserializer:
             if field == SerializationConst._EMBEDDED:
                 for relation in instance[SerializationConst._EMBEDDED]:
                     if not has_field(self.model, relation):
-                        raise ValueError("No relation found {0}".format(relation))
+                        raise UnknownRelation(relation, self.model)
             
             elif field == SerializationConst.ATTRIBUTES:
                 for attribute in instance[SerializationConst.ATTRIBUTES]:
                     if not has_field(self.model, attribute):
-                        raise ValueError("No attribute found {0} for model {1}".format(relation, self.model))
+                        raise UnknownField(attribute, self.model)
         links = {}
         links = instance.pop(SerializationConst._EMBEDDED, {})
         related_resources = {}
@@ -63,7 +65,7 @@ class Deserializer:
                 deserialize = RelDeserializer(self.session, related_model, rel_name)
                 related_resources[rel_name] = deserialize(rel_object[SerializationConst.DATA])
             else:
-                raise KeyError("Missing data in relation {0}".format(rel_name))
+                raise MissingDataException(rel_name)
         
         data = instance.pop(SerializationConst.ATTRIBUTES, {})
         data = dict((k, string_to_datetime(self.model, k, v)) for k, v in data.items())

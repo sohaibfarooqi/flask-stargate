@@ -1,3 +1,8 @@
+"""Main class exposed to users. This class manages model registration as endpoints. It wraps all view/db actions. 
+For details about this class check docs. Supported options for api_endpoints can be found in `create_resource_blueprint` method
+
+"""
+
 from flask import Flask, Blueprint, url_for, json, make_response
 from uuid import uuid1
 from collections import namedtuple
@@ -31,8 +36,8 @@ class Manager():
 			self.app = app
 		
 		else:
-			msg = "Provided app instance should be `Flask` or `FlaskClient` instance instead of %s" %str(type(app))
-			raise IllegalArgumentError(msg)
+			msg = "Provided app instance should be `flask.Flask` or `flask.Flask.FlaskClient` instance instead of %s" %str(type(app))
+			raise ValueError(msg)
 
 		manager_info.register(self)
 
@@ -153,20 +158,21 @@ class Manager():
                              decorators = [], primary_key = None):
 
 		if fields is not None and exclude is not None:
-			msg = 'Cannot simultaneously specify both `fields` and `exclude`'
-			raise IllegalArgumentError(msg)
+			msg = 'Cannot simultaneously specify both `fields` and `exclude` for model {0}'
+			raise IllegalArgumentError(msg.format(model.__name__))
 
 		if primary_key is None and not hasattr(model, ResourceConst.PRIMARY_KEY_COLUMN):
 			msg = 'Provided model is missing `id` attribute and no default primary key provided model {0}'
-			raise IllegalArgumentError(msg.format(model))
+			raise IllegalArgumentError(msg.format(model.__name__))
 
 		if collection_name == '':
-			msg = 'Collection name must be nonempty'
-			raise IllegalArgumentError(msg)
+			msg = 'Collection name must be nonempty for model {0}'
+			raise IllegalArgumentError(msg.format(model.__name__))
 
 		if name in self.registerd_blueprints:
 			msg = 'Duplicate Blueprint hash'
 			raise RuntimeError("{0}: Error {1}".format(name, msg))
+		
 		try:
 			instance = sqlalchemy_inspect(model)
 		except NoInspectionAvailable as e:

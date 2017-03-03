@@ -1,3 +1,8 @@
+"""Application exceptions. Base Exception class for this app is `StargateException`. All application exceptions are caught here and send back 
+to client in a prescribed format. Werkzeug exceptions are also mapped here.
+
+"""
+
 from flask import jsonify
 from werkzeug.exceptions import NotAcceptable, Conflict, BadRequest, NotFound, InternalServerError, UnsupportedMediaType, UnprocessableEntity
 from werkzeug.http import HTTP_STATUS_CODES
@@ -16,7 +21,8 @@ class StargateException(Exception):
     def as_dict(self):
         return {
             'status': self.status_code,
-            'message': self.msg if self.msg else HTTP_STATUS_CODES.get(self.status_code, '')
+            'message': self.msg if self.msg else HTTP_STATUS_CODES.get(self.status_code, ''),
+            'details': {'_exception_class': self.__name__}
         }
 
     def get_response(self):
@@ -35,15 +41,14 @@ class ResourceNotFound(StargateException):
 
     def as_dict(self):
         dct = super(ResourceNotFound, self).as_dict()
-        dct['resource'] = self.resource
-        dct['primary_key'] = self.id
+        dct['details'].update({'resource' : self.resource, 'primary_key' : self.id})
         return dct   
 ############################--CONFLICT ERRORS--############################################
 class ConflictException(StargateException):
     werkzeug_exception = Conflict
     
     def __init__(self, msg, **kwargs):
-        super(IllegalArgumentError, self).__init__()
+        super(ConflictException, self).__init__()
         self.msg = msg
 ############################--MEDIATYPE ERRORS--############################################
 class MediaTypeNotSupported(StargateException):
@@ -65,11 +70,24 @@ class UnknownField(ValidationException):
     def __init__(self, field, resource):
         super(UnknownField, self).__init__()
         self.field = field
+        self.resource = resource
         self.msg = "Unknown field {0} in model {1}".format(field, resource)
     
     def as_dict(self):
         dct = super(UnknownField, self).as_dict()
-        dct['field'] = self.field
+        dct['details'].update({'field' : self.field, 'resource': self.resource})
+        return dct
+
+class UnknownRelation(ValidationException):
+    def __init__(self, relation, resource):
+        super(UnknownRelation, self).__init__()
+        self.relation = relation
+        self.resource = resource
+        self.msg = "Unknown relation {0} in model {1}".format(field, resource)
+    
+    def as_dict(self):
+        dct = super(UnknownRelation, self).as_dict()
+        dct['details'].update({'relation' : self.relation,  'resource': self.resource})
         return dct
 
 class IllegalArgumentError(ValidationException):
@@ -82,21 +100,33 @@ class IllegalArgumentError(ValidationException):
 class ProcessingException(StargateException):
     werkzeug_exception = UnprocessableEntity       
 
+class MissingDataException(ProcessingException):
+    def __init__(self, model, *args, **kw):
+        super(SerializationException, self).__init__(*args, **kw)
+        self.msg  = "Missing `data` key for model {0}".format(self.model)
+
 class SerializationException(ProcessingException):
     
     def __init__(self, instance, message=None, *args, **kw):
         super(SerializationException, self).__init__(*args, **kw)
         self.instance = instance
-
+        DEFAULT_MSG = "Failed to Deserialize Object"
+        self.msg  = message if message is not None else DEFAULT_MSG
+    
     def as_dict(self):
         dct = super(SerializationException, self).as_dict()
-        dct['instance'] = self.instance
+        dct['details'].update({'instance' : self.instance})
         return dct
 
 class DeserializationException(ProcessingException):
     
-    def __init__(self, *args, **kw):
+    def __init__(self, instance, message = None, *args, **kw):
         super(DeserializationException, self).__init__(*args, **kw)
-        self.msg = kw['msg'] if kw['msg'] else 'Failed to deserialize object'
+        DEFAULT_MSG = "Failed to Deserialize Object"
+        self.msg = message if message is not None else DEFAULT_MSG
 
+    def as_dict(self):
+        dct = super(SerializationException, self).as_dict()
+        dct['details'].update({'instance' : self.instance})
+        return dct
 ###############################################################################################

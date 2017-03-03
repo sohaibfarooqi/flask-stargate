@@ -1,3 +1,8 @@
+"""Search utility for API. Can search collection, single instance, related collection, related resource.
+Provides filteration, grouping, ordering on collections and related collections.
+
+"""
+
 import inspect
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm import ColumnProperty, joinedload

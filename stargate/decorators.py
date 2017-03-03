@@ -1,3 +1,8 @@
+"""View Function decorators. Each view function (get, post, patch, delete) gets decorated with these functions. For more details 
+please check comments of individual function.
+
+"""
+
 import re
 from functools import wraps
 from flask import request, json, jsonify
@@ -73,10 +78,6 @@ def parse_accept_header(value):
         quality = max(min(float(extra), 1), 0) if extra else None
         return name, quality
     return map(match_to_pair, ACCEPT_RE.finditer(value))
-
-
-ERROR_FIELDS = ('id_', 'links', 'status', 'code_', 'title', 'detail', 'source',
-                'meta')
 
 CONFLICT_INDICATORS = ('conflicts with', 'UNIQUE constraint failed',
                         'is not unique')

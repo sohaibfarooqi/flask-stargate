@@ -1,3 +1,7 @@
+"""Representation class for API. Provides Collection, and Instance representation according to API format.
+Provides data, links, link header etc. Custom headers can be injected by using `_HEADERS` inside `meta` key.
+
+"""
 from flask import request, make_response, jsonify, json
 from .proxy import manager_info
 from .utils import get_paginated_url, get_pagination_links
