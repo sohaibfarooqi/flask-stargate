@@ -1,8 +1,5 @@
-===========================
-REST Resources Read Options
-===========================
-
-Collection filteration is supported in following format
+Collection Options
+==================
 
 Filters
 --------
