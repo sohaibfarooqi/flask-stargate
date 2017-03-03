@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Stargate Docs! &#8212; stargate 0.0.0 documentation</title>
+    <title>DELETE &#8212; stargate 0.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -26,7 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installation and Running" href="installation.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -42,35 +41,34 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-stargate">
-<span id="stargate-docs"></span><h1>Stargate Docs!<a class="headerlink" href="#module-stargate" title="Permalink to this headline">¶</a></h1>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">This project is currently under development.</p>
+  <div class="section" id="delete">
+<h1>DELETE<a class="headerlink" href="#delete" title="Permalink to this headline">¶</a></h1>
+<p>Delete method can be used to delete a resource with a specific primary key id</p>
+<div class="section" id="delete-resource">
+<h2>Delete Resource<a class="headerlink" href="#delete-resource" title="Permalink to this headline">¶</a></h2>
+<p>Resource <cite>User</cite>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/api/user/1</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
 </div>
-<p>Stargate is a framework for exposing RESTFul JSON APIs using Flask and SQLAlchemy.Currently it provides 
-GET, POST, PATCH, DELETE endpoints for resources, pagination, filters, sorting,
-grouping, resource expansion and partial responses.</p>
-<div class="section" id="user-s-guide">
-<h2>User&#8217;s guide<a class="headerlink" href="#user-s-guide" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation and Running</a></li>
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usageguide.html">Guidelines on creating API Endpoints</a></li>
-<li class="toctree-l1"><a class="reference internal" href="get.html">GET</a></li>
-<li class="toctree-l1"><a class="reference internal" href="post.html">POST</a></li>
-<li class="toctree-l1"><a class="reference internal" href="patch.html">PATCH</a></li>
-<li class="toctree-l1"><a class="reference internal" href="delete.html">DELETE</a></li>
-<li class="toctree-l1"><a class="reference internal" href="responseformat.html">Response Style</a></li>
-</ul>
+<p>will yield a response:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+</pre></div>
 </div>
-<dl class="attribute">
-<dt id="stargate.manager">
-<code class="descclassname">stargate.</code><code class="descname">manager</code><a class="headerlink" href="#stargate.manager" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#stargate.manager" title="stargate.manager"><code class="xref py py-class docutils literal"><span class="pre">stargate.manager</span></code></a></p>
-</dd></dl>
-
+</div>
+<div class="section" id="delete-related-resource">
+<h2>Delete Related Resource<a class="headerlink" href="#delete-related-resource" title="Permalink to this headline">¶</a></h2>
+<p>Resource <cite>User</cite>:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/api/user/1/images/1</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>will yield a response:</p>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -80,25 +78,25 @@ grouping, resource expansion and partial responses.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="#">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Stargate Docs!</a><ul>
-<li><a class="reference internal" href="#user-s-guide">User&#8217;s guide</a></li>
+<li><a class="reference internal" href="#">DELETE</a><ul>
+<li><a class="reference internal" href="#delete-resource">Delete Resource</a></li>
+<li><a class="reference internal" href="#delete-related-resource">Delete Related Resource</a></li>
 </ul>
 </li>
 </ul>
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
-  <li><a href="#">Documentation overview</a><ul>
-      <li>Next: <a href="installation.html" title="next chapter">Installation and Running</a></li>
+  <li><a href="index.html">Documentation overview</a><ul>
   </ul></li>
 </ul>
 </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
+      <li><a href="_sources/delete.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -124,7 +122,7 @@ grouping, resource expansion and partial responses.</p>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
-      <a href="_sources/index.rst.txt"
+      <a href="_sources/delete.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 

@@ -1,7 +1,7 @@
 .. docs root file
 
-Stargate Api Docs!
-==================
+Stargate Docs!
+==============
 
 .. automodule:: stargate
 
@@ -15,5 +15,10 @@ User's guide
    installation
    quickstart
    usageguide
-   resourceread
+   get
+   post
+   patch
+   delete
    responseformat
+
+.. autoclass:: stargate.manager
