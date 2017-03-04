@@ -266,14 +266,28 @@
 		<span class="k">return</span> <span class="n">blueprint</span>		</div>
 
 	<span class="k">def</span> <span class="nf">_add_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blueprint</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">view_func</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="n">READONLY_METHODS</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;Add url rule by invoking `flask.Flask.Blueprint.add_url_rule` method. Provides</span>
+<span class="sd">		view function and HTTP methods to add_rule.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
 		<span class="n">add_rule</span> <span class="o">=</span> <span class="n">blueprint</span><span class="o">.</span><span class="n">add_url_rule</span>
 		<span class="n">add_rule</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">view_func</span><span class="o">=</span><span class="n">view_func</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="n">methods</span><span class="p">)</span>
 
 	<span class="k">def</span> <span class="nf">register_exception_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;Register application exception handler and user exception handler. use</span>
+<span class="sd">		:meth:`~Manager._exception_handler` class method and check if thrown exception </span>
+<span class="sd">		is of :class:`~stargate.exception.StargateException` or </span>
+<span class="sd">		:class:`~werkzeug.exceptions.HTTPException`</span>
+
+<span class="sd">		&quot;&quot;&quot;</span>
 		<span class="n">app</span><span class="o">.</span><span class="n">handle_exception</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exception_handler</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">handle_exception</span><span class="p">)</span>
 		<span class="n">app</span><span class="o">.</span><span class="n">handle_user_exception</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exception_handler</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">handle_user_exception</span><span class="p">)</span>
 	
 	<span class="k">def</span> <span class="nf">_exception_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_handler</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;Return :meth:`~stargate.exception.StargateException.get_response` for application errors</span>
+<span class="sd">		or in case of werkzeug exceptions(MethodNotAllowed, ResourceNotFound) it returns</span>
+<span class="sd">		:meth:`~Manager._make_response`.</span>
+
+<span class="sd">		&quot;&quot;&quot;</span>
 		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">StargateException</span><span class="p">):</span>
 			<span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">get_response</span><span class="p">()</span>
 
@@ -283,7 +297,10 @@
 		<span class="k">return</span> <span class="n">original_handler</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
 	<span class="k">def</span> <span class="nf">_make_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    	
+		<span class="sd">&quot;&quot;&quot;This method is internally used in class in case of </span>
+<span class="sd">		:class:`~werkzeug.exceptions.HTTPException` raised in application.</span>
+
+<span class="sd">		&quot;&quot;&quot;</span>
 		<span class="n">settings</span> <span class="o">=</span> <span class="p">{}</span>
 		<span class="n">settings</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;indent&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 		<span class="n">settings</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;sort_keys&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
@@ -299,6 +316,11 @@
                              <span class="n">validation_exceptions</span> <span class="o">=</span> <span class="p">(),</span> <span class="n">exclude</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
                              <span class="n">decorators</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">primary_key</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 
+		<span class="sd">&quot;&quot;&quot;This method is invoked from :meth:`~Manager.register_resource` to perform </span>
+<span class="sd">		sanity checks on the values provided. Raises :class:`~stargate.exceptions.IllegalArgumentError`</span>
+<span class="sd">		with appropriate message.</span>
+
+<span class="sd">		&quot;&quot;&quot;</span>
 		<span class="k">if</span> <span class="n">fields</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">exclude</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 			<span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Cannot simultaneously specify both `fields` and `exclude` for model </span><span class="si">{0}</span><span class="s1">&#39;</span>
 			<span class="k">raise</span> <span class="n">IllegalArgumentError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
@@ -313,7 +335,7 @@
 
 		<span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">registerd_blueprints</span><span class="p">:</span>
 			<span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Duplicate Blueprint hash&#39;</span>
-			<span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">: Error </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
+			<span class="k">raise</span> <span class="n">IllegalArgumentError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">: Error </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">msg</span><span class="p">))</span>
 		
 		<span class="k">try</span><span class="p">:</span>
 			<span class="n">instance</span> <span class="o">=</span> <span class="n">sqlalchemy_inspect</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>

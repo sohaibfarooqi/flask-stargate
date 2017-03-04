@@ -253,10 +253,10 @@ class Manager():
 		return original_handler(e)
 
 	def _make_response(self, data, code, headers=None):
-    	"""This method is internally used in class in case of :class:`~werkzeug.exceptions.HTTPException`
-    	raised in application.
-    	
-    	"""
+		"""This method is internally used in class in case of 
+		:class:`~werkzeug.exceptions.HTTPException` raised in application.
+
+		"""
 		settings = {}
 		settings.setdefault('indent', 4)
 		settings.setdefault('sort_keys', True)
@@ -275,7 +275,7 @@ class Manager():
 		"""This method is invoked from :meth:`~Manager.register_resource` to perform 
 		sanity checks on the values provided. Raises :class:`~stargate.exceptions.IllegalArgumentError`
 		with appropriate message.
-		
+
 		"""
 		if fields is not None and exclude is not None:
 			msg = 'Cannot simultaneously specify both `fields` and `exclude` for model {0}'
