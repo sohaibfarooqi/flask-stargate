@@ -51,7 +51,7 @@ master_doc = 'index'
 project = 'stargate'
 copyright = '2017, sohaib farooqi'
 author = 'sohaib farooqi'
-
+autodoc_member_order = 'bysource'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
