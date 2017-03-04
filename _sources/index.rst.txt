@@ -21,4 +21,13 @@ User's guide
    delete
    responseformat
 
-.. autoclass:: stargate.manager
+Developers Guide
+----------------
+
+A technical description of the classes, functions, and idioms of
+Stargate.
+
+.. toctree::
+   :maxdepth: 2
+
+   devguide

@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dev Guide &#8212; stargate 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Response Style" href="responseformat.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dev-guide">
+<h1>Dev Guide<a class="headerlink" href="#dev-guide" title="Permalink to this headline">¶</a></h1>
+<p>Description for public functions of Stargate.</p>
+<span class="target" id="module-stargate.manager"></span><div class="section" id="the-manager-class">
+<h2>The Manager Class<a class="headerlink" href="#the-manager-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="stargate.manager.Manager">
+<em class="property">class </em><code class="descclassname">stargate.manager.</code><code class="descname">Manager</code><span class="sig-paren">(</span><em>app</em>, <em>db</em>, <em>decorators=None</em>, <em>url_prefix=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stargate/manager.html#Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stargate.manager.Manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class let you expose JSON RESTFul APIs against various resources.</p>
+<p><code class="docutils literal"><span class="pre">app</span></code> should be <code class="xref py py-class docutils literal"><span class="pre">Flask</span></code> instance. If you wish to use <cite>flask test client</cite>
+for testing you can also provide <code class="xref py py-class docutils literal"><span class="pre">FlaskClient</span></code> instance.</p>
+<p><code class="docutils literal"><span class="pre">db</span></code> should be <code class="xref py py-class docutils literal"><span class="pre">SQLAlchemy</span></code> instance.</p>
+<p><code class="docutils literal"><span class="pre">decorators</span></code> should be python decorators. Each resource registered with a manager
+instance will invoke all specified decorators before view functions are invoked.</p>
+<p><code class="docutils literal"><span class="pre">url_prefix</span></code> prefix url for all endpoints registered with <cite>Manager</cite> instance. url_prefix
+should start with &#8216;/&#8217;.</p>
+<p>Example usage of this class. Models should be defined using flask_sqlalchemy:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">Manager</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+<span class="c1">#With decorators</span>
+<span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">decorators</span> <span class="o">=</span> <span class="p">[</span><span class="n">auth_decorator</span><span class="p">])</span>
+<span class="c1">#With url_prefix</span>
+<span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">url_prefix</span> <span class="o">=</span> <span class="s1">&#39;/v1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="stargate.manager.Manager.register_resource">
+<code class="descname">register_resource</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stargate/manager.html#Manager.register_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stargate.manager.Manager.register_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method perform sanity check of argument passed, create resource blueprint
+blueprint, register it with <code class="xref py py-class docutils literal"><span class="pre">Flask</span></code> and finally add this blueprint to registered blueprints</p>
+<p>Example usage of this method</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">Manager</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This method supports sereral options:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">Manager</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+
+<span class="c1">#Specify resource methods</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+
+<span class="c1">#Specify url_prefix</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">url_prefix</span> <span class="o">=</span> <span class="s1">&#39;/v2&#39;</span><span class="p">)</span>
+
+<span class="c1">#Specify endpoint</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">endpoint</span> <span class="o">=</span> <span class="s1">&#39;/onlineusers&#39;</span><span class="p">)</span>
+
+<span class="c1">#Specify resource fields</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;username&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;date_added&#39;</span><span class="p">])</span>
+
+<span class="c1">#Exclude resource attributes</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">])</span>
+
+<span class="c1">#Specify resource decorators</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">decorators</span> <span class="o">=</span> <span class="p">[</span><span class="n">check_user_quota</span><span class="p">])</span>
+
+<span class="c1">#Specify resource primary key</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">primary_key</span> <span class="o">=</span> <span class="s1">&#39;ser_id&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="stargate.manager.Manager.create_resource_blueprint">
+<code class="descname">create_resource_blueprint</code><span class="sig-paren">(</span><em>name</em>, <em>model</em>, <em>methods=frozenset({'GET'})</em>, <em>url_prefix=None</em>, <em>endpoint=None</em>, <em>fields=None</em>, <em>exclude=None</em>, <em>decorators=[]</em>, <em>primary_key=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stargate/manager.html#Manager.create_resource_blueprint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stargate.manager.Manager.create_resource_blueprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns blueprint of a resource with specified options.</p>
+<p><code class="docutils literal"><span class="pre">name</span></code>: blueprint name</p>
+<p><code class="docutils literal"><span class="pre">model</span></code>: user defined model class Using <code class="xref py py-class docutils literal"><span class="pre">Model</span></code></p>
+<p><code class="docutils literal"><span class="pre">methods</span></code>: HTTP methods allowed on resource</p>
+<p><code class="docutils literal"><span class="pre">url_prefix</span></code>: prefix url for specific resource</p>
+<p><code class="docutils literal"><span class="pre">endpoint</span></code>: resource endpoint. By default it would be <code class="docutils literal"><span class="pre">table.__name__</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">fields</span></code>: allowed fields for Serializer.</p>
+<p><code class="docutils literal"><span class="pre">exclude</span></code>: exclude fields for Serializer.</p>
+<p><code class="docutils literal"><span class="pre">decorators</span></code>: view decorator functions.</p>
+<p><code class="docutils literal"><span class="pre">primary_key</span></code>: primary key column. By default <cite>id</cite> will be used</p>
+<p>This method register view functions using <code class="xref py py-class docutils literal"><span class="pre">ResourceAPI</span></code>
+and provide <cite>endpoint</cite>, <cite>session</cite>, <cite>model</cite> and <cite>primary key</cite>. It also register endpoint
+using <code class="xref py py-meth docutils literal"><span class="pre">add_url_rule()</span></code>. Collection and instances have different 
+HTTP methods and url schemes. Finally this method populate the namedtuple <code class="docutils literal"><span class="pre">RESOURCE_INFO</span></code></p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Dev Guide</a><ul>
+<li><a class="reference internal" href="#the-manager-class">The Manager Class</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="responseformat.html" title="previous chapter">Response Style</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/devguide.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, sohaib farooqi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/devguide.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
