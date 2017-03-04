@@ -34,10 +34,10 @@ class TestResourceManager(unittest.TestCase):
 			user = User()
 
 			manager = Manager(self.app, db)
-			manager.register_resource(User, collection_name = 'mycustomcollection', methods = ['GET'])
+			manager.register_resource(User, endpoint = 'mycustomcollection', methods = ['GET'])
 			manager.register_resource(Location, fields = ['latitude','longitude'])
 			manager.register_resource(City, url_prefix = '/v1', exclude = ['latitude','longitude'])
-			manager.register_resource(TestPrimaryKey, collection_name = 'testprimarykey', decorators = [auth_key_header], primary_key = 'ser_id')
+			manager.register_resource(TestPrimaryKey, endpoint = 'testprimarykey', decorators = [auth_key_header], primary_key = 'ser_id')
 			
 			with self.app.test_request_context():
 				db.create_all()
