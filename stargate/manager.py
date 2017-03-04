@@ -189,7 +189,7 @@ class Manager():
 
 		deserializer = Deserializer(model, self.session)
 
-		resource_api_view = ResourceAPI.as_view( apiname, self.session, model, validation_exceptions, primary_key)
+		resource_api_view = ResourceAPI.as_view( apiname, self.session, model, primary_key)
 
 		for decorator in decorators_:
 			resource_api_view = decorator(resource_api_view)

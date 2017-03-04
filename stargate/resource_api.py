@@ -23,7 +23,7 @@ class ResourceAPI(MethodView):
                     catch_processing_exceptions
                  ]
 
-	def __init__(self, session, model, validation_exceptions = None, primary_key = None,*args,**kw):
+	def __init__(self, session, model, primary_key = None,*args,**kw):
         
 		super(ResourceAPI, self).__init__(*args,**kw)
 
@@ -31,8 +31,6 @@ class ResourceAPI(MethodView):
 		
 		self.session = session
 		self.model = model
-
-		self.validation_exceptions = tuple(validation_exceptions or ())
 
 		self.primary_key = primary_key
 				
