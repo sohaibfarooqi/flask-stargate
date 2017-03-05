@@ -44,20 +44,30 @@
             
   <div class="section" id="dev-guide">
 <h1>Dev Guide<a class="headerlink" href="#dev-guide" title="Permalink to this headline">¶</a></h1>
-<p>Description for public functions of Stargate.</p>
+<p>Description of Stargate classes/modules/functions.</p>
 <span class="target" id="module-stargate.manager"></span><div class="section" id="the-manager-class">
 <h2>The Manager Class<a class="headerlink" href="#the-manager-class" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="stargate.manager.Manager">
-<em class="property">class </em><code class="descclassname">stargate.manager.</code><code class="descname">Manager</code><span class="sig-paren">(</span><em>app</em>, <em>db</em>, <em>decorators=None</em>, <em>url_prefix=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stargate/manager.html#Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stargate.manager.Manager" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">stargate.manager.</code><code class="descname">Manager</code><span class="sig-paren">(</span><em>app</em>, <em>db</em>, <em>decorators=None</em>, <em>url_prefix=None</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.manager.Manager" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class let you expose JSON RESTFul APIs against various resources.</p>
-<p><code class="docutils literal"><span class="pre">app</span></code> should be <code class="xref py py-class docutils literal"><span class="pre">Flask</span></code> instance. If you wish to use <cite>flask test client</cite>
-for testing you can also provide <code class="xref py py-class docutils literal"><span class="pre">FlaskClient</span></code> instance.</p>
-<p><code class="docutils literal"><span class="pre">db</span></code> should be <code class="xref py py-class docutils literal"><span class="pre">SQLAlchemy</span></code> instance.</p>
-<p><code class="docutils literal"><span class="pre">decorators</span></code> should be python decorators. Each resource registered with a manager
-instance will invoke all specified decorators before view functions are invoked.</p>
-<p><code class="docutils literal"><span class="pre">url_prefix</span></code> prefix url for all endpoints registered with <cite>Manager</cite> instance. url_prefix
-should start with &#8216;/&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>app</strong> &#8211; should be <code class="xref py py-class docutils literal"><span class="pre">Flask</span></code> instance. If you wish to use <cite>flask test client</cite>
+for testing you can also provide <code class="xref py py-class docutils literal"><span class="pre">FlaskClient</span></code> instance.</li>
+<li><strong>db</strong> &#8211; should be <code class="xref py py-class docutils literal"><span class="pre">SQLAlchemy</span></code> instance.</li>
+<li><strong>decorators</strong> &#8211; should be python decorators. Each resource registered with a manager
+instance will invoke all specified decorators before view functions are invoked.</li>
+<li><strong>url_prefix</strong> &#8211; prefix url for all endpoints registered with <cite>Manager</cite> instance. url_prefix
+should start with &#8216;/&#8217;.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <p>Example usage of this class. Models should be defined using flask_sqlalchemy:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">Manager</span>
 <span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
@@ -71,10 +81,10 @@ should start with &#8216;/&#8217;.</p>
 </div>
 <dl class="method">
 <dt id="stargate.manager.Manager.register_resource">
-<code class="descname">register_resource</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stargate/manager.html#Manager.register_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stargate.manager.Manager.register_resource" title="Permalink to this definition">¶</a></dt>
+<code class="descname">register_resource</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.manager.Manager.register_resource" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method perform sanity check of argument passed, create resource blueprint
 blueprint, register it with <code class="xref py py-class docutils literal"><span class="pre">Flask</span></code> and finally add this blueprint to registered blueprints</p>
-<p>Example usage of this method</p>
+<p>Example usage of this method:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">Manager</span>
 <span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
 
@@ -114,23 +124,380 @@ blueprint, register it with <code class="xref py py-class docutils literal"><spa
 
 <dl class="method">
 <dt id="stargate.manager.Manager.create_resource_blueprint">
-<code class="descname">create_resource_blueprint</code><span class="sig-paren">(</span><em>name</em>, <em>model</em>, <em>methods=frozenset({'GET'})</em>, <em>url_prefix=None</em>, <em>endpoint=None</em>, <em>fields=None</em>, <em>exclude=None</em>, <em>decorators=[]</em>, <em>primary_key=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stargate/manager.html#Manager.create_resource_blueprint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#stargate.manager.Manager.create_resource_blueprint" title="Permalink to this definition">¶</a></dt>
+<code class="descname">create_resource_blueprint</code><span class="sig-paren">(</span><em>name</em>, <em>model</em>, <em>methods=frozenset({'GET'})</em>, <em>url_prefix=None</em>, <em>endpoint=None</em>, <em>fields=None</em>, <em>exclude=None</em>, <em>decorators=[]</em>, <em>primary_key=None</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.manager.Manager.create_resource_blueprint" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method returns blueprint of a resource with specified options.</p>
-<p><code class="docutils literal"><span class="pre">name</span></code>: blueprint name</p>
-<p><code class="docutils literal"><span class="pre">model</span></code>: user defined model class Using <code class="xref py py-class docutils literal"><span class="pre">Model</span></code></p>
-<p><code class="docutils literal"><span class="pre">methods</span></code>: HTTP methods allowed on resource</p>
-<p><code class="docutils literal"><span class="pre">url_prefix</span></code>: prefix url for specific resource</p>
-<p><code class="docutils literal"><span class="pre">endpoint</span></code>: resource endpoint. By default it would be <code class="docutils literal"><span class="pre">table.__name__</span></code>.</p>
-<p><code class="docutils literal"><span class="pre">fields</span></code>: allowed fields for Serializer.</p>
-<p><code class="docutils literal"><span class="pre">exclude</span></code>: exclude fields for Serializer.</p>
-<p><code class="docutils literal"><span class="pre">decorators</span></code>: view decorator functions.</p>
-<p><code class="docutils literal"><span class="pre">primary_key</span></code>: primary key column. By default <cite>id</cite> will be used</p>
-<p>This method register view functions using <code class="xref py py-class docutils literal"><span class="pre">ResourceAPI</span></code>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> &#8211; blueprint name</li>
+<li><strong>model</strong> &#8211; user defined model class Using <code class="xref py py-class docutils literal"><span class="pre">Model</span></code></li>
+<li><strong>methods</strong> &#8211; HTTP methods allowed on resource</li>
+<li><strong>url_prefix</strong> &#8211; prefix url for specific resource</li>
+<li><strong>endpoint</strong> &#8211; resource endpoint. By default it would be <code class="docutils literal"><span class="pre">table.__name__</span></code>.</li>
+<li><strong>fields</strong> &#8211; allowed resource fields for <a class="reference internal" href="#stargate.serializer.Serializer" title="stargate.serializer.Serializer"><code class="xref py py-class docutils literal"><span class="pre">Serializer</span></code></a>.</li>
+<li><strong>exclude</strong> &#8211; exclude resource fields for <a class="reference internal" href="#stargate.serializer.Serializer" title="stargate.serializer.Serializer"><code class="xref py py-class docutils literal"><span class="pre">Serializer</span></code></a>.</li>
+<li><strong>decorators</strong> &#8211; view decorator functions.</li>
+<li><strong>primary_key</strong> &#8211; primary key column. By default <cite>id</cite> will be used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">Blueprint</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This method register view functions using <a class="reference internal" href="#stargate.resource_api.ResourceAPI" title="stargate.resource_api.ResourceAPI"><code class="xref py py-class docutils literal"><span class="pre">ResourceAPI</span></code></a>
 and provide <cite>endpoint</cite>, <cite>session</cite>, <cite>model</cite> and <cite>primary key</cite>. It also register endpoint
 using <code class="xref py py-meth docutils literal"><span class="pre">add_url_rule()</span></code>. Collection and instances have different 
 HTTP methods and url schemes. Finally this method populate the namedtuple <code class="docutils literal"><span class="pre">RESOURCE_INFO</span></code></p>
 </dd></dl>
 
+</dd></dl>
+
+<span class="target" id="module-stargate.resource_api"></span></div>
+<div class="section" id="resource-api-view">
+<h2>Resource API View<a class="headerlink" href="#resource-api-view" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="stargate.resource_api.ResourceAPI">
+<em class="property">class </em><code class="descclassname">stargate.resource_api.</code><code class="descname">ResourceAPI</code><span class="sig-paren">(</span><em>session</em>, <em>model</em>, <em>primary_key=None</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.resource_api.ResourceAPI" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is used to provide view functions against resources. By default on <code class="docutils literal"><span class="pre">GET</span></code> method
+is exposed. It accept options like database session, model class, primary key and any other 
+parameter that parent class <code class="xref py py-class docutils literal"><span class="pre">MethodView</span></code> provides.</p>
+<p>It applies <code class="xref py py-meth docutils literal"><span class="pre">requires_api_accept()</span></code>, <code class="xref py py-meth docutils literal"><span class="pre">requires_api_mimetype()</span></code>
+<code class="xref py py-meth docutils literal"><span class="pre">catch_processing_exceptions()</span></code> decorators by default.</p>
+<p>Example usage for this class:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">resource_api</span> <span class="kn">import</span> <span class="n">ResourceAPI</span>
+
+<span class="n">ResourceAPI</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+<span class="c1">#Specify primary_key id</span>
+<span class="n">ResourceAPI</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">primary_key</span> <span class="o">=</span> <span class="s1">&#39;ser_id&#39;</span><span class="p">)</span>
+
+<span class="c1">#MethodView args example</span>
+<span class="n">ResourceAPI</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">primary_key</span> <span class="o">=</span> <span class="s1">&#39;ser_id&#39;</span><span class="p">,</span> <span class="n">_external</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="stargate.resource_api.ResourceAPI.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>pk_id=None</em>, <em>relation=None</em>, <em>related_id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.resource_api.ResourceAPI.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides HTTP GET Method against a resource. Can be a collection or single instance.
+For more information about method and options check <cite>get method</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pk_id</strong> &#8211; resource primary key id.</li>
+<li><strong>relation</strong> &#8211; related collection name.</li>
+<li><strong>related_id</strong> &#8211; primary key id od related resource</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>For request query string options check <cite>docs get.collection</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="stargate.resource_api.ResourceAPI.post">
+<code class="descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#stargate.resource_api.ResourceAPI.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create resource(s) against data provided in payload.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code> instance.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Raise Following exceptions:</dt>
+<dd><ul class="first last simple">
+<li><code class="xref py py-class docutils literal"><span class="pre">InvalidPayload</span></code> if fails to convert payload to JSON.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">stargate.exception.DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
+</ul>
+</dd>
+</dl>
+<p>For more information on POST method and payload options check <cite>post method docs</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="stargate.resource_api.ResourceAPI.patch">
+<code class="descname">patch</code><span class="sig-paren">(</span><em>pk_id</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.resource_api.ResourceAPI.patch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update resource(s) against data provided in payload. Can create new resources on fly as well</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pk_id</strong> &#8211; primary key id of resource to be updated.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code> instance.</td>
+</tr>
+</tbody>
+</table>
+<p>Raise following exceptions:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="xref py py-class docutils literal"><span class="pre">InvalidPayload</span></code> if fails to convert payload to JSON.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">stargate.exception.DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
+<li><dl class="first docutils">
+<dt><code class="xref py py-class docutils literal"><span class="pre">MissingData</span></code> if data key is missing either in primary attribute</dt>
+<dd>of <code class="docutils literal"><span class="pre">_embedded</span></code> resource.</dd>
+</dl>
+</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">MissingPrimaryKey</span></code> if primary key id is missing.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">UnknownField</span></code> if field doesnot exists on resource.</li>
+</ul>
+</div></blockquote>
+<p>For more information on PATCH method and payload options check <cite>post method docs</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="stargate.resource_api.ResourceAPI.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>pk_id</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.resource_api.ResourceAPI.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete resource against id provided in path param.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pk_id</strong> &#8211; primary key id of resource to be updated.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code> instance.</td>
+</tr>
+</tbody>
+</table>
+<p>Raise following exception if operation fail:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="xref py py-class docutils literal"><span class="pre">stargate.exception.DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
+</ul>
+</div></blockquote>
+<p>For more information on DELETE method and payload options check <cite>post method docs</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-stargate.serializer"></span></div>
+<div class="section" id="serialization">
+<h2>Serialization<a class="headerlink" href="#serialization" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="stargate.serializer.Serializer">
+<em class="property">class </em><code class="descclassname">stargate.serializer.</code><code class="descname">Serializer</code><span class="sig-paren">(</span><em>model</em>, <em>primary_key</em>, <em>fields=None</em>, <em>exclude=None</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.serializer.Serializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Application Default serialization class. Each resource regsiter its own copy of this class 
+during initilization in <a class="reference internal" href="#stargate.manager.Manager" title="stargate.manager.Manager"><code class="xref py py-class docutils literal"><span class="pre">Manager</span></code></a>. Raise exception of type 
+<code class="xref py py-class docutils literal"><span class="pre">IllegalArgumentError</span></code> if both <cite>fields</cite> and <cite>exclude</cite> key word arguments
+are not None</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> &#8211; SQLALchemy model.</li>
+<li><strong>primary_key</strong> &#8211; Primary key column for model.</li>
+<li><strong>fields</strong> &#8211; Resource attributes to be serialized. By default all attributes will be seriaized.</li>
+<li><strong>exclude</strong> &#8211; Exclude resource attributes from serialization.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This class can be used globally within stargate package. Example usage of this class:
+#Return User serialization class</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER_FOR</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="stargate.serializer.Serializer.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>result_set</em>, <em>fields=None</em>, <em>exclude=None</em>, <em>expand=None</em>, <em>serialize_rel=True</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.serializer.Serializer.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callable for Serializer class. Can serialize list and single instance of SQLAlchemy 
+resutlset objects.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER_FOR</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+<span class="c1">#This execute callable.</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>result_set</strong> &#8211; List or single insance of SQLALchemy resuit set.</li>
+<li><strong>fields</strong> &#8211; Resource attributes to be serialized.</li>
+<li><strong>exclude</strong> &#8211; Resource attributes to be exluded from serialized.</li>
+<li><strong>expand</strong> &#8211; Exclude resource attributes from serialization.</li>
+<li><strong>serialize_rel</strong> &#8211; Boolean for serializing related resources.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="stargate.serializer.Serializer._serialize_many">
+<code class="descname">_serialize_many</code><span class="sig-paren">(</span><em>columns</em>, <em>result_set</em>, <em>expand=None</em>, <em>serialize_rel=False</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.serializer.Serializer._serialize_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called internally from __call__ if list of object need to be serialized</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>columns</strong> &#8211; Resource database table columns.</li>
+<li><strong>result_set</strong> &#8211; Objects needs to be serilized.</li>
+<li><strong>expand</strong> &#8211; List of relations need to be expanded.</li>
+<li><strong>serialize_rel</strong> &#8211; Boolean for serializing related resources.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="stargate.serializer.Serializer._serialize_one">
+<code class="descname">_serialize_one</code><span class="sig-paren">(</span><em>columns</em>, <em>instance</em>, <em>expand=None</em>, <em>serialize_rel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.serializer.Serializer._serialize_one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called internally from __call__ if single object need to be serialized</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>columns</strong> &#8211; Resource database table columns.</li>
+<li><strong>instance</strong> &#8211; Object needs to be serilized.</li>
+<li><strong>expand</strong> &#8211; List of relations need to be expanded.</li>
+<li><strong>serialize_rel</strong> &#8211; Boolean for serializing related resources.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-stargate.deserializer"></span></div>
+<div class="section" id="deserialization">
+<h2>Deserialization<a class="headerlink" href="#deserialization" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="stargate.deserializer.Deserializer">
+<em class="property">class </em><code class="descclassname">stargate.deserializer.</code><code class="descname">Deserializer</code><span class="sig-paren">(</span><em>model</em>, <em>session</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.deserializer.Deserializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default Deserializer class. Each resource regsiter its own copy of this class 
+during initilization in <a class="reference internal" href="#stargate.manager.Manager" title="stargate.manager.Manager"><code class="xref py py-class docutils literal"><span class="pre">Manager</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>session</strong> &#8211; SQLALchemy session object.</li>
+<li><strong>model</strong> &#8211; Resource model class.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="stargate.deserializer.Deserializer.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>document</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.deserializer.Deserializer.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Callable for Deserializer class. Can deserialize JSONArray or JSONObject representation.
+Raise <code class="xref py py-class docutils literal"><span class="pre">MissingDataKey</span></code> id <cite>data</cite> key is not present in request payload.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">deserializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">DESERIALIZER_FOR</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+<span class="c1">#This execute callable.</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">deserializer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>document</strong> &#8211; JSON request payload.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="stargate.deserializer.Deserializer._deserialize_many">
+<code class="descname">_deserialize_many</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.deserializer.Deserializer._deserialize_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called internally by __call__ method to deseriaize JSONArray representation of objects.
+Raise <code class="xref py py-class docutils literal"><span class="pre">DeserializationException</span></code> if operation fails.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> &#8211; Array of JSON Objects.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="stargate.deserializer.Deserializer._deserialize_one">
+<code class="descname">_deserialize_one</code><span class="sig-paren">(</span><em>instance</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.deserializer.Deserializer._deserialize_one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called internally by __call__ method to deseriaize JSONObject representation.
+Raise <code class="xref py py-class docutils literal"><span class="pre">DeserializationException</span></code> if operation fails.
+Raise <code class="xref py py-class docutils literal"><span class="pre">UnknownRelation</span></code> if unknown relation name is provided
+in <cite>_embedded</cite> key.Raise <code class="xref py py-class docutils literal"><span class="pre">UnknownField</span></code> if unknown field is provided
+in relation <cite>data</cite> key or primary resource <cite>data</cite> key.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>instance</strong> &#8211; Array of JSON Objects.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-stargate.proxy"></span></div>
+<div class="section" id="global-helper">
+<h2>Global Helper<a class="headerlink" href="#global-helper" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="stargate.proxy.ManagerInfo">
+<em class="property">class </em><code class="descclassname">stargate.proxy.</code><code class="descname">ManagerInfo</code><a class="headerlink" href="#stargate.proxy.ManagerInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides information about a resource registered with any 
+<a class="reference internal" href="#stargate.manager.Manager" title="stargate.manager.Manager"><code class="xref py py-class docutils literal"><span class="pre">Manager</span></code></a> instance. Data keys include :</p>
+<blockquote>
+<div><ul class="simple">
+<li>PRIMARY_KEY</li>
+<li>COLLECTION_NAME</li>
+<li>URL</li>
+<li>SERIALIZER</li>
+<li>DESERIALIZER</li>
+</ul>
+</div></blockquote>
+<p>This is a Singleton class that can be accessed any where in the application by just
+importing it.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">resource_info</span> <span class="kn">import</span> <span class="n">resource_info</span>
+
+<span class="c1">#returns primary_key for model class User</span>
+<span class="n">resource_info</span><span class="p">(</span><span class="n">PRIMARY_KEY</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+
+<span class="c1">#returns collection_name for model class User</span>
+<span class="n">resource_info</span><span class="p">(</span><span class="n">COLLECTION_NAME</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+
+<span class="c1">#returns fully qualified url for model class User</span>
+<span class="n">resource_info</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+
+<span class="c1">#returns Serializer class for model class User</span>
+<span class="n">resource_info</span><span class="p">(</span><span class="n">SERIALIZER</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+
+<span class="c1">#returns DeSerializer class for model class User</span>
+<span class="n">resource_info</span><span class="p">(</span><span class="n">DESERIALIZER</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Raises <cite>ValueError</cite> if unknown key is provided to the resource_info callable, it also raises 
+<cite>ValueError</cite> if model class is not registered with any <a class="reference internal" href="#stargate.manager.Manager" title="stargate.manager.Manager"><code class="xref py py-class docutils literal"><span class="pre">Manager</span></code></a> instance.</p>
 </dd></dl>
 
 </div>
@@ -146,6 +513,10 @@ HTTP methods and url schemes. Finally this method populate the namedtuple <code 
   <ul>
 <li><a class="reference internal" href="#">Dev Guide</a><ul>
 <li><a class="reference internal" href="#the-manager-class">The Manager Class</a></li>
+<li><a class="reference internal" href="#resource-api-view">Resource API View</a></li>
+<li><a class="reference internal" href="#serialization">Serialization</a></li>
+<li><a class="reference internal" href="#deserialization">Deserialization</a></li>
+<li><a class="reference internal" href="#global-helper">Global Helper</a></li>
 </ul>
 </li>
 </ul>

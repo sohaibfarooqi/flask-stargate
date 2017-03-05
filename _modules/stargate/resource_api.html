@@ -1,0 +1,323 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>stargate.resource_api &#8212; stargate 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for stargate.resource_api</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Main API view for all resources. Provide GET, POST, PATCH, DELETE HTTP method support.</span>
+<span class="sd">Endpoint for methods may vary in case of collection and instance. Support all db transction </span>
+<span class="sd">which can result in case of mentioned HTTP methods. More options can be found in docs of individual func.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">request</span><span class="p">,</span> <span class="n">json</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">from</span> <span class="nn">flask.views</span> <span class="k">import</span> <span class="n">MethodView</span>
+<span class="kn">from</span> <span class="nn">.proxy</span> <span class="k">import</span> <span class="n">manager_info</span>
+<span class="kn">from</span> <span class="nn">.decorators</span> <span class="k">import</span> <span class="n">catch_processing_exceptions</span><span class="p">,</span> <span class="n">catch_integrity_errors</span><span class="p">,</span> <span class="n">requires_api_accept</span><span class="p">,</span> <span class="n">requires_api_mimetype</span>
+<span class="kn">from</span> <span class="nn">.exception</span> <span class="k">import</span> <span class="n">StargateException</span><span class="p">,</span> <span class="n">ResourceNotFound</span>
+<span class="kn">from</span> <span class="nn">.search</span> <span class="k">import</span> <span class="n">Search</span><span class="p">,</span> <span class="n">session_query</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">get_related_model</span><span class="p">,</span> <span class="n">get_relations</span>
+<span class="kn">from</span> <span class="nn">.representation</span> <span class="k">import</span> <span class="n">InstanceRepresentation</span><span class="p">,</span> <span class="n">CollectionRepresentation</span>
+<span class="kn">from</span> <span class="nn">flask_sqlalchemy</span> <span class="k">import</span> <span class="n">Pagination</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">get_resource</span><span class="p">,</span> <span class="n">is_like_list</span><span class="p">,</span> <span class="n">has_field</span><span class="p">,</span> <span class="n">string_to_datetime</span>
+<span class="kn">from</span> <span class="nn">.const</span> <span class="k">import</span> <span class="n">PaginationConst</span><span class="p">,</span> <span class="n">QueryStringConst</span><span class="p">,</span> <span class="n">ResourceInfoConst</span><span class="p">,</span> <span class="n">SerializationConst</span>
+
+<div class="viewcode-block" id="ResourceAPI"><a class="viewcode-back" href="../../devguide.html#stargate.manager.ResourceAPI">[docs]</a><span class="k">class</span> <span class="nc">ResourceAPI</span><span class="p">(</span><span class="n">MethodView</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;This class is used to provide view functions against resources. By default on ``GET`` method</span>
+<span class="sd">	is exposed. It accept options like database session, model class, primary key and any other </span>
+<span class="sd">	parameter that parent class :class:`~flask.views.MethodView` provides.</span>
+
+<span class="sd">	It applies :meth:`~stargate.decorators.requires_api_accept`, :meth:`~stargate.decorators.requires_api_mimetype`</span>
+<span class="sd">	:meth:`~stargate.decorators.catch_processing_exceptions` decorators by default.</span>
+
+<span class="sd">	Example usage for this class: </span>
+
+<span class="sd">	.. sourcecode:: python</span>
+<span class="sd">		</span>
+<span class="sd">		from resource_api import ResourceAPI</span>
+
+<span class="sd">		ResourceAPI.as_view(session, model)</span>
+
+<span class="sd">		#Specify primary_key id</span>
+<span class="sd">		ResourceAPI.as_view(session, model, primary_key = &#39;ser_id&#39;)</span>
+
+<span class="sd">		#MethodView args example</span>
+<span class="sd">		ResourceAPI.as_view(session, model, primary_key = &#39;ser_id&#39;, _external=True)</span>
+
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">decorators</span> <span class="o">=</span> <span class="p">[</span>  
+                    <span class="n">requires_api_accept</span><span class="p">,</span> 
+                    <span class="n">requires_api_mimetype</span><span class="p">,</span>
+                    <span class="n">catch_processing_exceptions</span>
+                 <span class="p">]</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">primary_key</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        
+		<span class="nb">super</span><span class="p">(</span><span class="n">ResourceAPI</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">collection_name</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">COLLECTION_NAME_FOR</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+		
+		<span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">primary_key</span> <span class="o">=</span> <span class="n">primary_key</span>
+				
+
+<div class="viewcode-block" id="ResourceAPI.get"><a class="viewcode-back" href="../../devguide.html#stargate.manager.ResourceAPI.get">[docs]</a>	<span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pk_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">relation</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">related_id</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;Provides HTTP GET Method against a resource. This method can be invoked with </span>
+<span class="sd">		following endpoints</span>
+<span class="sd">		</span>
+<span class="sd">		Get Collection:</span>
+<span class="sd">		``http://localhost/api/user``</span>
+<span class="sd">		</span>
+<span class="sd">		Get instance with id:</span>
+<span class="sd">		``http://localhost/api/user/1``</span>
+<span class="sd">		</span>
+<span class="sd">		Get related collection:</span>
+<span class="sd">		``http://localhost/api/user/1/images``</span>
+
+<span class="sd">		Get related instance.</span>
+<span class="sd">		``http://localhost/api/user/1/images/1``</span>
+<span class="sd">		</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">query_string</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+		<span class="n">filters</span> <span class="o">=</span> <span class="n">query_string</span><span class="p">[</span><span class="n">QueryStringConst</span><span class="o">.</span><span class="n">FILTER</span><span class="p">]</span> <span class="k">if</span> <span class="n">QueryStringConst</span><span class="o">.</span><span class="n">FILTER</span> <span class="ow">in</span> <span class="n">query_string</span> <span class="k">else</span> <span class="p">[]</span>
+		<span class="n">sort</span> <span class="o">=</span> <span class="n">query_string</span><span class="p">[</span><span class="n">QueryStringConst</span><span class="o">.</span><span class="n">SORT</span><span class="p">]</span> <span class="k">if</span> <span class="n">QueryStringConst</span><span class="o">.</span><span class="n">SORT</span> <span class="ow">in</span> <span class="n">query_string</span> <span class="k">else</span> <span class="p">[]</span>
+		<span class="n">group_by</span> <span class="o">=</span> <span class="n">query_string</span><span class="p">[</span><span class="n">QueryStringConst</span><span class="o">.</span><span class="n">GROUP</span><span class="p">]</span> <span class="k">if</span> <span class="n">QueryStringConst</span><span class="o">.</span><span class="n">GROUP</span> <span class="ow">in</span> <span class="n">query_string</span> <span class="k">else</span> <span class="p">[]</span>
+		<span class="n">fields</span> <span class="o">=</span> <span class="n">query_string</span><span class="p">[</span><span class="n">QueryStringConst</span><span class="o">.</span><span class="n">FIELDS</span><span class="p">]</span> <span class="k">if</span> <span class="n">QueryStringConst</span><span class="o">.</span><span class="n">FIELDS</span> <span class="ow">in</span> <span class="n">query_string</span> <span class="k">else</span> <span class="p">[]</span>
+		<span class="n">exclude</span> <span class="o">=</span> <span class="n">query_string</span><span class="p">[</span><span class="n">QueryStringConst</span><span class="o">.</span><span class="n">EXCLUDE</span><span class="p">]</span> <span class="k">if</span> <span class="n">QueryStringConst</span><span class="o">.</span><span class="n">EXCLUDE</span> <span class="ow">in</span> <span class="n">query_string</span> <span class="k">else</span> <span class="p">[]</span>
+		<span class="n">expand</span> <span class="o">=</span> <span class="n">query_string</span><span class="p">[</span><span class="n">QueryStringConst</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">]</span> <span class="k">if</span> <span class="n">QueryStringConst</span><span class="o">.</span><span class="n">EXPAND</span> <span class="ow">in</span> <span class="n">query_string</span> <span class="k">else</span> <span class="kc">None</span>
+		<span class="n">page_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">query_string</span><span class="p">[</span><span class="n">QueryStringConst</span><span class="o">.</span><span class="n">PAGE_NUMBER</span><span class="p">])</span> <span class="k">if</span> <span class="n">QueryStringConst</span><span class="o">.</span><span class="n">PAGE_NUMBER</span> <span class="ow">in</span> <span class="n">query_string</span> <span class="k">else</span> <span class="n">PaginationConst</span><span class="o">.</span><span class="n">PAGE_NUMBER</span>
+		<span class="n">page_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">query_string</span><span class="p">[</span><span class="n">QueryStringConst</span><span class="o">.</span><span class="n">PAGE_SIZE</span><span class="p">])</span> <span class="k">if</span> <span class="n">QueryStringConst</span><span class="o">.</span><span class="n">PAGE_SIZE</span> <span class="ow">in</span> <span class="n">query_string</span> <span class="k">else</span> <span class="n">PaginationConst</span><span class="o">.</span><span class="n">PAGE_SIZE</span>
+		<span class="n">page_size</span> <span class="o">=</span> <span class="n">page_size</span> <span class="k">if</span> <span class="n">page_size</span> <span class="o">&lt;=</span> <span class="n">PaginationConst</span><span class="o">.</span><span class="n">MAX_PAGE_SIZE</span> <span class="k">else</span> <span class="n">PaginationConst</span><span class="o">.</span><span class="n">MAX_PAGE_SIZE</span>
+
+		<span class="k">if</span> <span class="n">filters</span><span class="p">:</span>
+			<span class="n">filters</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="n">sort</span><span class="p">:</span>
+			<span class="n">sort</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+					<span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sort</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+		
+		<span class="k">if</span> <span class="n">group_by</span><span class="p">:</span>
+			<span class="n">group_by</span> <span class="o">=</span> <span class="n">group_by</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+			<span class="n">group_by</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">PRIMARY_KEY_FOR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">))</span>
+		
+		<span class="k">if</span> <span class="n">fields</span><span class="p">:</span>
+			<span class="n">fields</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+		
+		<span class="k">if</span> <span class="n">exclude</span><span class="p">:</span>
+			<span class="n">exclude</span> <span class="o">=</span> <span class="n">exclude</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+		
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">search_obj</span> <span class="o">=</span> <span class="n">Search</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">relation</span> <span class="o">=</span> <span class="n">relation</span><span class="p">)</span>
+		<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exception</span><span class="p">:</span>
+			<span class="n">detail</span> <span class="o">=</span> <span class="s1">&#39;Unable to construct query </span><span class="si">{0}</span><span class="s1">&#39;</span>
+			<span class="k">raise</span> <span class="n">StargateException</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">detail</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">exception</span><span class="p">))</span>
+
+		<span class="n">result_set</span> <span class="o">=</span> <span class="n">search_obj</span><span class="o">.</span><span class="n">search_resource</span><span class="p">(</span><span class="n">pk_id</span><span class="p">,</span> <span class="n">related_id</span><span class="p">,</span> <span class="n">filters</span> <span class="o">=</span> <span class="n">filters</span><span class="p">,</span> <span class="n">sort</span> <span class="o">=</span> <span class="n">sort</span><span class="p">,</span> 
+												<span class="n">group_by</span> <span class="o">=</span> <span class="n">group_by</span><span class="p">,</span> <span class="n">page_size</span> <span class="o">=</span> <span class="n">page_size</span><span class="p">,</span> 
+												<span class="n">page_number</span> <span class="o">=</span> <span class="n">page_number</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">relation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">serializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER_FOR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">serializer</span>	<span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER_FOR</span><span class="p">,</span> <span class="n">get_related_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">relation</span><span class="p">))</span>
+		
+		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result_set</span><span class="p">,</span> <span class="n">Pagination</span><span class="p">):</span>
+			<span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">(</span><span class="n">result_set</span><span class="o">.</span><span class="n">items</span><span class="p">,</span> <span class="n">fields</span> <span class="o">=</span> <span class="n">fields</span><span class="p">,</span> <span class="n">exclude</span> <span class="o">=</span> <span class="n">exclude</span><span class="p">,</span> <span class="n">expand</span> <span class="o">=</span> <span class="n">expand</span><span class="p">)</span>
+			<span class="n">representation</span> <span class="o">=</span> <span class="n">CollectionRepresentation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">representation</span><span class="o">.</span><span class="n">to_response</span><span class="p">(</span><span class="n">page_size</span> <span class="o">=</span> <span class="n">page_size</span><span class="p">,</span> <span class="n">page_number</span> <span class="o">=</span> <span class="n">page_number</span><span class="p">,</span> <span class="n">pagination</span> <span class="o">=</span> <span class="n">result_set</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">(</span><span class="n">result_set</span><span class="p">,</span> <span class="n">fields</span> <span class="o">=</span> <span class="n">fields</span><span class="p">,</span> <span class="n">exclude</span> <span class="o">=</span> <span class="n">exclude</span><span class="p">,</span> <span class="n">expand</span> <span class="o">=</span> <span class="n">expand</span><span class="p">)</span>
+			<span class="n">representation</span> <span class="o">=</span> <span class="n">InstanceRepresentation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">pk_id</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">representation</span><span class="o">.</span><span class="n">to_response</span><span class="p">()</span></div>
+
+		
+
+	<span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span> <span class="ow">or</span> <span class="p">{}</span>
+		
+		<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exception</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="n">StargateException</span><span class="p">(</span><span class="s2">&quot;Unable to decode Request Body : &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exception</span><span class="p">)))</span>
+
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">deserializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">DESERIALIZER_FOR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+			<span class="n">instance</span> <span class="o">=</span> <span class="n">deserializer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+			
+			<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add_all</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+		
+			<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+		
+		<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+			<span class="k">raise</span> <span class="n">StargateException</span><span class="p">(</span><span class="s2">&quot;Unable to save object Error: `</span><span class="si">{0}</span><span class="s2">`&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">)))</span>
+
+		<span class="n">relations</span> <span class="o">=</span> <span class="n">get_relations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+		<span class="n">relations</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">relations</span><span class="p">)</span>
+		<span class="n">serializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER_FOR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+		<span class="n">result</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">expand</span> <span class="o">=</span> <span class="n">relations</span><span class="p">)</span>
+		
+		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+			<span class="n">representation</span> <span class="o">=</span> <span class="n">CollectionRepresentation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+		
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">pk_name</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">PRIMARY_KEY_FOR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+			<span class="n">pk_val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">pk_name</span><span class="p">)</span>
+			<span class="n">representation</span> <span class="o">=</span> <span class="n">InstanceRepresentation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">pk_val</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+
+		<span class="k">return</span> <span class="n">representation</span><span class="o">.</span><span class="n">to_response</span><span class="p">()</span>
+
+	<span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pk_id</span><span class="p">):</span>
+		
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span> <span class="ow">or</span> <span class="p">{}</span>
+		
+		<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exception</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="n">StargateException</span><span class="p">(</span><span class="s2">&quot;Unable to decode Request Body : &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exception</span><span class="p">)))</span>
+		
+		<span class="n">primary_resource</span> <span class="o">=</span> <span class="n">get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">pk_id</span><span class="p">)</span>
+		<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">SerializationConst</span><span class="o">.</span><span class="n">DATA</span><span class="p">,</span> <span class="p">{})</span>
+		
+		<span class="n">links</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">SerializationConst</span><span class="o">.</span><span class="n">_EMBEDDED</span><span class="p">,</span> <span class="p">{})</span>
+		
+		<span class="k">for</span> <span class="n">linkname</span><span class="p">,</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">links</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+			<span class="n">linkage</span> <span class="o">=</span> <span class="n">link</span><span class="p">[</span><span class="n">SerializationConst</span><span class="o">.</span><span class="n">DATA</span><span class="p">]</span>
+			<span class="n">related_model</span> <span class="o">=</span> <span class="n">get_related_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">linkname</span><span class="p">)</span>
+            
+			<span class="k">if</span> <span class="n">is_like_list</span><span class="p">(</span><span class="n">primary_resource</span><span class="p">,</span> <span class="n">linkname</span><span class="p">):</span>
+
+				<span class="n">newvalue</span> <span class="o">=</span> <span class="p">[]</span>
+				<span class="n">fk_name</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">PRIMARY_KEY_FOR</span><span class="p">,</span> <span class="n">related_model</span><span class="p">)</span>
+				<span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">linkage</span><span class="p">:</span>
+					
+					<span class="k">if</span> <span class="n">fk_name</span> <span class="ow">in</span> <span class="n">rel</span><span class="p">:</span>
+						<span class="n">inst</span> <span class="o">=</span> <span class="n">get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="n">related_model</span><span class="p">,</span> <span class="n">rel</span><span class="p">[</span><span class="n">fk_name</span><span class="p">])</span>
+						<span class="n">newvalue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>
+				
+				<span class="k">if</span> <span class="n">linkage</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+					<span class="n">newvalue</span> <span class="o">=</span> <span class="kc">None</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">fk_name</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">PRIMARY_KEY_FOR</span><span class="p">,</span> <span class="n">related_model</span><span class="p">)</span>
+					<span class="k">if</span> <span class="n">fk_name</span> <span class="ow">in</span> <span class="n">linkage</span><span class="p">:</span>
+						<span class="n">inst</span> <span class="o">=</span> <span class="n">get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="n">related_model</span><span class="p">,</span> <span class="n">linkage</span><span class="p">[</span><span class="n">fk_name</span><span class="p">])</span>
+						<span class="n">newvalue</span> <span class="o">=</span> <span class="n">inst</span>
+						<span class="nb">setattr</span><span class="p">(</span><span class="n">primary_resource</span><span class="p">,</span> <span class="n">linkname</span><span class="p">,</span> <span class="n">newvalue</span><span class="p">)</span>
+
+			<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">SerializationConst</span><span class="o">.</span><span class="n">ATTRIBUTES</span><span class="p">,</span> <span class="p">{})</span>
+
+			<span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+				<span class="k">if</span> <span class="ow">not</span> <span class="n">has_field</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+					<span class="n">detail</span> <span class="o">=</span> <span class="s2">&quot;Model does not have field &#39;</span><span class="si">{0}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+					<span class="k">raise</span> <span class="n">StargateException</span><span class="p">(</span><span class="n">detail</span><span class="o">=</span><span class="n">detail</span><span class="p">)</span>
+
+			<span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">string_to_datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+			<span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+				<span class="k">for</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+					<span class="nb">setattr</span><span class="p">(</span><span class="n">primary_resource</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+			
+			<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">primary_resource</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+			
+			<span class="n">serializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER_FOR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+			<span class="n">result</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">(</span><span class="n">primary_resource</span><span class="p">)</span>
+			
+			<span class="nb">repr</span> <span class="o">=</span> <span class="n">InstanceRepresentation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">pk_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+			<span class="k">return</span> <span class="nb">repr</span><span class="o">.</span><span class="n">to_response</span><span class="p">()</span>
+
+	<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pk_id</span><span class="p">):</span>
+
+		<span class="n">resource</span> <span class="o">=</span> <span class="n">get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">pk_id</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+		<span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status_code&#39;</span><span class="p">:</span> <span class="mi">204</span><span class="p">,</span> <span class="s1">&#39;message&#39;</span><span class="p">:</span> <span class="s1">&#39;No Content&#39;</span><span class="p">})</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, sohaib farooqi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

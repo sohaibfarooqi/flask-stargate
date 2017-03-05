@@ -190,24 +190,17 @@
                        		<span class="n">exclude</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">decorators</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">primary_key</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;This method returns blueprint of a resource with specified options.</span>
 
-<span class="sd">		``name``: blueprint name</span>
-
-<span class="sd">		``model``: user defined model class Using :class:`~flask_sqlalchemy.SQLALchemy.Model` </span>
+<span class="sd">		:param name: blueprint name</span>
+<span class="sd">		:param model: user defined model class Using :class:`~flask_sqlalchemy.SQLALchemy.Model` </span>
+<span class="sd">		:param methods: HTTP methods allowed on resource </span>
+<span class="sd">		:param url_prefix: prefix url for specific resource </span>
+<span class="sd">		:param endpoint: resource endpoint. By default it would be ``table.__name__``. </span>
+<span class="sd">		:param fields: allowed fields for Serializer. </span>
+<span class="sd">		:param exclude: exclude fields for Serializer. </span>
+<span class="sd">		:param decorators: view decorator functions. </span>
+<span class="sd">		:param primary_key: primary key column. By default `id` will be used</span>
+<span class="sd">		:return: :class:`~flask.Flask.Blueprint`</span>
 <span class="sd">		</span>
-<span class="sd">		``methods``: HTTP methods allowed on resource </span>
-<span class="sd">		</span>
-<span class="sd">		``url_prefix``: prefix url for specific resource </span>
-<span class="sd">		</span>
-<span class="sd">		``endpoint``: resource endpoint. By default it would be ``table.__name__``. </span>
-<span class="sd">		</span>
-<span class="sd">		``fields``: allowed fields for Serializer. </span>
-<span class="sd">		</span>
-<span class="sd">		``exclude``: exclude fields for Serializer. </span>
-<span class="sd">		</span>
-<span class="sd">		``decorators``: view decorator functions. </span>
-<span class="sd">		</span>
-<span class="sd">		``primary_key``: primary key column. By default `id` will be used</span>
-
 <span class="sd">		This method register view functions using :class:`~stargate.resource_api.ResourceAPI`</span>
 <span class="sd">		and provide `endpoint`, `session`, `model` and `primary key`. It also register endpoint</span>
 <span class="sd">		using :meth:`~flask.Flask.Blueprint.add_url_rule`. Collection and instances have different </span>
@@ -233,7 +226,7 @@
 
 		<span class="n">deserializer</span> <span class="o">=</span> <span class="n">Deserializer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
 
-		<span class="n">resource_api_view</span> <span class="o">=</span> <span class="n">ResourceAPI</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span> <span class="n">apiname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">validation_exceptions</span><span class="p">,</span> <span class="n">primary_key</span><span class="p">)</span>
+		<span class="n">resource_api_view</span> <span class="o">=</span> <span class="n">ResourceAPI</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span> <span class="n">apiname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">primary_key</span><span class="p">)</span>
 
 		<span class="k">for</span> <span class="n">decorator</span> <span class="ow">in</span> <span class="n">decorators_</span><span class="p">:</span>
 			<span class="n">resource_api_view</span> <span class="o">=</span> <span class="n">decorator</span><span class="p">(</span><span class="n">resource_api_view</span><span class="p">)</span>
