@@ -6,7 +6,7 @@ For details about this class check docs. Supported options for api_endpoints can
 from flask import Flask, Blueprint, url_for, json, make_response
 from uuid import uuid1
 from collections import namedtuple
-from .proxy import manager_info
+from .resource_info import resource_info
 from .serializer import Serializer
 from .deserializer import Deserializer
 from functools import partial
@@ -32,20 +32,20 @@ RESOURCE_INFO = namedtuple('RESOURCE_INFO', ['collection','blueprint','serialize
 class Manager():
 	"""This class let you expose JSON RESTFul APIs against various resources.
 	
-	``app`` should be :class:`~flask.Flask` instance. If you wish to use `flask test client`
-	for testing you can also provide :class:`~flask.Flask.FlaskClient` instance. 
+	:param app: should be :class:`~flask.Flask` instance. If you wish to use `flask test client`
+				for testing you can also provide :class:`~flask.Flask.FlaskClient` instance. 
 	
-	``db`` should be :class:`~flask_sqlalchemy.SQLAlchemy` instance.
-	
-	``decorators`` should be python decorators. Each resource registered with a manager
-	instance will invoke all specified decorators before view functions are invoked.
+	:param db: should be :class:`~flask_sqlalchemy.SQLAlchemy` instance.
 
-	``url_prefix`` prefix url for all endpoints registered with `Manager` instance. url_prefix
-	should start with '/'.
+	:param decorators: 	should be python decorators. Each resource registered with a manager
+					 	instance will invoke all specified decorators before view functions are invoked.
+
+	:param url_prefix: prefix url for all endpoints registered with `Manager` instance. url_prefix
+						should start with '/'.
 	
 	Example usage of this class. Models should be defined using flask_sqlalchemy:
 
-	.. sourcecode:: python
+	.. code-block:: python
 		
 		from stargate import Manager
 		from models import User
@@ -59,10 +59,12 @@ class Manager():
 	"""	
 	def __init__(self, app, db, decorators = None, url_prefix = None):
 
+		#If provided app instance is `flask.Flask` register exception handler too.
 		if isinstance(app, Flask):
 			self.app = app
 			self.register_exception_handler(app)
 		
+		#Otherwise if flask.Flask.FlaskClient is provided don't register it.
 		elif isinstance(app, FlaskClient):
 			self.app = app
 		
@@ -70,7 +72,9 @@ class Manager():
 			msg = "Provided app instance should be `flask.Flask` or `flask.Flask.FlaskClient` instance instead of %s" %str(type(app))
 			raise ValueError(msg)
 
-		manager_info.register(self)
+		#register manager instance with `stargate.resource_info.ResourceInfo` class. This class is
+		#globally used in application to access resource info.
+		resource_info.register(self)
 
 		self.session = db.session
 		self.url_prefix = url_prefix
@@ -86,11 +90,11 @@ class Manager():
 	def register_resource(self, *args, **kwargs):
 		"""This method perform sanity check of argument passed, create resource blueprint
 		blueprint, register it with :class:`~flask.Flask` and finally add this blueprint to registered blueprints
-		
-		Example usage of this method
 
-		.. sourcecode:: python
-		
+		Example usage of this method:
+
+		.. code-block:: python
+
 			from stargate import Manager
 			from models import User
 
@@ -98,42 +102,46 @@ class Manager():
 			manager.register_resource(User)
 
 		This method supports sereral options:
-			
-		.. sourcecode:: python
-		
+
+		.. code-block:: python
+
 			from stargate import Manager
 			from models import User
 
 			manager = Manager(app, db)
-			
+
 			#Specify resource methods
 			manager.register_resource(User, methods = ['GET', 'POST'])
-			
+
 			#Specify url_prefix
 			manager.register_resource(User, url_prefix = '/v2')
-			
+
 			#Specify endpoint
 			manager.register_resource(User, endpoint = '/onlineusers')
-			
+
 			#Specify resource fields
 			manager.register_resource(User, fields = ['username', 'email', 'date_added'])
-			
+
 			#Exclude resource attributes
 			manager.register_resource(User, exclude = ['password'])
-			
+
 			#Specify resource decorators
 			manager.register_resource(User, decorators = [check_user_quota])
-			
+
 			#Specify resource primary key
 			manager.register_resource(User, primary_key = 'ser_id')
 
 		"""
+		#Create Random Blueprint name
 		blueprint_name = str(uuid1())
 
+		#Check arguments sanity
 		if self._args_sanity_checks(blueprint_name, *args, **kwargs):
 			blueprint = self.create_resource_blueprint(blueprint_name, *args, **kwargs)
 			self.registerd_blueprints.append(blueprint)
 
+		#Check if `flask.Flask` app instance is set, then register the newely created bluepring
+		#otherwise raise exception
 		if self.app is not None:
 			self.app.register_blueprint(blueprint)
 
@@ -146,23 +154,16 @@ class Manager():
                        		exclude = None, decorators = [], primary_key = None):
 		"""This method returns blueprint of a resource with specified options.
 
-		``name``: blueprint name
-
-		``model``: user defined model class Using :class:`~flask_sqlalchemy.SQLALchemy.Model` 
-		
-		``methods``: HTTP methods allowed on resource 
-		
-		``url_prefix``: prefix url for specific resource 
-		
-		``endpoint``: resource endpoint. By default it would be ``table.__name__``. 
-		
-		``fields``: allowed fields for Serializer. 
-		
-		``exclude``: exclude fields for Serializer. 
-		
-		``decorators``: view decorator functions. 
-		
-		``primary_key``: primary key column. By default `id` will be used
+		:param name: blueprint name
+		:param model: user defined model class Using :class:`~flask_sqlalchemy.SQLALchemy.Model` 
+		:param methods: HTTP methods allowed on resource 
+		:param url_prefix: prefix url for specific resource 
+		:param endpoint: resource endpoint. By default it would be ``table.__name__``. 
+		:param fields: allowed resource fields for :class:`~stargate.serializer.Serializer`. 
+		:param exclude: exclude resource fields for :class:`~stargate.serializer.Serializer`. 
+		:param decorators: view decorator functions. 
+		:param primary_key: primary key column. By default `id` will be used
+		:return: :class:`~flask.Flask.Blueprint`
 
 		This method register view functions using :class:`~stargate.resource_api.ResourceAPI`
 		and provide `endpoint`, `session`, `model` and `primary key`. It also register endpoint
@@ -170,30 +171,38 @@ class Manager():
 		HTTP methods and url schemes. Finally this method populate the namedtuple ``RESOURCE_INFO`` 
 
 		"""
+
+		#Set endpoint for resource
 		if endpoint is None:
 			endpoint = model.__table__.name
 		
+		#HTTP Methods
 		methods = frozenset((m.upper() for m in methods))
 		apiname = self.api_name(endpoint)
 
+		#extend resource decorators and manager decorators
 		decorators_ = self.decorators
 		decorators_.extend(decorators)
 
+		#Set primary key for resource
 		if primary_key is None:
 			if hasattr(model, ResourceConst.PRIMARY_KEY_COLUMN):
 				primary_key = ResourceConst.PRIMARY_KEY_COLUMN  
 			else: 
 				raise ValueError("Model {0} has no specified primary_key".format(model.__class__))
 		
+		#Register default serializer
 		serializer = Serializer(model, primary_key, fields=fields, exclude=exclude)
-
+		#Register default deserializer
 		deserializer = Deserializer(model, self.session)
-
+		#Register API View.
 		resource_api_view = ResourceAPI.as_view( apiname, self.session, model, primary_key)
 
+		#Apply resource decorators to view functions
 		for decorator in decorators_:
 			resource_api_view = decorator(resource_api_view)
 
+		#Set url_prefix for resource
 		if url_prefix is not None:
 			prefix = url_prefix
 		elif self.url_prefix is not None:
@@ -201,22 +210,30 @@ class Manager():
 		else:
 			prefix = DEFAULT_URL_PREFIX
 
+
 		blueprint = Blueprint(name, __name__, url_prefix=prefix)
+		
 		#TODO: Segregate collection and resource methods
+		#Register Collection endpoint
+		
 		collection_url = '/{0}'.format(endpoint)
 		collection_methods = ALL_METHODS & methods
 		self._add_endpoint(blueprint, collection_url, resource_api_view, methods=collection_methods)
 		
+		#Register instance endpoint
 		resource_url = '/{0}/<pk_id>'.format(endpoint)
 		resource_methods = ALL_METHODS & methods
 		self._add_endpoint(blueprint, resource_url, resource_api_view ,methods=resource_methods)
 		
+		#Register related collection endpoint
 		nested_collection_url = '{0}/<relation>'.format(resource_url)
 		self._add_endpoint(blueprint, nested_collection_url, resource_api_view ,methods=resource_methods)
 		
+		#Register related instance endpoint
 		nested_instance_url = '{0}/<related_id>'.format(nested_collection_url)
 		self._add_endpoint(blueprint, nested_instance_url, resource_api_view ,methods=resource_methods)
-
+		
+		#Finally add it to registered APIs
 		self.registered_apis[model] = RESOURCE_INFO(endpoint, blueprint.name, serializer, deserializer, primary_key, apiname)
 
 		return blueprint		
@@ -274,7 +291,7 @@ class Manager():
 
 		"""This method is invoked from :meth:`~Manager.register_resource` to perform 
 		sanity checks on the values provided. Raises :class:`~stargate.exceptions.IllegalArgumentError`
-		with appropriate message.
+		with appropriate message. Returns `True` is all check pass.
 
 		"""
 		if fields is not None and exclude is not None:

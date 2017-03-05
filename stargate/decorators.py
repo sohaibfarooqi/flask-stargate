@@ -6,27 +6,9 @@ please check comments of individual function.
 import re
 from functools import wraps
 from flask import request, json, jsonify
-from .exception import NotAcceptable, MediaTypeNotSupported, ProcessingException, ConflictException, ValidationException
+from .exception import NotAcceptable, MediaTypeNotSupported, ProcessingException, ConflictException, ValidationError
 from werkzeug import parse_options_header
-
-CONTENT_TYPE = 'application/json'
-
-ACCEPT_RE = re.compile(
-    r'''(                       # media-range capturing-parenthesis
-          [^\s;,]+              # type/subtype
-          (?:[ \t]*;[ \t]*      # ";"
-            (?:                 # parameter non-capturing-parenthesis
-              [^\s;,q][^\s;,]*  # token that doesn't start with "q"
-            |                   # or
-              q[^\s;,=][^\s;,]* # token that is more than just "q"
-            )
-          )*                    # zero or more parameters
-        )                       # end of media-range
-        (?:[ \t]*;[ \t]*q=      # weight is a "q" parameter
-          (\d*(?:\.\d+)?)       # qvalue capturing-parentheses
-          [^,]*                 # "extension" accept params: who cares?
-        )?                      # accept params are optional
-    ''', re.VERBOSE)
+from .const import MediatypeConstants
 
 """View function Content-Type decorators"""
 def requires_api_accept(func):
@@ -39,7 +21,7 @@ def requires_api_accept(func):
         if len(header_pairs) == 0:
             return func(*args, **kw)
         jsonapi_pairs = [(name, extra) for name, extra in header_pairs
-                         if name.startswith(CONTENT_TYPE)]
+                         if name.startswith(MediatypeConstants.CONTENT_TYPE)]
         if len(jsonapi_pairs) == 0:
             detail = ('Accept header, if specified, must be the JSON API media type: {0}'.format(CONTENT_TYPE))
             raise NotAcceptable(msg=detail)
@@ -77,7 +59,7 @@ def parse_accept_header(value):
         extra = match.group(2)
         quality = max(min(float(extra), 1), 0) if extra else None
         return name, quality
-    return map(match_to_pair, ACCEPT_RE.finditer(value))
+    return map(match_to_pair, MediatypeConstants.ACCEPT_RE.finditer(value))
 
 CONFLICT_INDICATORS = ('conflicts with', 'UNIQUE constraint failed',
                         'is not unique')
@@ -104,6 +86,6 @@ def catch_integrity_errors(session):
                 if any(s in exception_string for s in CONFLICT_INDICATORS):
                     raise ConflictException(exception_string)
                 else:
-                    raise ValidationException(exception_string)
+                    raise ValidationError(exception_string)
             return wrapped
         return decorated

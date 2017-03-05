@@ -10,6 +10,8 @@ from flask import url_for
 from .const import ResourceInfoConst
 
 class Singleton(type):
+    """Singleton Helper for ResourceInfo.
+    """
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -20,6 +22,8 @@ class Singleton(type):
 
 
 class RegisteredManagers():
+    """Keep a set of all registered :class:`~stargate.manager.Manager` instances.
+    """
     def __init__(self):
         self.created_managers = set()
 
@@ -27,10 +31,47 @@ class RegisteredManagers():
         self.created_managers.add(resmanager)
 
 
-class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
+class ResourceInfo(with_metaclass(Singleton, RegisteredManagers)):
+    """This class provides information about a resource registered with any 
+    :class:`~stargate.manager.Manager` instance. Data keys include :
+        
+        - PRIMARY_KEY
+        - COLLECTION_NAME
+        - URL
+        - SERIALIZER
+        - DESERIALIZER
+    
+    This is a Singleton class that can be accessed any where in the application by just
+    importing it.
 
+    Example:
+    
+    .. code-block:: python
+    
+        from resource_info import resource_info
+    
+        #returns primary_key for model class User
+        resource_info(PRIMARY_KEY, User)
+
+        #returns collection_name for model class User
+        resource_info(COLLECTION_NAME, User)
+
+        #returns fully qualified url for model class User
+        resource_info(URL, User)
+
+        #returns Serializer class for model class User
+        resource_info(SERIALIZER, User)
+
+        #returns DeSerializer class for model class User
+        resource_info(DESERIALIZER, User)
+    
+    Raises `ValueError` if unknown key is provided to the resource_info callable, it also raises 
+    `ValueError` if model class is not registered with any :class:`~stargate.manager.Manager` instance.
+
+    """
     def __call__(self, key, instance_or_model, **kw):
         if self.created_managers:
+            
             if isinstance(instance_or_model, type):
                 model = instance_or_model
 
@@ -73,5 +114,5 @@ class ManagerInfo(with_metaclass(Singleton, RegisteredManagers)):
             raise RuntimeError("No Manager Instance Found")
 
         
-
-manager_info = ManagerInfo()
+#This instance is imported in all other modules.
+resource_info = ResourceInfo()

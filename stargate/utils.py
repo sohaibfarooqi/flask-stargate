@@ -1,4 +1,5 @@
-"""Various utility functions used across application. Refer to individual function docs for more details.
+"""Various utility functions used across application. Refer to individual function docs 
+for parameters and return type information.
 
 """
 
@@ -8,7 +9,7 @@ import math
 from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.orm.exc import NoResultFound
 from .exception import StargateException, ResourceNotFound
-from .proxy import manager_info
+from .resource_info import resource_info
 from .const import ResourceInfoConst
 from sqlalchemy import inspect as sqlalchemy_inspect
 from dateutil.parser import parse as parse_datetime
@@ -23,6 +24,7 @@ from sqlalchemy.inspection import inspect
 from flask import request
 
 def session_query(session, model):
+	"""return SQLAlchemy query object against model class"""
 	if hasattr(model, 'query'):
 		if callable(model.query):
 			query = model.query()
@@ -33,22 +35,27 @@ def session_query(session, model):
 	return session.query(model)
 
 def is_like_list(instance, relation):
-    if relation in instance._sa_class_manager:
-        return instance._sa_class_manager[relation].property.uselist
-    elif hasattr(instance, relation):
-        attr = getattr(instance._sa_instance_state.class_, relation)
-        if hasattr(attr, 'property'):
-            return attr.property.uselist
-    related_value = getattr(type(instance), relation, None)
-    if isinstance(related_value, AssociationProxy):
-        local_prop = related_value.local_attr.prop
-        if isinstance(local_prop, RelProperty):
-            return local_prop.uselist
-    return False
+	"""Check if relatation is TO_MANY or TO_ONE based on relationship
+	property ``userlist``
+
+	"""
+	if relation in instance._sa_class_manager:
+		return instance._sa_class_manager[relation].property.uselist
+	elif hasattr(instance, relation):
+		attr = getattr(instance._sa_instance_state.class_, relation)
+		if hasattr(attr, 'property'):
+			return attr.property.uselist
+		related_value = getattr(type(instance), relation, None)
+		if isinstance(related_value, AssociationProxy):
+			local_prop = related_value.local_attr.prop
+		if isinstance(local_prop, RelProperty):
+			return local_prop.uselist
+	return False
 
 def get_resource(session, model, pk_id):
-
-	pk_name = manager_info(ResourceInfoConst.PRIMARY_KEY_FOR, model)
+	"""Get resource from db with specified model class and primary key value.
+	"""
+	pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, model)
 		
 	try:
 		query = session_query(session, model)
@@ -64,26 +71,33 @@ def get_resource(session, model, pk_id):
 		raise StargateException(msg=detail)
 
 def has_field(model, fieldname):
-    descriptors = sqlalchemy_inspect(model).all_orm_descriptors._data
-    if fieldname in descriptors and hasattr(descriptors[fieldname], 'fset'):
-        return descriptors[fieldname].fset is not None
-    return hasattr(model, fieldname)
+	"""Check if the specified model has the provided fieldname defined.
+	"""
+	descriptors = sqlalchemy_inspect(model).all_orm_descriptors._data
+	if fieldname in descriptors and hasattr(descriptors[fieldname], 'fset'):
+		return descriptors[fieldname].fset is not None
+	return hasattr(model, fieldname)
 
 def get_field_type(model, fieldname):
-    field = getattr(model, fieldname)
-    if isinstance(field, ColumnElement):
-        return field.type
-    if isinstance(field, AssociationProxy):
-        field = field.remote_attr
-    if hasattr(field, 'property'):
-        prop = field.property
-        if isinstance(prop, RelProperty):
-            return None
-        return prop.columns[0].type
-    return None
+	"""Check where a given field is a model attribute, association proxy or Relationship 
+	property
+	"""
+	field = getattr(model, fieldname)
+	if isinstance(field, ColumnElement):
+		return field.type
+	if isinstance(field, AssociationProxy):
+		field = field.remote_attr
+	if hasattr(field, 'property'):
+		prop = field.property
+		if isinstance(prop, RelProperty):
+			return None
+		return prop.columns[0].type
+	return None
 
 def string_to_datetime(model, fieldname, value):
-
+	"""Convert string representation of time to specific datetime field. Can parse intervals and 
+	timestamp objects.
+	"""
 	CURRENT_TIME_MARKERS = ('CURRENT_TIMESTAMP', 'CURRENT_DATE', 'LOCALTIMESTAMP')
 	if value is None:
 		return value
@@ -104,7 +118,9 @@ def string_to_datetime(model, fieldname, value):
 	return value
 
 def get_pagination_links(page_size, page_number, num_results, first, last, next, prev, url = None):
-
+	"""Get pagination links for a collection provided collection's first, last, next and prev.
+	In case of related collection pagination provide initial `url`. 
+	"""
 	if url is not None:
 		link_url =  url	
 
@@ -137,7 +153,8 @@ def get_pagination_links(page_size, page_number, num_results, first, last, next,
 
 
 def get_paginated_url(link, page_number, page_size):
-
+	"""Append pagination params to a url.
+	"""
 	if link.endswith('?'):
 		return "{0}page_number={1}&page_size={2}".format(link, page_number, page_size)
 
@@ -149,11 +166,14 @@ def get_paginated_url(link, page_number, page_size):
 
 
 def get_relations(model):
-		NON_RELATION_ATTRS = ('query', 'query_class', '_sa_class_manager','_decl_class_registry')
-		return [k for k in dir(model) if not (k.startswith('__') or k in NON_RELATION_ATTRS) and get_related_model(model, k)]
+	"""Get all relations of a model.
+	"""
+	NON_RELATION_ATTRS = ('query', 'query_class', '_sa_class_manager','_decl_class_registry')
+	return [k for k in dir(model) if not (k.startswith('__') or k in NON_RELATION_ATTRS) and get_related_model(model, k)]
 	
 def get_related_model(model, relationname):
-
+	"""Get related model provided with relation name. Relation can be association proxy.
+	"""
 	if hasattr(model, relationname):
 		attr = getattr(model, relationname)
 	if hasattr(attr, 'property') and isinstance(attr.property, RelProperty):
@@ -171,7 +191,25 @@ def get_related_association_proxy_model(attr):
 
 
 def parse_expansions(model, expand):
+	"""Parse resource expansion. Resource expansion string could be like:
+		
+		- expand=location,city
+			In this case all attributes of location and city relationship will be expanded
+		
+		- expand=location(latitude,longitude),city
+			In this case only two attributes of location will be included in response.
+
+		This method return a dict of resource that are to be expanded fully and another dict key
+		which indicates reources which are to be expanded partially.
+		
+		Example:
+
+		expand=location(latitude,longitude),city
+		{"expand": city, "expand_partial":('location', [latitude, longitude])}
+
+	"""
 	REGEX_MATCH_FIELD = r'((\w+)\(([\s+\w\s+,\s+.]+)\))'
+	#FIXME: This should be namedtuple
 	nested_fields = re.findall(REGEX_MATCH_FIELD, expand)
 
 	resource = expand

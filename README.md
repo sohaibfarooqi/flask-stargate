@@ -1,7 +1,7 @@
 ##Stargate 
 [![Build Status](https://travis-ci.org/sohaibfarooqi/stargate.svg?branch=master)](https://travis-ci.org/sohaibfarooqi/stargate)
 
-Stargate let you expost JSON RESTFul APIs against Model resources. This project is currently under
+Stargate let you expost JSON RESTFul APIs against Model resources. This project is under
 development. Currently `GET` method has test cases written. Remaining view functions are yet to be 
 tested. Docs for this project will be published soon on github pages.
 

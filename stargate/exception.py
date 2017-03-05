@@ -1,5 +1,7 @@
-"""Application exceptions. Base Exception class for this app is `StargateException`. All application exceptions are caught here and send back 
-to client in a prescribed format. Werkzeug exceptions are also mapped here.
+"""Application exceptions. Base Exception class for this app is `StargateException`. 
+All application exceptions are caught here and send back to client in a prescribed format. 
+Exceptions are further grouped so that we can located the part of code causing a specific 
+exception. Werkzeug exceptions are also mapped here.
 
 """
 
@@ -58,15 +60,19 @@ class NotAcceptable(StargateException):
     werkzeug_exception = NotAcceptable
 
 ############################--VALIDATION ERRORS--############################################
-class ValidationException(StargateException):
+class ValidationError(StargateException):
     werkzeug_exception = BadRequest
 
-class ComparisonToNull(ValidationException):
+    def __init__(self, msg, **kwargs):
+        super(ValidationError, self).__init__()
+        self.msg = msg
+
+class ComparisonToNull(ValidationError):
     def __init__(self, msg, **kwargs):
         super(ComparisonToNull, self).__init__()
         self.msg = msg
 
-class UnknownField(ValidationException):
+class UnknownField(ValidationError):
     def __init__(self, field, resource):
         super(UnknownField, self).__init__()
         self.field = field
@@ -78,7 +84,7 @@ class UnknownField(ValidationException):
         dct['details'].update({'field' : self.field, 'resource': self.resource})
         return dct
 
-class UnknownRelation(ValidationException):
+class UnknownRelation(ValidationError):
     def __init__(self, relation, resource):
         super(UnknownRelation, self).__init__()
         self.relation = relation
@@ -90,7 +96,7 @@ class UnknownRelation(ValidationException):
         dct['details'].update({'relation' : self.relation,  'resource': self.resource})
         return dct
 
-class IllegalArgumentError(ValidationException):
+class IllegalArgumentError(ValidationError):
     
     def __init__(self, msg, **kwargs):
         super(IllegalArgumentError, self).__init__()
@@ -100,10 +106,20 @@ class IllegalArgumentError(ValidationException):
 class ProcessingException(StargateException):
     werkzeug_exception = UnprocessableEntity       
 
-class MissingDataException(ProcessingException):
+class MissingData(ProcessingException):
     def __init__(self, model, *args, **kw):
-        super(SerializationException, self).__init__(*args, **kw)
-        self.msg  = "Missing `data` key for model {0}".format(self.model)
+        super(MissingData, self).__init__(*args, **kw)
+        self.msg  = "Missing `data` key for model {0}".format(model)
+
+class MissingPrimaryKey(ProcessingException):
+    def __init__(self, model, *args, **kw):
+        super(MissingPrimaryKey, self).__init__(*args, **kw)
+        self.msg  = "Missing `id` key for model {0}".format(model)
+
+class DatabaseError(ProcessingException):
+    def __init__(self, msg, *args, **kw):
+        super(DatabaseError, self).__init__(*args, **kw)
+        self.msg  = "Error occured in db transction {0}".format(model)
 
 class SerializationException(ProcessingException):
     
