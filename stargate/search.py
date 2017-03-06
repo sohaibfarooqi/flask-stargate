@@ -105,7 +105,7 @@ class Search():
 		
 		"""
 		if filters:
-			filters = [Filter.from_dictionary(self.model, f) for f in filters]
+			filters = [Filter.from_json(self.model, f) for f in filters]
 			filters = [create_filter(self.model, f) for f in filters]
 			query = query.filter(*filters)
 	    

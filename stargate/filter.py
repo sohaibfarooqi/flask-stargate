@@ -4,7 +4,7 @@ and Disjunction Filters. Also contains a list of supported `OPERATORS`(unary, bi
 """
 
 import inspect
-from .exception import UnknownField, ComparisonToNull
+from .exception import UnknownField, ComparisonToNull, UnknownOperator
 from sqlalchemy import Date, DateTime, Interval, Time, and_, or_
 from dateutil.parser import parse as parse_datetime
 import datetime
@@ -30,37 +30,7 @@ OPERATORS = {
     # Operators which accept a single argument.
     'is_null': lambda f: f == None,
     'is_not_null': lambda f: f != None,
-    # Operators which accept two arguments.
-    '==': lambda f, a: f == a,
-    'eq': lambda f, a: f == a,
-    'equals': lambda f, a: f == a,
-    'equal_to': lambda f, a: f == a,
-    '!=': lambda f, a: f != a,
-    'ne': lambda f, a: f != a,
-    'neq': lambda f, a: f != a,
-    'not_equal_to': lambda f, a: f != a,
-    'does_not_equal': lambda f, a: f != a,
-    '>': lambda f, a: f > a,
-    'gt': lambda f, a: f > a,
-    '<': lambda f, a: f < a,
-    'lt': lambda f, a: f < a,
-    '>=': lambda f, a: f >= a,
-    'ge': lambda f, a: f >= a,
-    'gte': lambda f, a: f >= a,
-    'geq': lambda f, a: f >= a,
-    '<=': lambda f, a: f <= a,
-    'le': lambda f, a: f <= a,
-    'lte': lambda f, a: f <= a,
-    'leq': lambda f, a: f <= a,
-    '<<': lambda f, a: f.op('<<')(a),
-    '<<=': lambda f, a: f.op('<<=')(a),
-    '>>': lambda f, a: f.op('>>')(a),
-    '>>=': lambda f, a: f.op('>>=')(a),
-    '<>': lambda f, a: f.op('<>')(a),
-    '&&': lambda f, a: f.op('&&')(a),
-    'ilike': lambda f, a: f.ilike(a),
-    'like': lambda f, a: f.like(a),
-    'not_like': lambda f, a: ~f.like(a),
+    # Operators which accept a List of values.
     'in': lambda f, a: f.in_(a),
     'not_in': lambda f, a: ~f.in_(a),
     # Operators which accept three arguments.
@@ -70,33 +40,50 @@ OPERATORS = {
 
 
 class Filter:
+    """Convert JSON representation of filters to SQL Filter expression. It Recursively build filters
+    in case of JunctionFilters are present in expression.
 
-    def __init__(self, fieldname, operator, argument=None, otherfield=None):
+    :param fieldname: Resource field name.
+    :param operator: SQL operator to be applied. 
+    :param argument: Value to be comared with. 
+    
+    """
+    def __init__(self, fieldname, operator, argument=None):
         self.fieldname = fieldname
         self.operator = operator
         self.argument = argument
-        self.otherfield = otherfield
-
+        
     @staticmethod
-    def from_dictionary(model, dictionary):
-        if 'or' not in dictionary and 'and' not in dictionary:
-            fieldname = dictionary.get('name')
+    def from_json(model, filters):
+        """This is public method of class. It recursively build filter expression if 
+        `or` or `and` key word is present in filter json.
+        
+        :param filters: filter json representation
+
+        Example filter expression:
+        
+            - [{"name":"age","op":"in","val":"10,11,12"}]
+            - [{"name":"age","op":"is_not_null"}]
+            - [{"name":"age","op":"eq","val":10}]
+
+        """
+        if 'or' not in filters and 'and' not in filters:
+            fieldname = filters.get('name')
             if not hasattr(model, fieldname):
                 raise UnknownField("No Field found {0}",format(fieldname))
-            operator = dictionary.get('op')
-            otherfield = dictionary.get('field')
-            argument = dictionary.get('val')
+            operator = filters.get('op')
+            argument = filters.get('val')    
             argument = string_to_datetime(model, fieldname, argument)
-            return Filter(fieldname, operator, argument, otherfield)
+            return Filter(fieldname, operator, argument)
         
-        from_dict = Filter.from_dictionary
+        from_dict = Filter.from_json
         
-        if 'or' in dictionary:
-            subfilters = dictionary.get('or')
+        if 'or' in filters:
+            subfilters = filters.get('or')
             return DisjunctionFilter(*[from_dict(model, filter_)
                                        for filter_ in subfilters])
         else:
-            subfilters = dictionary.get('and')
+            subfilters = filters.get('and')
             return ConjunctionFilter(*[from_dict(model, filter_)
                                        for filter_ in subfilters])
 
@@ -118,26 +105,36 @@ class DisjunctionFilter(JunctionFilter):
 
 def create_operation(model, fieldname, operator, argument):
     
-    opfunc = OPERATORS[operator]
-    numargs = len(inspect.signature(opfunc).parameters)
     field = getattr(model, fieldname)
-    if numargs == 1:
-        return opfunc(field)
-    if argument is None:
-        msg = ('To compare a value to NULL, use the is_null/is_not_null '
-               'operators.')
-        raise ComparisonToNull(msg)
-    if numargs == 2:
-        return opfunc(field, argument)
-    return opfunc(field, argument, fieldname)
-
+    
+    if operator in OPERATORS:
+        opfunc = OPERATORS[operator]
+        numargs = len(inspect.signature(opfunc).parameters)
+        
+        #Unary Operators
+        if numargs == 1:
+            return opfunc(field)
+        
+        #Binary Operator Acception List of Values
+        elif numargs == 2:
+            argument = argument.split(',')
+            return opfunc(field, argument)
+    
+    #Binary Operators accepting single argument
+    else:
+        opfunc = list(filter(
+                                lambda e: hasattr(field, e % operator), 
+                                ['%s','%s_','__%s__']
+                            ))
+        if not opfunc:
+            raise UnknownOperator(msg="No operator found{0}".format(operator))
+        opfunc = opfunc[0] % operator
+        return getattr(field, opfunc)(argument)    
 
 def create_filter(model, filt):
     if not isinstance(filt, JunctionFilter):
         fname = filt.fieldname
         val = filt.argument
-        if filt.otherfield:
-            val = getattr(model, filt.otherfield)
         return create_operation(model, fname, filt.operator, val)
     if isinstance(filt, ConjunctionFilter):
         return and_(create_filter(model, f) for f in filt)

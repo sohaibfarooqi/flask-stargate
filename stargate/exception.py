@@ -102,6 +102,10 @@ class IllegalArgumentError(ValidationError):
         super(IllegalArgumentError, self).__init__()
         self.msg = msg
 
+class UnknownOperator(ValidationError):
+    def __init__(self, msg, **kwargs):
+        self.__name__ = 'UnknownOperator'
+        super(UnknownOperator, self).__init__(msg)
 ############################--PROCESSING ERRORS--############################################
 class ProcessingException(StargateException):
     werkzeug_exception = UnprocessableEntity       
