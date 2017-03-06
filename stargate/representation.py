@@ -65,7 +65,7 @@ class InstanceRepresentation(Representation):
 
     def to_response(self):
 
-        self_link = resource_info(ResourceInfoConst.URL_FOR, self.model, pk_id = self.pk_id)
+        self_link = resource_info(ResourceInfoConst.URL, self.model, pk_id = self.pk_id)
         
         self.__base_repr__['meta']['_HEADERS']['rel'] = self_link
         self.__base_repr__[SerializationConst.DATA] = self.data
@@ -90,7 +90,7 @@ class CollectionRepresentation(Representation):
 
     def to_response(self, page_size = None, page_number = None, pagination = None):
         
-        self_link =  resource_info(ResourceInfoConst.URL_FOR, self.model)
+        self_link =  resource_info(ResourceInfoConst.URL, self.model)
         
         if pagination is not None and page_number is not None and page_size is not None:
             num_results = pagination.total

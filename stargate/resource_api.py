@@ -48,7 +48,7 @@ class ResourceAPI(MethodView):
         
 		super(ResourceAPI, self).__init__(*args,**kw)
 
-		self.collection_name = resource_info(ResourceInfoConst.COLLECTION_NAME_FOR, model)
+		self.collection_name = resource_info(ResourceInfoConst.COLLECTION_NAME, model)
 		
 		self.session = session
 		self.model = model
@@ -105,7 +105,7 @@ class ResourceAPI(MethodView):
 		if group_by:
 			group_by = group_by.strip().rstrip(',').lstrip(',')
 			group_by = group_by.split(',')
-			group_by.append(resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, self.model))
+			group_by.append(resource_info(ResourceInfoConst.PRIMARY_KEY, self.model))
 		
 		if fields:
 			fields = fields.strip().rstrip(',').lstrip(',')
@@ -129,9 +129,9 @@ class ResourceAPI(MethodView):
 		
 		#If related collection/resource get serializer for related model else primary model.
 		if relation is None:
-			serializer = resource_info(ResourceInfoConst.SERIALIZER_FOR, self.model)
+			serializer = resource_info(ResourceInfoConst.SERIALIZER, self.model)
 		else:
-			serializer	= resource_info(ResourceInfoConst.SERIALIZER_FOR, get_related_model(self.model, relation))
+			serializer	= resource_info(ResourceInfoConst.SERIALIZER, get_related_model(self.model, relation))
 		
 		"""If result set is `flask_sqlalchemy.Pagination` object, make response of type
 		`stargate.representation.CollectionRepresentation` otherwise 
@@ -169,7 +169,7 @@ class ResourceAPI(MethodView):
 
 		try:
 			#Deserialize data
-			deserializer = resource_info(ResourceInfoConst.DESERIALIZER_FOR, self.model)
+			deserializer = resource_info(ResourceInfoConst.DESERIALIZER, self.model)
 			instance = deserializer(data)
 			
 			#Add object to db session
@@ -190,7 +190,7 @@ class ResourceAPI(MethodView):
 		#Get all relations for serialization
 		relations = get_relations(self.model)
 		relations = ",".join(relations)
-		serializer = resource_info(ResourceInfoConst.SERIALIZER_FOR, self.model)
+		serializer = resource_info(ResourceInfoConst.SERIALIZER, self.model)
 		#Serialize data with all resource expanded
 		result = serializer(instance, expand = relations)
 		
@@ -198,7 +198,7 @@ class ResourceAPI(MethodView):
 			representation = CollectionRepresentation(self.model, result, 201)
 		
 		else:
-			pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, self.model)
+			pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, self.model)
 			pk_val = getattr(instance, pk_name)
 			representation = InstanceRepresentation(self.model, pk_val, result, 201)
 
@@ -232,7 +232,7 @@ class ResourceAPI(MethodView):
 		#get data out of payload
 		data = data.pop(SerializationConst.DATA, {})
 		#Get embedded resource
-		links = data.pop(SerializationConst._EMBEDDED, {})
+		links = data.pop(SerializationConst.EMBEDDED, {})
 		#Get all relations of primary resource
 		all_links = get_relations(self.model)
 		
@@ -252,7 +252,7 @@ class ResourceAPI(MethodView):
 			if is_like_list(primary_resource, linkname):
 
 				newvalue = []
-				fk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, related_model)
+				fk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, related_model)
 				for rel in linkage:
 					
 					if fk_name in rel:
@@ -267,7 +267,7 @@ class ResourceAPI(MethodView):
 				if linkage is None:
 					newvalue = None
 				else:
-					fk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, related_model)
+					fk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, related_model)
 					
 					if fk_name in linkage:
 						inst = get_resource(self.session, related_model, linkage[fk_name])
@@ -298,7 +298,7 @@ class ResourceAPI(MethodView):
 				raise DatabaseError("Unable to update resource: {0}".format(str(e)))
 			
 			#FIXME: How to return proper representation using API response style?
-			serializer = resource_info(ResourceInfoConst.SERIALIZER_FOR, self.model)
+			serializer = resource_info(ResourceInfoConst.SERIALIZER, self.model)
 			result = serializer(primary_resource)
 			
 			repr = InstanceRepresentation(self.model, pk_id, result, 200)

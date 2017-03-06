@@ -128,7 +128,7 @@ class TestResourceManager(unittest.TestCase):
 			self.assertEqual(response._status_code, 405)
 		
 		def test_custom_primary_key_field(self):
-			primary_key = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, TestPrimaryKey)
+			primary_key = resource_info(ResourceInfoConst.PRIMARY_KEY, TestPrimaryKey)
 			self.assertEqual(primary_key, 'ser_id')
 		
 		@classmethod

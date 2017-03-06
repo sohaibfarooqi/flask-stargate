@@ -61,7 +61,7 @@ class Search():
 		
 		elif pk_id is not None and self.relation is not None:
 			
-			pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, self.model)
+			pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, self.model)
 			primary_resource = query.filter(getattr(self.model, pk_name) == pk_id).first()
 			related_model = getattr(primary_resource, self.relation)
 

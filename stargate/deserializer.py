@@ -30,7 +30,7 @@ class Deserializer:
 
         .. code-block:: python
         
-            deserializer = resource_info(ResourceInfoConst.DESERIALIZER_FOR, User)
+            deserializer = resource_info(ResourceInfoConst.DESERIALIZER, User)
             #This execute callable.
             data = deserializer(data)
 
@@ -77,8 +77,8 @@ class Deserializer:
         try:
             for field in instance:
                 
-                if field == SerializationConst._EMBEDDED:
-                    for relation in instance[SerializationConst._EMBEDDED]:
+                if field == SerializationConst.EMBEDDED:
+                    for relation in instance[SerializationConst.EMBEDDED]:
                         if not has_field(self.model, relation):
                             raise UnknownRelation(relation, self.model)
                 
@@ -87,7 +87,7 @@ class Deserializer:
                         if not has_field(self.model, attribute):
                             raise UnknownField(attribute, self.model)
             links = {}
-            links = instance.pop(SerializationConst._EMBEDDED, {})
+            links = instance.pop(SerializationConst.EMBEDDED, {})
             related_resources = {}
 
             for rel_name, rel_object in links.items():
@@ -127,7 +127,7 @@ class RelDeserializer(Deserializer):
         #If its a TO_ONE relationship check: 
         #if primary key id is present return the object, if not present create and return new object
         if not isinstance(data, list):
-            pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, self.model)
+            pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, self.model)
             
             if pk_name in data:
                 return get_resource(self.session, self.model, data[pk_name])

@@ -45,11 +45,11 @@ def expand_resource(related_value, fields, serialize_rel = False):
     else:
         related_model = related_value
     
-    serializer = resource_info(ResourceInfoConst.SERIALIZER_FOR, related_model)
+    serializer = resource_info(ResourceInfoConst.SERIALIZER, related_model)
     data = serializer(related_value, fields = fields, serialize_rel = False)
     
-    pk_id_ = getattr(related_model, resource_info(ResourceInfoConst.PRIMARY_KEY_FOR,related_model))
-    self_link = resource_info(ResourceInfoConst.URL_FOR, related_model, pk_id = pk_id_)
+    pk_id_ = getattr(related_model, resource_info(ResourceInfoConst.PRIMARY_KEY,related_model))
+    self_link = resource_info(ResourceInfoConst.URL, related_model, pk_id = pk_id_)
     return data, self_link
 
 def serialize_relationship(model, instance, relation, expand = None):
@@ -87,13 +87,13 @@ def serialize_relationship(model, instance, relation, expand = None):
     related_value = getattr(instance, relation)
     pagination_links = {}
 
-    pk_value = getattr(instance, resource_info(ResourceInfoConst.PRIMARY_KEY_FOR,model))
+    pk_value = getattr(instance, resource_info(ResourceInfoConst.PRIMARY_KEY,model))
     #Lazy Loading
     if isinstance(related_value, BaseQuery):
         related_value_paginated = related_value.paginate(PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE, error_out=False)
         related_value = related_value_paginated.items
         
-        self_link = resource_info(ResourceInfoConst.URL_FOR, model, pk_id = pk_value, relation = relation)
+        self_link = resource_info(ResourceInfoConst.URL, model, pk_id = pk_value, relation = relation)
         result['meta']['_links'].update(get_pagination_links(PaginationConst.PAGE_SIZE, PaginationConst.PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = self_link))
         self_link = get_paginated_url(self_link, PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE)
         result['meta']['_links'].update({'self': self_link})
@@ -105,7 +105,7 @@ def serialize_relationship(model, instance, relation, expand = None):
     
     #Eager Loading
     elif isinstance(related_value, list):
-        self_link = resource_info(ResourceInfoConst.URL_FOR, model, pk_id = pk_value, relation = relation)
+        self_link = resource_info(ResourceInfoConst.URL, model, pk_id = pk_value, relation = relation)
         result['meta']['_links'].update({'self': self_link})
         result['meta']['_type'] = RelTypeConst.TO_MANY
         result['meta']['_evaluation'] = CollectionEvaluationConst.EAGER
@@ -116,11 +116,11 @@ def serialize_relationship(model, instance, relation, expand = None):
     #Single Instance.
     elif related_value is not None:
         
-        related_id = getattr(related_value, resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, related_model))
-        self_link = resource_info(ResourceInfoConst.URL_FOR, model, pk_id = pk_value, relation = relation, related_id = related_id)
+        related_id = getattr(related_value, resource_info(ResourceInfoConst.PRIMARY_KEY, related_model))
+        self_link = resource_info(ResourceInfoConst.URL, model, pk_id = pk_value, relation = relation, related_id = related_id)
         result['meta']['_type'] = RelTypeConst.TO_ONE
         result['meta']['_links'] = {'self': self_link}
-        serializer = resource_info(ResourceInfoConst.SERIALIZER_FOR,related_model)
+        serializer = resource_info(ResourceInfoConst.SERIALIZER,related_model)
         
         if EXPAND:
             result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
@@ -146,7 +146,7 @@ class Serializer():
 
     .. code-block:: python
         
-        serializer = resource_info(ResourceInfoConst.SERIALIZER_FOR, User)
+        serializer = resource_info(ResourceInfoConst.SERIALIZER, User)
         data = serializer(data)
 
     """
@@ -175,7 +175,7 @@ class Serializer():
 
         .. code-block:: python
         
-            serializer = resource_info(ResourceInfoConst.SERIALIZER_FOR, User)
+            serializer = resource_info(ResourceInfoConst.SERIALIZER, User)
             #This execute callable.
             data = serializer(data)
 
@@ -213,7 +213,7 @@ class Serializer():
             if self.exclude:
                 columns = [c for c in columns if c not in self.exclude]
 
-            pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, model)
+            pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, model)
             
             if fields:
                 fields = set(fields)
@@ -265,7 +265,7 @@ class Serializer():
         
         try:
             model = type(instance)
-            pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, model)
+            pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, model)
             attributes = dict((column, getattr(instance, column))
                               for column in columns)
             attributes = dict((k, (v() if callable(v) else v))
@@ -282,7 +282,7 @@ class Serializer():
 
             if serialize_rel:
                 relations = get_relations(model)
-                result[SerializationConst._EMBEDDED] = dict((rel, serialize_relationship(model, instance, rel, expand = expand))
+                result[SerializationConst.EMBEDDED] = dict((rel, serialize_relationship(model, instance, rel, expand = expand))
                                                         for rel in relations)
             return result
             

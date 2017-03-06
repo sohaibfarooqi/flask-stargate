@@ -34,7 +34,7 @@ class CollectionEvaluationConst:
 
 #Serialization Constants
 class SerializationConst:
-	_EMBEDDED = '_embedded'
+	EMBEDDED = '_embedded'
 	ATTRIBUTES = 'attributes'
 	DATA = 'data'
 	NUM_RESULTS = 'num_results'
@@ -42,11 +42,11 @@ class SerializationConst:
 
 #Resource Info Constants
 class ResourceInfoConst:
-	PRIMARY_KEY_FOR = 'primary_key_for'
-	SERIALIZER_FOR = 'serializer_for'
-	DESERIALIZER_FOR = 'deserializer_for'
-	URL_FOR = 'url_for'
-	COLLECTION_NAME_FOR = 'collection_name_for'
+	PRIMARY_KEY = 'primary_key_for'
+	SERIALIZER = 'serializer_for'
+	DESERIALIZER = 'deserializer_for'
+	URL = 'url_for'
+	COLLECTION_NAME = 'collection_name_for'
 
 class MediatypeConstants:
 	CONTENT_TYPE = 'application/json'

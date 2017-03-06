@@ -55,7 +55,7 @@ def is_like_list(instance, relation):
 def get_resource(session, model, pk_id):
 	"""Get resource from db with specified model class and primary key value.
 	"""
-	pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY_FOR, model)
+	pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, model)
 		
 	try:
 		query = session_query(session, model)
