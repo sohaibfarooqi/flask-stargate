@@ -129,7 +129,7 @@ class TestFilters(unittest.TestCase):
 		def test_conjunction_filter(self):
 			filter_list = list() 
 			name_list = ["John Doe", "Mark Adams"]
-			filter_1 = dict(name="name", op="in", val=name_list)
+			filter_1 = dict(name="name", op="in", val=','.join(name_list))
 			filter_2 = dict(name="age", op="lt", val="25")
 			
 			combined_filter = list()
@@ -152,7 +152,7 @@ class TestFilters(unittest.TestCase):
 		def test_disjunction_filter(self):
 			filter_list = list() 
 			
-			filter_1 = dict(name="name", op="in", val=["Vanguard", "Wayne John"])
+			filter_1 = dict(name="name", op="in", val="Vanguard,Wayne John")
 			filter_2 = dict(name="age", op="gt", val="19")
 			
 			combined_filter = list()
