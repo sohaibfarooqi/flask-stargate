@@ -48,7 +48,7 @@ class ResourceAPI(MethodView):
         
 		super(ResourceAPI, self).__init__(*args,**kw)
 
-		self.collection_name = resource_info(ResourceInfoConst.COLLECTION_NAME, model)
+		# self.collection_name = resource_info(ResourceInfoConst.COLLECTION_NAME, model)
 		
 		self.session = session
 		self.model = model

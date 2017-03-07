@@ -6,3 +6,6 @@ grouping, resource expansion and partial responses.
 
 """
 from .manager import Manager
+
+__version__ = '0.0.1'
+

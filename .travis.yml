@@ -16,11 +16,4 @@ before_script:
   - flask db upgrade
 
 script: 
-  - python tests/test_routes.py
-  - python tests/test_resource_manager.py
-  - python tests/test_filteration.py
-  - python tests/test_sorting.py
-  - python tests/test_grouping.py
-  - python tests/test_query_string_options.py
-  - python tests/test_pagination.py
-  - python tests/test_embedded_resource.py
+  - python -m unittest discover -p "test_*.py"
