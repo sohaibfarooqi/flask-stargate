@@ -1,10 +1,10 @@
-from . import TestSetup
+from . import SimpleTestBase
 from flask import json
 import datetime
 from app.models import User, City, Location
 from app import db
 
-class TestSorting(TestSetup):
+class TestSorting(SimpleTestBase):
 		
 		@classmethod
 		def setUpClass(self):

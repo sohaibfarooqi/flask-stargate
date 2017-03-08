@@ -15,7 +15,7 @@ db.init_app(app)
 Migrate(app, db)
 
 #Model Definition
-class User(db.Model,Entity,TimestampMixin):
+class User(db.Model):
     id = db.Column(db.Integer, primary_key = True, autoincrement = True)
     created_at = db.Column(db.DateTime, default=func.now())
     updated_at = db.Column(db.DateTime, onupdate=func.now())
