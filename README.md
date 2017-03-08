@@ -8,7 +8,7 @@ tested. Docs for this project will be published soon on github pages.
 This code is largely inspired from [Flask-Restless](https://github.com/jfinkels/flask-restless). It is 
 indeed a great example for someone who wants to learn and understand how RESTFul APIs should be coded.
 
-For quickstart please check [example app][../app/quickstart.py]
+For quickstart please check [example app](../app/quickstart.py)
 
 ###Features
 
