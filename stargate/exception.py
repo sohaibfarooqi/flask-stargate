@@ -24,7 +24,7 @@ class StargateException(Exception):
         return {
             'status': self.status_code,
             'message': self.msg if self.msg else HTTP_STATUS_CODES.get(self.status_code, ''),
-            'details': {'_exception_class': self.__name__}
+            'details': {'_exception_class': type(self).__name__}
         }
 
     def get_response(self):
@@ -74,10 +74,10 @@ class ComparisonToNull(ValidationError):
 
 class UnknownField(ValidationError):
     def __init__(self, field, resource):
-        super(UnknownField, self).__init__()
         self.field = field
         self.resource = resource
         self.msg = "Unknown field {0} in model {1}".format(field, resource)
+        super(UnknownField, self).__init__(self.msg)
     
     def as_dict(self):
         dct = super(UnknownField, self).as_dict()
@@ -123,7 +123,7 @@ class MissingPrimaryKey(ProcessingException):
 class DatabaseError(ProcessingException):
     def __init__(self, msg, *args, **kw):
         super(DatabaseError, self).__init__(*args, **kw)
-        self.msg  = "Error occured in db transction {0}".format(model)
+        self.msg  = msg
 
 class SerializationException(ProcessingException):
     

@@ -6,7 +6,6 @@ def insert_pagination_data(test_client):
 			location = Location()
 
 			with test_client.test_request_context():
-				db.create_all()
 				city.title = "Lahore"
 				city.latitude = 72.813
 				city.longitude = 78.1987
@@ -45,7 +44,6 @@ def insert_pagination_data(test_client):
 def insert_simple_test_data(test_client):
 	
 	with test_client.test_request_context():
-		db.create_all()
 		#Insert Dummy data for testing
 		city = City()
 		location = Location()
@@ -96,7 +94,6 @@ def insert_filteration_data(test_client):
 		user5 = User()
 
 		with test_client.test_request_context():
-			db.create_all()
 			city.title = "Lahore"
 			city.latitude = 72.813
 			city.longitude = 78.1987

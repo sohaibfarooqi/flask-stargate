@@ -149,7 +149,7 @@ class ResourceAPI(MethodView):
 		
 
 	def post(self):
-		"""Create resource(s) against data provided in payload. 
+		"""Create resource against data provided in payload. 
 		
 		:return: :class:`~stargate.representation.Representation` instance.
 
@@ -171,12 +171,8 @@ class ResourceAPI(MethodView):
 			#Deserialize data
 			deserializer = resource_info(ResourceInfoConst.DESERIALIZER, self.model)
 			instance = deserializer(data)
-			
 			#Add object to db session
-			if isinstance(instance, list):
-				self.session.add_all(instance)
-			else:
-				self.session.add(instance)
+			self.session.add(instance)
 		
 			self.session.flush()
 			self.session.commit()
@@ -194,13 +190,9 @@ class ResourceAPI(MethodView):
 		#Serialize data with all resource expanded
 		result = serializer(instance, expand = relations)
 		
-		if isinstance(instance, list):
-			representation = CollectionRepresentation(self.model, result, 201)
-		
-		else:
-			pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, self.model)
-			pk_val = getattr(instance, pk_name)
-			representation = InstanceRepresentation(self.model, pk_val, result, 201)
+		pk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, self.model)
+		pk_val = getattr(instance, pk_name)
+		representation = InstanceRepresentation(self.model, pk_val, result, 201)
 
 		return representation.to_response()
 

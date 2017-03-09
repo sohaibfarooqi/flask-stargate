@@ -27,31 +27,21 @@ class TestResourceManager(ManagerTestBase):
 
 		def test_resource_fields(self):
 			response = self.client.get('/api/location', headers={"Content-Type": "application/json"})
-			content_length = int(response.headers['Content-Length'] )
-
-			if content_length > 0:
-				data = json.loads(response.get_data())
-				data = data['data']
-			
-				for key in data:
-					keys = list(key['attributes'].keys())
-					self.assertCountEqual(keys, ['latitude','longitude'])
-			else:
-				raise ValueError("No-Content")
+			data = json.loads(response.get_data())
+			data = data['data']
+		
+			for key in data:
+				keys = list(key['attributes'].keys())
+				self.assertCountEqual(keys, ['latitude','longitude'])
 
 		def test_resource_exclude(self):
 			response = self.client.get('/v1/city', headers={"Content-Type": "application/json"})
-			content_length = int(response.headers['Content-Length'] )
-
-			if content_length > 0:
-				data = json.loads(response.get_data())
-				data = data['data']
-				
-				for key in data:
-					keys = list(key['attributes'].keys())
-					self.assertNotIn(['latitude','longitude'], keys)
-			else:
-				raise ValueError("No-Content")
+			data = json.loads(response.get_data())
+			data = data['data']
+			
+			for key in data:
+				keys = list(key['attributes'].keys())
+				self.assertNotIn(['latitude','longitude'], keys)
 		
 		
 		def test_view_decorators(self):

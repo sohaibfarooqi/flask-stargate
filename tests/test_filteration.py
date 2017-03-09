@@ -16,13 +16,10 @@ class TestFilters(DescriptiveTestBase):
 			filter_list.append(filter_expr)
 			query_str = json.dumps(filter_list)
 			response = self.client.get('/api/user?filters={0}'.format(query_str), headers={"Content-Type": "application/json"})
-			content_length = int(response.headers['Content-Length'] )
-
-			if content_length > 0:
-				data = json.loads(response.get_data())
-				data = data['data']
-				for user in data:
-					self.assertEqual(user['attributes']['name'], 'Vanguard')
+			data = json.loads(response.get_data())
+			data = data['data']
+			for user in data:
+				self.assertEqual(user['attributes']['name'], 'Vanguard')
 
 		def test_conjunction_filter(self):
 			filter_list = list() 
@@ -39,13 +36,10 @@ class TestFilters(DescriptiveTestBase):
 			query_str = json.dumps(filter_list)
 			
 			response = self.client.get('/api/user?filters={0}'.format(query_str), headers={"Content-Type": "application/json"})
-			content_length = int(response.headers['Content-Length'])
-
-			if content_length > 0:
-				data = json.loads(response.get_data())
-				data = data['data']
-				for user in data:
-					self.assertTrue(any(user['attributes']['name'] == name for name in name_list) or user['attributes']['age'] < 25)
+			data = json.loads(response.get_data())
+			data = data['data']
+			for user in data:
+				self.assertTrue(any(user['attributes']['name'] == name for name in name_list) or user['attributes']['age'] < 25)
 
 		def test_disjunction_filter(self):
 			filter_list = list() 
@@ -62,11 +56,8 @@ class TestFilters(DescriptiveTestBase):
 			query_str = json.dumps(filter_list)
 			
 			response = self.client.get('/api/user?filters={0}'.format(query_str), headers={"Content-Type": "application/json"})
-			content_length = int(response.headers['Content-Length'] )
-
-			if content_length > 0:
-				data = json.loads(response.get_data())
-				data = data['data']
-				for user in data:
-					self.assertIn(user['attributes']['name'], ['Vanguard', 'Wayne John'])		
-					self.assertGreater(user['attributes']['age'], 19)		
+			data = json.loads(response.get_data())
+			data = data['data']
+			for user in data:
+				self.assertIn(user['attributes']['name'], ['Vanguard', 'Wayne John'])		
+				self.assertGreater(user['attributes']['age'], 19)		

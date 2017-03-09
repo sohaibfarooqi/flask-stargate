@@ -23,7 +23,7 @@ def requires_api_accept(func):
         jsonapi_pairs = [(name, extra) for name, extra in header_pairs
                          if name.startswith(MediatypeConstants.CONTENT_TYPE)]
         if len(jsonapi_pairs) == 0:
-            detail = ('Accept header, if specified, must be the JSON API media type: {0}'.format(CONTENT_TYPE))
+            detail = ('Accept header, if specified, must be the JSON API media type: {0}'.format(MediatypeConstants.CONTENT_TYPE))
             raise NotAcceptable(msg=detail)
         if all(extra is not None for name, extra in jsonapi_pairs):
             detail = ('Accept header contained API content type, but each'
@@ -41,10 +41,10 @@ def requires_api_mimetype(func):
             return func(*args, **kw)
         header = request.headers.get('Content-Type')
         content_type, extra = parse_options_header(header)
-        content_is_json = content_type.startswith(CONTENT_TYPE)
+        content_is_json = content_type.startswith(MediatypeConstants.CONTENT_TYPE)
         if not content_is_json:
             detail = ('Request must have "Content-Type: {0}"'
-                      ' header').format(CONTENT_TYPE)
+                      ' header').format(MediatypeConstants.CONTENT_TYPE)
             raise MediaTypeNotSupported(msg=detail)
         if extra:
             detail = ('Content-Type header must not have any media type'

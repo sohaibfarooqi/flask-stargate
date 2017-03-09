@@ -82,7 +82,7 @@ def serialize_relationship(model, instance, relation, expand = None):
                 EXPAND = False
                 
 
-    result = {'meta':{'_links':{}}}
+    result = {}
     related_model = get_related_model(model, relation)
     related_value = getattr(instance, relation)
     pagination_links = {}
@@ -92,32 +92,36 @@ def serialize_relationship(model, instance, relation, expand = None):
     if isinstance(related_value, BaseQuery):
         related_value_paginated = related_value.paginate(PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE, error_out=False)
         related_value = related_value_paginated.items
-        
-        self_link = resource_info(ResourceInfoConst.URL, model, pk_id = pk_value, relation = relation)
-        result['meta']['_links'].update(get_pagination_links(PaginationConst.PAGE_SIZE, PaginationConst.PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = self_link))
-        self_link = get_paginated_url(self_link, PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE)
-        result['meta']['_links'].update({'self': self_link})
-        result['meta']['_type'] = RelTypeConst.TO_MANY
-        result['meta']['_evaluation'] = CollectionEvaluationConst.LAZY
-        
-        if EXPAND:
-            result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
+        if related_value:
+            self_link = resource_info(ResourceInfoConst.URL, model, pk_id = pk_value, relation = relation)
+            result['meta'] = {}
+            result['meta']['_links'] = get_pagination_links(PaginationConst.PAGE_SIZE, PaginationConst.PAGE_NUMBER, related_value_paginated.total, 1, related_value_paginated.pages, related_value_paginated.next_num, related_value_paginated.prev_num , url = self_link)
+            self_link = get_paginated_url(self_link, PaginationConst.PAGE_NUMBER, PaginationConst.PAGE_SIZE)
+            result['meta']['_links'].update({'self': self_link})
+            result['meta']['_type'] = RelTypeConst.TO_MANY
+            result['meta']['_evaluation'] = CollectionEvaluationConst.LAZY
+            
+            if EXPAND:
+                result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
     
     #Eager Loading
     elif isinstance(related_value, list):
-        self_link = resource_info(ResourceInfoConst.URL, model, pk_id = pk_value, relation = relation)
-        result['meta']['_links'].update({'self': self_link})
-        result['meta']['_type'] = RelTypeConst.TO_MANY
-        result['meta']['_evaluation'] = CollectionEvaluationConst.EAGER
+        if related_value:
+            self_link = resource_info(ResourceInfoConst.URL, model, pk_id = pk_value, relation = relation)
+            result['meta'] = {}
+            result['meta']['_links'] = {'self': self_link}
+            result['meta']['_type'] = RelTypeConst.TO_MANY
+            result['meta']['_evaluation'] = CollectionEvaluationConst.EAGER
 
-        if EXPAND:
-            result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
+            if EXPAND:
+                result['data'], self_link = expand_resource(related_value, fields, serialize_rel = False)
     
     #Single Instance.
     elif related_value is not None:
         
         related_id = getattr(related_value, resource_info(ResourceInfoConst.PRIMARY_KEY, related_model))
         self_link = resource_info(ResourceInfoConst.URL, model, pk_id = pk_value, relation = relation, related_id = related_id)
+        result['meta'] = {}
         result['meta']['_type'] = RelTypeConst.TO_ONE
         result['meta']['_links'] = {'self': self_link}
         serializer = resource_info(ResourceInfoConst.SERIALIZER,related_model)

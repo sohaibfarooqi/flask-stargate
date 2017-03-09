@@ -34,7 +34,7 @@ class Representation():
         headers = self.__base_repr__['meta'].pop('_HEADERS', {}) if 'meta' in self.__base_repr__ else {}
         
         settings = {}
-        settings.setdefault('indent', 4)
+        settings.setdefault('indent', 20)
         settings.setdefault('sort_keys', True)
         
         response_doc = json.dumps(self.__base_repr__, **settings)

@@ -4,11 +4,11 @@ of a resource to respective class object or list of objects.
 """
 
 from .resource_info import resource_info
-from .utils import get_related_model
+from .utils import get_resource, get_related_model
 from sqlalchemy.inspection import inspect as sqlalchemy_inspect
 from .utils import has_field, string_to_datetime, session_query
 from .const import SerializationConst, ResourceInfoConst
-from .exception import DeserializationException, UnknownRelation, MissingData
+from .exception import DeserializationException, UnknownRelation, MissingData, UnknownField
 
 class Deserializer:
     """Default Deserializer class. Each resource regsiter its own copy of this class 
@@ -23,7 +23,7 @@ class Deserializer:
         self.session = session
 
     def __call__(self, document):
-        """Callable for Deserializer class. Can deserialize JSONArray or JSONObject representation.
+        """Callable for Deserializer class. Deserialize JSONObject representation.
         Raise :class:`~stargate.exception.MissingDataKey` id `data` key is not present in request payload.
 
         Example:
@@ -42,30 +42,9 @@ class Deserializer:
         
         data = document[SerializationConst.DATA]
         
-        if isinstance(data, list):
-            return self._deserialize_many(data)
-        
-        else:
-            return self._deserialize_one(data)
+        return self._deserialize(data)
 
-    def _deserialize_many(self, data):
-        """Called internally by __call__ method to deseriaize JSONArray representation of objects.
-        Raise :class:`~stargate.exception.DeserializationException` if operation fails.
-
-        :param data: Array of JSON Objects.
-        """
-        result = []
-        for instance in data:
-            try:
-                deserialized = self._deserialize_one(instance)
-                result.append(deserialized)
-            
-            except DeserializationException as exception:
-                raise DeserializationException(instance, str(exception))
-        
-        return result
-
-    def _deserialize_one(self, instance):
+    def _deserialize(self, instance):
         """Called internally by __call__ method to deseriaize JSONObject representation.
         Raise :class:`~stargate.exception.DeserializationException` if operation fails.
         Raise :class:`~stargate.exception.UnknownRelation` if unknown relation name is provided
