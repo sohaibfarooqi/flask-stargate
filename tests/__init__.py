@@ -97,7 +97,7 @@ class ManagerTestBase(unittest.TestCase):
 		self.manager.register_resource(City, url_prefix = '/v1', exclude = ['latitude','longitude'])
 		self.manager.register_resource(TestPrimaryKey, endpoint = 'testprimarykey', decorators = [auth_key_header], primary_key = 'ser_id')
 
-		insert_pagination_data(self.app)
+		insert_simple_test_data(self.app)
 	
 	@classmethod
 	def tearDownClass(self):
