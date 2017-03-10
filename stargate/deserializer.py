@@ -51,7 +51,7 @@ class Deserializer:
         in `_embedded` key.Raise :class:`~stargate.exception.UnknownField` if unknown field is provided
         in relation `data` key or primary resource `data` key.
 
-        :param instance: Array of JSON Objects.
+        :param instance: JSON Representation of object.
         """
         try:
             for field in instance:

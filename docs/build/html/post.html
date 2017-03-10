@@ -57,9 +57,9 @@ creation as well as single resource creation.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="creating-instance">
-<h2>Creating Instance<a class="headerlink" href="#creating-instance" title="Permalink to this headline">¶</a></h2>
-<p>Single instance can be created with following request</p>
+<div class="section" id="simple-post-operation">
+<h2>Simple Post Operation<a class="headerlink" href="#simple-post-operation" title="Permalink to this headline">¶</a></h2>
+<p>Instance can be created with following request</p>
 <div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/api/user</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
 <span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
@@ -77,13 +77,67 @@ creation as well as single resource creation.</p>
                 <span class="nt">&quot;phone&quot;</span><span class="p">:</span> <span class="s2">&quot;923349725618&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-02-24T17:35:24.223328&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;pic_url&quot;</span><span class="p">:</span> <span class="s2">&quot;/images/pic.jpg&quot;</span>
-        <span class="p">}</span>
+                <span class="p">}</span>
 
         <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>You can also link an already created instance:</p>
+</div>
+<div class="section" id="link-already-created-resources">
+<h2>Link already created resources<a class="headerlink" href="#link-already-created-resources" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/api/user</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>with payload:</p>
+<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John B&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;John91&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="mi">19</span><span class="p">,</span>
+        <span class="nt">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;johnbaptist@gmail.com&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;abcdefg&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;phone&quot;</span><span class="p">:</span> <span class="s2">&quot;923349725618&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-02-24T17:35:24.223328&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;pic_url&quot;</span><span class="p">:</span> <span class="s2">&quot;/images/pic.jpg&quot;</span>
+        <span class="p">},</span>
+<span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;data&quot;</span><span class="p">:{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}},</span>
+        <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;data&quot;</span><span class="p">:{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}}</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="link-related-collection">
+<h2>Link Related Collection<a class="headerlink" href="#link-related-collection" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/api/city</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
+<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
+</pre></div>
+</div>
+<p>with payload:</p>
+<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Lahore&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;latitude&quot;</span><span class="p">:</span> <span class="mf">72.8134</span><span class="p">,</span>
+                <span class="nt">&quot;longitude&quot;</span><span class="p">:</span> <span class="mf">78.9123</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;data&quot;</span><span class="p">:[{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span><span class="p">}]}</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-related-instance-collection-on-fly">
+<h2>Create related instance/collection on fly!<a class="headerlink" href="#create-related-instance-collection-on-fly" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/api/user</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
 <span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
@@ -101,105 +155,18 @@ creation as well as single resource creation.</p>
                 <span class="nt">&quot;phone&quot;</span><span class="p">:</span> <span class="s2">&quot;923349725618&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-02-24T17:35:24.223328&quot;</span><span class="p">,</span>
                 <span class="nt">&quot;pic_url&quot;</span><span class="p">:</span> <span class="s2">&quot;/images/pic.jpg&quot;</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span>
                 <span class="p">},</span>
+        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="nt">&quot;data&quot;</span><span class="p">:{</span> <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span> <span class="p">}</span> <span class="p">},</span>
                 <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                        <span class="nt">&quot;data&quot;</span><span class="p">:{</span>
+                                <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;South Town&quot;</span><span class="p">,</span>
+                                <span class="nt">&quot;latitude&quot;</span><span class="p">:</span> <span class="mf">72.8176</span><span class="p">,</span>
+                                <span class="nt">&quot;longitude&quot;</span><span class="p">:</span> <span class="mf">79.8143</span>
+                                <span class="p">}</span>
+                        <span class="p">}</span>
                 <span class="p">}</span>
         <span class="p">}</span>
-<span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Link resources on the fly!:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/api/user</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
-<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
-</pre></div>
-</div>
-<p>with payload:</p>
-<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John B&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;John91&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="mi">19</span><span class="p">,</span>
-                <span class="nt">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;johnbaptist@gmail.com&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;abcdefg&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;phone&quot;</span><span class="p">:</span> <span class="s2">&quot;923349725618&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-02-24T17:35:24.223328&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;pic_url&quot;</span><span class="p">:</span> <span class="s2">&quot;/images/pic.jpg&quot;</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span>
-                <span class="p">},</span>
-                <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;South Town&quot;</span><span class="p">,</span>
-                        <span class="nt">&quot;latitude&quot;</span><span class="p">:</span> <span class="mf">72.8176</span><span class="p">,</span>
-                        <span class="nt">&quot;longitude&quot;</span><span class="p">:</span> <span class="mf">79.8143</span>
-                <span class="p">}</span>
-        <span class="p">}</span>
-<span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="creating-collection">
-<h2>Creating Collection<a class="headerlink" href="#creating-collection" title="Permalink to this headline">¶</a></h2>
-<p>Create list of resources:</p>
-<div class="highlight-http"><div class="highlight"><pre><span></span><span class="nf">POST</span> <span class="nn">/api/user</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-<span class="na">Host</span><span class="o">:</span> <span class="l">client.com</span>
-<span class="na">Accept</span><span class="o">:</span> <span class="l">application/json</span>
-</pre></div>
-</div>
-<p>with payload:</p>
-<div class="highlight-json"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="nt">&quot;data&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John B&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;John91&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="mi">19</span><span class="p">,</span>
-                <span class="nt">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;johnbaptist@gmail.com&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;abcdefg&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;phone&quot;</span><span class="p">:</span> <span class="s2">&quot;923349725618&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-02-24T17:35:24.223328&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;pic_url&quot;</span><span class="p">:</span> <span class="s2">&quot;/images/pic.jpg&quot;</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span>
-                <span class="p">},</span>
-                <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;South Town&quot;</span><span class="p">,</span>
-                        <span class="nt">&quot;latitude&quot;</span><span class="p">:</span> <span class="mf">72.8176</span><span class="p">,</span>
-                        <span class="nt">&quot;longitude&quot;</span><span class="p">:</span> <span class="mf">79.8143</span>
-                <span class="p">}</span>
-        <span class="p">}</span>
-<span class="p">},</span>
-<span class="p">{</span>
-        <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;John B&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;John91&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;age&quot;</span><span class="p">:</span> <span class="mi">19</span><span class="p">,</span>
-                <span class="nt">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;johnbaptist@gmail.com&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;abcdefg&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;phone&quot;</span><span class="p">:</span> <span class="s2">&quot;923349725618&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;created_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-02-24T17:35:24.223328&quot;</span><span class="p">,</span>
-                <span class="nt">&quot;pic_url&quot;</span><span class="p">:</span> <span class="s2">&quot;/images/pic.jpg&quot;</span>
-        <span class="p">},</span>
-        <span class="nt">&quot;_embedded&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span>
-                <span class="p">},</span>
-                <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span>
-                <span class="p">}</span>
-        <span class="p">}</span>
-<span class="p">}]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -216,8 +183,10 @@ creation as well as single resource creation.</p>
   <ul>
 <li><a class="reference internal" href="#">POST</a><ul>
 <li><a class="reference internal" href="#url-scheme">Url Scheme</a></li>
-<li><a class="reference internal" href="#creating-instance">Creating Instance</a></li>
-<li><a class="reference internal" href="#creating-collection">Creating Collection</a></li>
+<li><a class="reference internal" href="#simple-post-operation">Simple Post Operation</a></li>
+<li><a class="reference internal" href="#link-already-created-resources">Link already created resources</a></li>
+<li><a class="reference internal" href="#link-related-collection">Link Related Collection</a></li>
+<li><a class="reference internal" href="#create-related-instance-collection-on-fly">Create related instance/collection on fly!</a></li>
 </ul>
 </li>
 </ul>

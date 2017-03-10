@@ -1,7 +1,7 @@
 .. docs root file
 
-Stargate Docs!
-==============
+Flask-Stargate Doumentation
+===========================
 
 .. automodule:: stargate
 
@@ -25,7 +25,7 @@ Developers Guide
 ----------------
 
 A technical description of the classes, functions, and idioms of
-Stargate.
+Flask-Stargate.
 
 .. toctree::
    :maxdepth: 2

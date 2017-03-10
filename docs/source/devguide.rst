@@ -25,7 +25,7 @@ Serialization
 -----------------
 
 .. autoclass:: Serializer
-	:members: __call__, _serialize_many, _serialize_one, serialize_relationship
+	:members: __call__, _serialize_many, _serialize_one
 
 .. module:: stargate.deserializer
 
@@ -33,7 +33,7 @@ Deserialization
 -----------------
 
 .. autoclass:: Deserializer
-	:members: __call__, _deserialize_many, _deserialize_one
+	:members: __call__, _deserialize
 
 .. module:: stargate.resource_info
 
