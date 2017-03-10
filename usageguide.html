@@ -51,55 +51,78 @@
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">ResourceManager</span>
 <span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
 
-<span class="n">manager</span> <span class="o">=</span> <span class="n">ResourceManager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">flask_sqlalchemy_db</span> <span class="o">=</span> <span class="n">db</span><span class="p">)</span>
+<span class="n">manager</span> <span class="o">=</span> <span class="n">ResourceManager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">db</span><span class="p">)</span>
 <span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>First line initilize <code class="docutils literal"><span class="pre">ResourceManager</span></code> instance, which requires <code class="docutils literal"><span class="pre">Flask</span></code> app and
 <code class="docutils literal"><span class="pre">SqlAlchemy</span></code> instance</p>
-<p>Second line exposes HTTP GET method for <code class="docutils literal"><span class="pre">User</span></code> model. If you are running this at your localhost you
-can excess this resource at: <a class="reference external" href="http://127.0.0.1:5000/api/user">http://127.0.0.1:5000/api/user</a>
+<p>Second line exposes HTTP GET method for <code class="docutils literal"><span class="pre">User</span></code> model. If you are running this at your
+localhost you can excess this resource at:
+<code class="docutils literal"><span class="pre">http://localhost:5000/api/user</span></code>.
 By default the resource endpoint will be <code class="docutils literal"><span class="pre">Resource.__tablename__</span></code>.</p>
 <div class="section" id="customizing-api-endpoints">
 <h2>Customizing API Endpoints<a class="headerlink" href="#customizing-api-endpoints" title="Permalink to this headline">¶</a></h2>
-<p>You can specify custom url_prefix for all models registered with a <code class="docutils literal"><span class="pre">ResourceManager</span></code></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span> <span class="o">=</span> <span class="n">ResourceManager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">flask_sqlalchemy_db</span> <span class="o">=</span> <span class="n">db</span><span class="p">,</span> <span class="n">url_prefix</span> <span class="o">=</span> <span class="s1">&#39;/v1&#39;</span><span class="p">)</span>
+<p>API Endpoints supports following customizations:</p>
+<div class="section" id="url-prefix">
+<h3>Url Prefix<a class="headerlink" href="#url-prefix" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span> <span class="o">=</span> <span class="n">ResourceManager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">db</span><span class="p">,</span> <span class="n">url_prefix</span> <span class="o">=</span> <span class="s1">&#39;/v1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Specifying url_prefix only for a resource</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">url_prefix</span> <span class="o">=</span> <span class="s1">&#39;/adminusers&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Specifying Http Methods</p>
+</div>
+<div class="section" id="http-methods">
+<h3>Http Methods<a class="headerlink" href="#http-methods" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="s1">&#39;POST&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Any other Http method will result in 405 (MethodNotAllowed)</p>
-<p>Specifying endpoint:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">collection_name</span> <span class="o">=</span> <span class="s1">&#39;my_custom_collection&#39;</span><span class="p">)</span>
+</div>
+<div class="section" id="custom-endpoint">
+<h3>Custom endpoint<a class="headerlink" href="#custom-endpoint" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">endpoint</span> <span class="o">=</span> <span class="s1">&#39;my_custom_collection&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now on localhost <code class="docutils literal"><span class="pre">User</span></code> resource is accessible at: <a class="reference external" href="http://127.0.0.1:5000/api/my_custom_collection">http://127.0.0.1:5000/api/my_custom_collection</a></p>
-<p>Specifying Model attributes:</p>
+<p>Now on localhost <code class="docutils literal"><span class="pre">User</span></code> resource is accessible at: <a class="reference external" href="http://localhost:5000/api/my_custom_collection">http://localhost:5000/api/my_custom_collection</a></p>
+</div>
+<div class="section" id="limiting-resource-attributes">
+<h3>Limiting Resource attributes<a class="headerlink" href="#limiting-resource-attributes" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Now GET request on <code class="docutils literal"><span class="pre">/user</span></code> will only result in <code class="docutils literal"><span class="pre">name</span></code> and <code class="docutils literal"><span class="pre">username</span></code> keys. Primary key will always be included in response.</p>
-<p>Specifying attributes to exclude:</p>
+</div>
+<div class="section" id="exclude-some-attributes">
+<h3>Exclude Some Attributes<a class="headerlink" href="#exclude-some-attributes" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;username&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>The response will result in all attributes of <code class="docutils literal"><span class="pre">User</span></code> except <code class="docutils literal"><span class="pre">name</span></code> and <code class="docutils literal"><span class="pre">username</span></code>.</p>
-<p>Specifying embedded resources:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">includes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">])</span>
+</div>
+<div class="section" id="related-resources">
+<h3>Related Resources<a class="headerlink" href="#related-resources" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">expand</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;city&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>By default all embedded resources will only have link and relationship type in it. Includes option
+<p>By default all embedded resources will only have link and relationship type in it. expand option
 will expand the specified resources.</p>
-<p>Specifying View Decorators:</p>
+</div>
+<div class="section" id="view-decorators">
+<h3>View Decorators<a class="headerlink" href="#view-decorators" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">my_decorators</span> <span class="kn">import</span> <span class="n">decorator</span>
 <span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">decorators</span> <span class="o">=</span> <span class="p">[</span><span class="n">decorator</span><span class="p">])</span>
 </pre></div>
+</div>
+</div>
+<div class="section" id="specify-primary-key">
+<h3>Specify Primary Key<a class="headerlink" href="#specify-primary-key" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">primary_key</span> <span class="o">=</span> <span class="s1">&#39;ser_id&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now in all over application primary key column used will be <code class="docutils literal"><span class="pre">ser_id</span></code></p>
 </div>
 </div>
 </div>
@@ -113,7 +136,17 @@ will expand the specified resources.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Guidelines on creating API Endpoints</a><ul>
-<li><a class="reference internal" href="#customizing-api-endpoints">Customizing API Endpoints</a></li>
+<li><a class="reference internal" href="#customizing-api-endpoints">Customizing API Endpoints</a><ul>
+<li><a class="reference internal" href="#url-prefix">Url Prefix</a></li>
+<li><a class="reference internal" href="#http-methods">Http Methods</a></li>
+<li><a class="reference internal" href="#custom-endpoint">Custom endpoint</a></li>
+<li><a class="reference internal" href="#limiting-resource-attributes">Limiting Resource attributes</a></li>
+<li><a class="reference internal" href="#exclude-some-attributes">Exclude Some Attributes</a></li>
+<li><a class="reference internal" href="#related-resources">Related Resources</a></li>
+<li><a class="reference internal" href="#view-decorators">View Decorators</a></li>
+<li><a class="reference internal" href="#specify-primary-key">Specify Primary Key</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

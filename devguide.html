@@ -206,7 +206,7 @@ For more information about method and options check <cite>get method</cite></p>
 <dl class="method">
 <dt id="stargate.resource_api.ResourceAPI.post">
 <code class="descname">post</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#stargate.resource_api.ResourceAPI.post" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create resource(s) against data provided in payload.</p>
+<dd><p>Create resource against data provided in payload.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -308,7 +308,7 @@ are not None</p>
 </table>
 <p>This class can be used globally within stargate package. Example usage of this class:
 #Return User serialization class</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER_FOR</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">resource_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -318,7 +318,7 @@ are not None</p>
 <dd><p>Callable for Serializer class. Can serialize list and single instance of SQLAlchemy 
 resutlset objects.</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER_FOR</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">serializer</span> <span class="o">=</span> <span class="n">resource_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">SERIALIZER</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
 <span class="c1">#This execute callable.</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
@@ -405,10 +405,10 @@ during initilization in <a class="reference internal" href="#stargate.manager.Ma
 <dl class="method">
 <dt id="stargate.deserializer.Deserializer.__call__">
 <code class="descname">__call__</code><span class="sig-paren">(</span><em>document</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.deserializer.Deserializer.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Callable for Deserializer class. Can deserialize JSONArray or JSONObject representation.
+<dd><p>Callable for Deserializer class. Deserialize JSONObject representation.
 Raise <code class="xref py py-class docutils literal"><span class="pre">MissingDataKey</span></code> id <cite>data</cite> key is not present in request payload.</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">deserializer</span> <span class="o">=</span> <span class="n">manager_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">DESERIALIZER_FOR</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">deserializer</span> <span class="o">=</span> <span class="n">resource_info</span><span class="p">(</span><span class="n">ResourceInfoConst</span><span class="o">.</span><span class="n">DESERIALIZER</span><span class="p">,</span> <span class="n">User</span><span class="p">)</span>
 <span class="c1">#This execute callable.</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">deserializer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
@@ -424,23 +424,8 @@ Raise <code class="xref py py-class docutils literal"><span class="pre">MissingD
 </dd></dl>
 
 <dl class="method">
-<dt id="stargate.deserializer.Deserializer._deserialize_many">
-<code class="descname">_deserialize_many</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.deserializer.Deserializer._deserialize_many" title="Permalink to this definition">¶</a></dt>
-<dd><p>Called internally by __call__ method to deseriaize JSONArray representation of objects.
-Raise <code class="xref py py-class docutils literal"><span class="pre">DeserializationException</span></code> if operation fails.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> &#8211; Array of JSON Objects.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="stargate.deserializer.Deserializer._deserialize_one">
-<code class="descname">_deserialize_one</code><span class="sig-paren">(</span><em>instance</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.deserializer.Deserializer._deserialize_one" title="Permalink to this definition">¶</a></dt>
+<dt id="stargate.deserializer.Deserializer._deserialize">
+<code class="descname">_deserialize</code><span class="sig-paren">(</span><em>instance</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.deserializer.Deserializer._deserialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called internally by __call__ method to deseriaize JSONObject representation.
 Raise <code class="xref py py-class docutils literal"><span class="pre">DeserializationException</span></code> if operation fails.
 Raise <code class="xref py py-class docutils literal"><span class="pre">UnknownRelation</span></code> if unknown relation name is provided
@@ -450,7 +435,7 @@ in relation <cite>data</cite> key or primary resource <cite>data</cite> key.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>instance</strong> &#8211; Array of JSON Objects.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>instance</strong> &#8211; JSON Representation of object.</td>
 </tr>
 </tbody>
 </table>
@@ -458,12 +443,12 @@ in relation <cite>data</cite> key or primary resource <cite>data</cite> key.</p>
 
 </dd></dl>
 
-<span class="target" id="module-stargate.proxy"></span></div>
+<span class="target" id="module-stargate.resource_info"></span></div>
 <div class="section" id="global-helper">
 <h2>Global Helper<a class="headerlink" href="#global-helper" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="stargate.proxy.ManagerInfo">
-<em class="property">class </em><code class="descclassname">stargate.proxy.</code><code class="descname">ManagerInfo</code><a class="headerlink" href="#stargate.proxy.ManagerInfo" title="Permalink to this definition">¶</a></dt>
+<dt id="stargate.resource_info.ResourceInfo">
+<em class="property">class </em><code class="descclassname">stargate.resource_info.</code><code class="descname">ResourceInfo</code><a class="headerlink" href="#stargate.resource_info.ResourceInfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class provides information about a resource registered with any 
 <a class="reference internal" href="#stargate.manager.Manager" title="stargate.manager.Manager"><code class="xref py py-class docutils literal"><span class="pre">Manager</span></code></a> instance. Data keys include :</p>
 <blockquote>

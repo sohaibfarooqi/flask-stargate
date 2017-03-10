@@ -10,18 +10,18 @@ Post has only one url scheme:
 
 Resource `User`:
 
-.. sourcecode:: http
+.. code-block:: http
 
 	POST /api/user HTTP/1.1
 	Host: client.com 
 	Accept: application/json
 
-Creating Instance
------------------
+Simple Post Operation
+----------------------
 
-Single instance can be created with following request
+Instance can be created with following request
 
-.. sourcecode:: http
+.. code-block:: http
 
 	POST /api/user HTTP/1.1
 	Host: client.com 
@@ -29,7 +29,7 @@ Single instance can be created with following request
 
 with payload:
 
-.. sourcecode:: json
+.. code-block:: json
 	
 	{
 	"data": {
@@ -42,16 +42,16 @@ with payload:
 			"phone": "923349725618",
 			"created_at": "2017-02-24T17:35:24.223328",
 			"pic_url": "/images/pic.jpg"
-		}
+			}
 		
 		}
 	}
 
 
+Link already created resources
+------------------------------
 
-You can also link an already created instance:
-
-.. sourcecode:: http
+.. code-block:: http
 
 	POST /api/user HTTP/1.1
 	Host: client.com 
@@ -59,7 +59,64 @@ You can also link an already created instance:
 
 with payload:
 
-.. sourcecode:: json
+.. code-block:: json
+
+	{
+	"data": {
+		"attributes": {
+		"name": "John B",
+		"username": "John91",
+		"age": 19,
+		"email": "johnbaptist@gmail.com",
+		"password": "abcdefg",
+		"phone": "923349725618",
+		"created_at": "2017-02-24T17:35:24.223328",
+		"pic_url": "/images/pic.jpg"
+		},
+	"_embedded": {
+		"city": {"data":{"id": 1}},
+		"location": {"data":{"id": 1}}
+		}
+	}
+	}
+
+Link Related Collection
+------------------------
+.. code-block:: http
+
+	POST /api/city HTTP/1.1
+	Host: client.com 
+	Accept: application/json
+
+with payload:
+
+.. code-block:: json
+	
+	{
+	"data": {
+		"attributes": {
+			"title": "Lahore",
+			"latitude": 72.8134,
+			"longitude": 78.9123,
+		},
+		"_embedded": {
+			"location": {"data":[{"id": 1}, {"id": "2"}]}
+			}
+		}
+	}
+
+Create related instance/collection on fly!
+------------------------------------------
+
+.. code-block:: http
+
+	POST /api/user HTTP/1.1
+	Host: client.com 
+	Accept: application/json
+
+with payload:
+
+.. code-block:: json
 	
 	{
 	"data": {
@@ -72,113 +129,16 @@ with payload:
 			"phone": "923349725618",
 			"created_at": "2017-02-24T17:35:24.223328",
 			"pic_url": "/images/pic.jpg"
-		},
-		"_embedded": {
-			"city": {
-				"id": 1
 			},
+		"_embedded": {
+			"city": { "data":{ "id": 1 } },
 			"location": {
-				"id": 1
+				"data":{
+					"title": "South Town",
+					"latitude": 72.8176,
+					"longitude": 79.8143
+					}
+				}
 			}
 		}
 	}
-	}
-
-
-Link resources on the fly!:
-
-.. sourcecode:: http
-
-	POST /api/user HTTP/1.1
-	Host: client.com 
-	Accept: application/json
-
-with payload:
-
-.. sourcecode:: json
-	
-	{
-	"data": {
-		"attributes": {
-			"name": "John B",
-			"username": "John91",
-			"age": 19,
-			"email": "johnbaptist@gmail.com",
-			"password": "abcdefg",
-			"phone": "923349725618",
-			"created_at": "2017-02-24T17:35:24.223328",
-			"pic_url": "/images/pic.jpg"
-		},
-		"_embedded": {
-			"city": {
-				"id": 1
-			},
-			"location": {
-				"title": "South Town",
-				"latitude": 72.8176,
-				"longitude": 79.8143
-			}
-		}
-	}
-	}
-
-Creating Collection
---------------------
-
-Create list of resources:
-
-.. sourcecode:: http
-
-	POST /api/user HTTP/1.1
-	Host: client.com 
-	Accept: application/json
-
-with payload:
-
-.. sourcecode:: json
-	
-	{
-	"data": [{
-		"attributes": {
-			"name": "John B",
-			"username": "John91",
-			"age": 19,
-			"email": "johnbaptist@gmail.com",
-			"password": "abcdefg",
-			"phone": "923349725618",
-			"created_at": "2017-02-24T17:35:24.223328",
-			"pic_url": "/images/pic.jpg"
-		},
-		"_embedded": {
-			"city": {
-				"id": 1
-			},
-			"location": {
-				"title": "South Town",
-				"latitude": 72.8176,
-				"longitude": 79.8143
-			}
-		}
-	},
-	{
-		"attributes": {
-			"name": "John B",
-			"username": "John91",
-			"age": 19,
-			"email": "johnbaptist@gmail.com",
-			"password": "abcdefg",
-			"phone": "923349725618",
-			"created_at": "2017-02-24T17:35:24.223328",
-			"pic_url": "/images/pic.jpg"
-		},
-		"_embedded": {
-			"city": {
-				"id": 1
-			},
-			"location": {
-				"id": 1
-			}
-		}
-	}]
-	}
-
