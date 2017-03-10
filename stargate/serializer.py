@@ -283,7 +283,8 @@ class Serializer():
             if attributes:
                 result[pk_name] = attributes.pop(pk_name)
                 result[SerializationConst.ATTRIBUTES] = attributes
-
+                result['_link'] = resource_info(ResourceInfoConst.URL, model, pk_id = result[pk_name])
+            
             if serialize_rel:
                 relations = get_relations(model)
                 result[SerializationConst.EMBEDDED] = dict((rel, serialize_relationship(model, instance, rel, expand = expand))
