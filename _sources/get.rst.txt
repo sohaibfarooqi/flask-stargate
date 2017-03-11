@@ -7,8 +7,6 @@ GET request can be use to fetch an instance or collection.
 Collections
 ===========
 
-Url Scheme
-----------
 Collection can be queried in two different ways:
 
 Primary Resource `User`:
@@ -324,4 +322,111 @@ Grouping example:
 
 This will perform ``GROUP BY created_at, age``. This will group the users who were created 
 at same date/time and have same age.
-   
+
+Instance
+========
+
+Instances can be queried in two different ways:
+
+Primary Resource `User`:
+
+.. sourcecode:: http
+
+	GET /api/user/1 HTTP/1.1
+	Host: client.com 
+	Accept: application/json
+	
+will yield response:
+
+.. code-block:: http
+	
+	HTTP/1.1 200 OK
+	Content-Type: application/json
+
+	{
+	"data": {
+	"id": 1,
+	"_embedded": {
+		"city": {
+		"meta": {
+			"_links": {
+			"self": "http://localhost:5000/api/user/1/city/1"
+				},
+			"_type": "to_one"
+			}
+		},
+		"location": {
+		"meta": {
+			"_links": {
+			"self": "http://localhost:5000/api/user/1/location/1"
+				},
+			"_type": "to_one"
+			}
+		}
+	},
+	"_link": "http://localhost:5000/api/user/1",
+	"attributes": {
+		"name": "John Baptist",
+		"password": "abcdefg",
+		"updated_at": "None",
+		"age": 19,
+		"email": "johnbaptist@gmail.com",
+		"created_at": "2017-03-11T14:04:22.487051",
+		"phone": "923349725618",
+		"pic_url": "/images/pic.jpg",
+		"username": "John91"
+	}
+
+	},
+	"meta": {
+		"message": "Ok.",
+		"status_code": 200
+		}
+	}
+
+Related Resource `city`:
+
+.. sourcecode:: http
+
+	GET /api/user/1/location/1 HTTP/1.1
+	Host: client.com 
+	Accept: application/json
+
+Will yield response:
+
+.. code-block:: http
+	
+	HTTP/1.1 200 OK
+	Content-Type: application/json
+
+	{
+	"meta": {
+		"message": "Ok.",
+		"status_code": 200
+	},
+	"data": {
+	"_embedded": {
+		"city": {
+		"meta": {
+			"_links": {
+				"self": "http://localhost:5000/api/location/1/city/1"
+			},
+			"_type": "to_one"
+			}
+		}
+		},
+		"_link": "http://localhost:5000/api/location/1",
+		"attributes": {
+			"created_at": "2017-03-11T14:15:31.295018",
+			"longitude": 78.1987,
+			"title": "Johar Town",
+			"parent_id": -1,
+			"latitude": 72.813,
+			"updated_at": "None"
+		},
+		"id": 1
+	}
+	}
+
+
+``fields``, ``exclude`` and ``expand`` can be applied to instances too.
