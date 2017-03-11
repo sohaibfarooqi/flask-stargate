@@ -30,59 +30,129 @@ Simple collection
 		"status": 200,
 		"message": "Ok."
 	},
+	
 	"_links": {
-		"self": "/api/users?page=1&perpage=10",
-		"first": "/api/users?page=1&perpage=10",
-		"last": "/api/users?page=10&perpage=10",
-		"next": "/api/users?page=2&perpage=10",
-		"previous": "/api/users?page=0&perpage=10"
+	
+	"self": "http://localhost/api/users?page=1&perpage=10",
+	"first": "http://localhost/api/users?page=1&perpage=10",
+	"last": "http://localhost/api/users?page=10&perpage=10",
+	"next": "http://localhost/api/users?page=2&perpage=10",
+	"prev": "http://localhost/api/users?page=0&perpage=10"
+	
 	},
+	
+	"num_results": 2,
+	
 	"data": [{
+		
 		"attributes": {
-			"name": "John",
-			"age": "19",
-			"username": "John91",
-			"sex": "M"
-		},
-		"id": "1",
-		"_embedded": {
-			"city": {
-				"type": "TO_ONE",
-				"_link": "/user/1/city"
-			},
-			"images": {
-				"type": "TO_MANY",
-				"_link": "/user/1/images"
-			}
-		}
-	}, {
-		"attributes": {
-			"name": "John Agha",
-			"age": "23",
+			"name": "John B",
 			"username": "John92",
-			"sex": "M"
+			"age": 19,
+			"email": "johnbapti@gmail.com",
+			"password": "abcdefg",
+			"phone": "923349725618",
+			"created_at": "2017-02-24T17:35:24.223328",
+			"pic_url": "/images/pic.jpg"
 		},
-		"id": "2",
+		
+		"id": "1",
+		"_link": "http://localhost/api/users/1",
+		
 		"_embedded": {
-			"city": {
-				"type": "TO_ONE",
-				"_link": "/user/1/city"
-			},
-			"images": {
-				"type": "TO_MANY",
-				"_link": "/user/1/images"
-			}
+			
+		"city": {
+		"meta":{
+		"_type": "to_one",
+		"_links": {"self": "http://localhost/api/user/1/city/1"}
+		}
 		},
-		"num_results": 2
+			
+		"images": {
+		"meta":{
+		"type": "to_many",
+		"_evaluation": "lazy",
+		
+		"_links": {
+		"self":  "http://localhost/api/user/1/images?page=1&perpage=10",
+		"first": "http://localhost/api/user/1/images?page=1&perpage=10",
+		"last":  "http://localhost/api/user/1/images?page=3&perpage=10",
+		"next":  "http://localhost/api/user/1/images?page=2&perpage=10",
+		"prev":  "None"
+		
+		}
+		}
+		}
+		}
+	},
+	{
+	
+	"attributes": {
+		"name": "John B",
+		"username": "John93",
+		"age": 19,
+		"email": "johnbaptist@gmail.com",
+		"password": "abcdefg",
+		"phone": "923349725618",
+		"created_at": "2017-02-24T17:35:24.223328",
+		"pic_url": "/images/pic.jpg"
+	},
+	
+	"id": "2",
+	"_link": "http://localhost/api/users/2",
+
+	"_embedded": {
+		
+	"city": {
+	"meta":{
+	"_type": "to_one",
+	"_link": "http://localhost/api/user/1/city/1"
+	}
+	},
+		
+	"images": {
+	"meta":{
+	"_type": "to_many",
+	"_evaluation": "lazy",
+	
+	"_links": {
+	"self": "http://localhost/api/user/1/images?page=1&perpage=10",
+	"first": "http://localhost/api/user/1/images?page=1&perpage=10",
+	"last": "http://localhost/api/user/1/images?page=2&perpage=10",
+	"next": "http://localhost/api/user/1/images?page=2&perpage=10",
+	"prev": "None"
+	
+	}
+	}
+	}
+	}
 	}]
 	}
 
 	
-``meta`` will include the response code and message. ``_links`` contains pagination links.
-``data`` contains the array of ``User`` objects. Each object has ``attributes`` and ``id`` keys.
-It further includes ``_embedded`` keys which represents all resources that are related to ``User``.
-Each related resource will ``type`` key which represent relationship type and ``_link`` key to get 
-the full resource. 
+- ``meta`` will include the response code and response message. 
+- ``_links`` contains pagination links i.e first, last, next, prev and self_link.
+- ``data`` contains the array of ``User`` objects. Each object has 
+	
+	- ``attributes``: Resource attributes.
+	- ``_link``: Self link.
+	- ``id``: Primary key for resource.
+
+- ``_embedded`` keys which represents all resources that are related to ``User``.
+	Each related resource will have ``meta`` key which contains: 
+	
+	- ``_type``: key which represent relationship type i.e. 'to_many' or 'to_one'. 
+	
+	- ``_evaluation``: key which represent relationship evaluation i.e 'lazy', 'eager'. This is only
+		applicable to collection sub resources.
+	
+	- ``_links``:
+		
+		- ``self``: self url.
+		- ``next``: next page link. Applicable to `lazy` collections only. 
+		- ``prev``: prvious page link. Applicable to `lazy` collections only.
+		- ``first``: first page link. Applicable to `lazy` collections only.
+		- ``last``: last page link. Applicable to `lazy` collections only.
 
 .. note:: All related resources will only have relationship type and link to get the full resource. 
 		  If you want to get full resource representation in ``/user`` endpoint, Please specify 
@@ -111,11 +181,11 @@ relationships.
 		"message": "Ok."
 	},
 	"_links": {
-		"self": "/api/users/1/images?page=1&perpage=10",
-		"first": "/api/users1/images?page=1&perpage=10",
-		"last": "/api/users1/images?page=10&perpage=10",
-		"next": "/api/users1/images?page=2&perpage=10",
-		"previous": "/api/users1/images?page=0&perpage=10"
+		"self": "http://localhost/api/users/1/images?page=1&perpage=10",
+		"first": "http://localhost/api/users/1/images?page=1&perpage=10",
+		"last": "http://localhost/api/users/1/images?page=10&perpage=10",
+		"next": "http://localhost/api/users/1/images?page=2&perpage=10",
+		"prev": "http://localhost/api/users/1/images?page=0&perpage=10"
 	},
 	"data": [{
 		"attributes": {
@@ -125,10 +195,14 @@ relationships.
 			"height": "20"
 		},
 		"id": "1",
+		"_link": "http://localhost/api/images/1",
 		"_embedded": {
 			"image_details": {
-				"type": "TO_MANY",
+				"meta":{
+				"type": "to_many",
+				"_evaluation": "eager",
 				"_link": "/images/2/image_details"
+				}
 			}
 		}
 	}, {
@@ -139,10 +213,14 @@ relationships.
 			"height": "80"
 		},
 		"id": "2",
+		"_link": "http://localhost/api/images/2",
 		"_embedded": {
 			"image_details": {
-				"type": "TO_MANY",
+				"meta":{
+				"type": "to_many",
+				"_evaluation": "eager",
 				"_link": "/images/2/image_details"
+				}
 			}
 		},
 		"num_results": 2
@@ -174,20 +252,36 @@ Simple Instance
 	},
 	"data": {
 		"attributes": {
-			"name": "John",
-			"age": "19",
-			"username": "John91",
-			"sex": "M"
+			"name": "John B",
+			"username": "John93",
+			"age": 19,
+			"email": "johnbaptist@gmail.com",
+			"password": "abcdefg",
+			"phone": "923349725618",
+			"created_at": "2017-02-24T17:35:24.223328",
+			"pic_url": "/images/pic.jpg"
+	
 		},
 		"id": "1",
+		"_link": "http://localhost/api/users/1",
 		"_embedded": {
 			"city": {
-				"type": "TO_ONE",
+			"meta":{
+				"type": "to_one",
 				"_link": "/user/1/city"
-			},
-			"images": {
-				"type": "TO_MANY",
-				"_link": "/user/1/images"
+				},
+			}
+			"images":{
+			"meta":{
+				"type": "to_many",
+				"_evaluation": "lazy"
+				"_links": {
+					"self": "http://localhost/api/user/1/images?page=1&perpage=10",
+					"first": "http://localhost/api/user/1/images?page=1&perpage=10",
+					"last": "http://localhost/api/user/1/images?page=3&perpage=10",
+					"next": "http://localhost/api/user/1/images?page=2&perpage=10",
+					"prev": "None"
+				}
 			}
 		}
 	}
@@ -223,10 +317,12 @@ Related Instance
 			"longitude": "78.1907866"
 		},
 		"id": "1",
+		"_link": "http://localhost/api/city/1",
 		"_embedded": {
 			"locations": {
-				"type": "TO_MANY",
-				"_link": "/city/1/location"
+				"_type": "to_many",
+				"_evaluation": "eager",
+				"_link": "http://localhost/api/city/1/location"
 			}
 		}
 	}

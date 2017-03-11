@@ -15,6 +15,7 @@ find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 https://jeffknupp.com/blog/2014/01/29/productionizing-a-flask-application/
 https://coveralls.io/
 https://landscape.io/
+git subtree push --prefix docs/build/html origin gh-pages
 
 POST_REQUEST_INSTANCE(TO_ONE):
 {

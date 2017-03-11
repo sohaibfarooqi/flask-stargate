@@ -24,6 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/stargate_favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Response Style" href="responseformat.html" />
@@ -56,8 +57,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>app</strong> &#8211; should be <code class="xref py py-class docutils literal"><span class="pre">Flask</span></code> instance. If you wish to use <cite>flask test client</cite>
-for testing you can also provide <code class="xref py py-class docutils literal"><span class="pre">FlaskClient</span></code> instance.</li>
+<li><strong>app</strong> &#8211; should be <a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.Flask" title="(in Flask v0.12-dev)"><code class="xref py py-class docutils literal"><span class="pre">Flask</span></code></a> instance. If you wish to use <cite>flask test client</cite>
+for testing you can also provide <a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.testing.FlaskClient" title="(in Flask v0.12-dev)"><code class="xref py py-class docutils literal"><span class="pre">FlaskClient</span></code></a> instance.</li>
 <li><strong>db</strong> &#8211; should be <code class="xref py py-class docutils literal"><span class="pre">SQLAlchemy</span></code> instance.</li>
 <li><strong>decorators</strong> &#8211; should be python decorators. Each resource registered with a manager
 instance will invoke all specified decorators before view functions are invoked.</li>
@@ -83,7 +84,7 @@ should start with &#8216;/&#8217;.</li>
 <dt id="stargate.manager.Manager.register_resource">
 <code class="descname">register_resource</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.manager.Manager.register_resource" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method perform sanity check of argument passed, create resource blueprint
-blueprint, register it with <code class="xref py py-class docutils literal"><span class="pre">Flask</span></code> and finally add this blueprint to registered blueprints</p>
+blueprint, register it with <a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.Flask" title="(in Flask v0.12-dev)"><code class="xref py py-class docutils literal"><span class="pre">Flask</span></code></a> and finally add this blueprint to registered blueprints</p>
 <p>Example usage of this method:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">Manager</span>
 <span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
@@ -150,7 +151,7 @@ blueprint, register it with <code class="xref py py-class docutils literal"><spa
 </table>
 <p>This method register view functions using <a class="reference internal" href="#stargate.resource_api.ResourceAPI" title="stargate.resource_api.ResourceAPI"><code class="xref py py-class docutils literal"><span class="pre">ResourceAPI</span></code></a>
 and provide <cite>endpoint</cite>, <cite>session</cite>, <cite>model</cite> and <cite>primary key</cite>. It also register endpoint
-using <code class="xref py py-meth docutils literal"><span class="pre">add_url_rule()</span></code>. Collection and instances have different 
+using <a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.Blueprint.add_url_rule" title="(in Flask v0.12-dev)"><code class="xref py py-meth docutils literal"><span class="pre">add_url_rule()</span></code></a>. Collection and instances have different 
 HTTP methods and url schemes. Finally this method populate the namedtuple <code class="docutils literal"><span class="pre">RESOURCE_INFO</span></code></p>
 </dd></dl>
 
@@ -164,7 +165,7 @@ HTTP methods and url schemes. Finally this method populate the namedtuple <code 
 <em class="property">class </em><code class="descclassname">stargate.resource_api.</code><code class="descname">ResourceAPI</code><span class="sig-paren">(</span><em>session</em>, <em>model</em>, <em>primary_key=None</em>, <em>*args</em>, <em>**kw</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.resource_api.ResourceAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class is used to provide view functions against resources. By default on <code class="docutils literal"><span class="pre">GET</span></code> method
 is exposed. It accept options like database session, model class, primary key and any other 
-parameter that parent class <code class="xref py py-class docutils literal"><span class="pre">MethodView</span></code> provides.</p>
+parameter that parent class <a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.views.MethodView" title="(in Flask v0.12-dev)"><code class="xref py py-class docutils literal"><span class="pre">MethodView</span></code></a> provides.</p>
 <p>It applies <code class="xref py py-meth docutils literal"><span class="pre">requires_api_accept()</span></code>, <code class="xref py py-meth docutils literal"><span class="pre">requires_api_mimetype()</span></code>
 <code class="xref py py-meth docutils literal"><span class="pre">catch_processing_exceptions()</span></code> decorators by default.</p>
 <p>Example usage for this class:</p>
@@ -494,6 +495,9 @@ importing it.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.jpeg" alt="Logo"/>
+            </a></p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Dev Guide</a><ul>

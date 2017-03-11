@@ -23,7 +23,6 @@ class TestPost(TestSetup):
 			response = self.client.post('/api/city', data = json.dumps(request_data), headers={"Content-Type": "application/json"})
 			response_doc = json.loads(response.get_data())
 			self.assertEqual(response_doc['meta']['status_code'], 201)
-			
 			data = response_doc['data']
 			
 			get_response = self.client.get(response.headers.get('rel'), headers={"Content-Type": "application/json"})
@@ -62,7 +61,6 @@ class TestPost(TestSetup):
 			response = self.client.post('/api/location', data = json.dumps(request_data_related), headers={"Content-Type": "application/json"})
 			rel_response_doc = json.loads(response.get_data())
 			self.assertEqual(rel_response_doc['meta']['status_code'], 201)
-
 			data = rel_response_doc['data']
 
 			get_response = self.client.get("{0}?expand=city".format(response.headers.get('rel')), headers={"Content-Type": "application/json"})
@@ -163,7 +161,6 @@ class TestPost(TestSetup):
 			response = self.client.post('/api/location', data = json.dumps(request_data), headers={"Content-Type": "application/json"})
 			response_doc = json.loads(response.get_data())
 			self.assertEqual(response_doc['meta']['status_code'], 201)
-
 			related = response_doc['data']['_embedded']['city']['data']
 
 			resource_url = related.pop('_link')

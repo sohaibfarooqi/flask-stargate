@@ -31,3 +31,28 @@ Flask-Stargate.
    :maxdepth: 2
 
    devguide
+
+
+TODO List
+---------
+   - Authentication/Authorization.
+   - Rate limiting.
+   - Schema Views.
+   - Field validations.
+
+More Rest Apis in Flask
+-----------------------
+Following are some examples of Rest Api frameworks written in Flask:
+
+   - `Flask Restless`_.
+   - `Flask Api`_.
+   - `Flask Restplus`_.
+   - `Flask Potion`_.
+
+Credits
+-------
+
+.. _Flask Restless: https://flask-restless.readthedocs.io/en/stable/
+.. _Flask Api: http://www.flaskapi.org/
+.. _Flask Restplus: https://flask-restplus.readthedocs.io/en/stable/
+.. _Flask Potion: https://potion.readthedocs.io/en/latest/

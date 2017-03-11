@@ -31,6 +31,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 # ones.
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.imgmath',
     'sphinx.ext.githubpages']
 
@@ -77,6 +78,7 @@ pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
+intersphinx_mapping = {'flask': ('http://flask.pocoo.org/docs', None)   }
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -108,6 +110,8 @@ html_theme_options = {
     'github_repo': 'stargate',
 }
 
+html_logo = "logo.jpeg"
+html_favicon = "stargate_favicon.ico"
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {

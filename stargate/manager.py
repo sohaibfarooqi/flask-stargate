@@ -33,7 +33,7 @@ class Manager():
 	"""This class let you expose JSON RESTFul APIs against various resources.
 	
 	:param app: should be :class:`~flask.Flask` instance. If you wish to use `flask test client`
-				for testing you can also provide :class:`~flask.Flask.FlaskClient` instance. 
+				for testing you can also provide :class:`~flask.testing.FlaskClient` instance. 
 	
 	:param db: should be :class:`~flask_sqlalchemy.SQLAlchemy` instance.
 
@@ -167,7 +167,7 @@ class Manager():
 
 		This method register view functions using :class:`~stargate.resource_api.ResourceAPI`
 		and provide `endpoint`, `session`, `model` and `primary key`. It also register endpoint
-		using :meth:`~flask.Flask.Blueprint.add_url_rule`. Collection and instances have different 
+		using :meth:`~flask.Blueprint.add_url_rule`. Collection and instances have different 
 		HTTP methods and url schemes. Finally this method populate the namedtuple ``RESOURCE_INFO`` 
 
 		"""
