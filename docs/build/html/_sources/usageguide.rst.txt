@@ -8,14 +8,14 @@ Lets consider the example in quickstart again. I am going to skip model definiti
 
 .. sourcecode:: python
 
-	from stargate import ResourceManager
+	from stargate import Manager
 	from models import User
 
-	manager = ResourceManager(app, db = db)
+	manager = Manager(app, db = db)
 	manager.register_resource(User, methods = ['GET'])
 
-First line initilize ``ResourceManager`` instance, which requires ``Flask`` app and 
-``SqlAlchemy`` instance
+First line initilize :class:`~stargate.manager.Manager` instance, which 
+requires :class:`~flask.Flask` app and :class:`~flask_sqlalchemy.SQLAlchemy` instance
 
 Second line exposes HTTP GET method for ``User`` model. If you are running this at your 
 localhost you can excess this resource at: 
@@ -102,4 +102,4 @@ Specify Primary Key
 
 Now in all over application primary key column used will be ``ser_id``
 
-.. _flask_sqlahcemy_docs: http://flask-sqlalchemy.pocoo.org/2.1/
+.. _flask_sqlahcemy_docs: http://flask-sqlalchemy.pocoo.org/2.2/

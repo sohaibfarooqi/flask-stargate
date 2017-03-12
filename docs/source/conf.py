@@ -79,6 +79,7 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 intersphinx_mapping = {'flask': ('http://flask.pocoo.org/docs', None)   }
+intersphinx_mapping = {'flask_sqlalchemy': ('http://flask-sqlalchemy.pocoo.org/2.2/', None)   }
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -98,7 +99,7 @@ html_theme = 'alabaster'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
+html_show_sourcelink = False
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.

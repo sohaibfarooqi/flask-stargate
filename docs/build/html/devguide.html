@@ -59,7 +59,7 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>app</strong> &#8211; should be <a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.Flask" title="(in Flask v0.12-dev)"><code class="xref py py-class docutils literal"><span class="pre">Flask</span></code></a> instance. If you wish to use <cite>flask test client</cite>
 for testing you can also provide <a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.testing.FlaskClient" title="(in Flask v0.12-dev)"><code class="xref py py-class docutils literal"><span class="pre">FlaskClient</span></code></a> instance.</li>
-<li><strong>db</strong> &#8211; should be <code class="xref py py-class docutils literal"><span class="pre">SQLAlchemy</span></code> instance.</li>
+<li><strong>db</strong> &#8211; should be <a class="reference external" href="http://flask-sqlalchemy.pocoo.org/2.2/api/#flask_sqlalchemy.SQLAlchemy" title="(in Flask-SQLAlchemy v2.2)"><code class="xref py py-class docutils literal"><span class="pre">SQLAlchemy</span></code></a> instance.</li>
 <li><strong>decorators</strong> &#8211; should be python decorators. Each resource registered with a manager
 instance will invoke all specified decorators before view functions are invoked.</li>
 <li><strong>url_prefix</strong> &#8211; prefix url for all endpoints registered with <cite>Manager</cite> instance. url_prefix
@@ -144,7 +144,7 @@ blueprint, register it with <a class="reference external" href="http://flask.poc
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">Blueprint</span></code></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.Blueprint" title="(in Flask v0.12-dev)"><code class="xref py py-class docutils literal"><span class="pre">Blueprint</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -196,7 +196,7 @@ For more information about method and options check <cite>get method</cite></p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#stargate.representation.Representation" title="stargate.representation.Representation"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code></a></p>
 </td>
 </tr>
 </tbody>
@@ -212,15 +212,15 @@ For more information about method and options check <cite>get method</cite></p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code> instance.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#stargate.representation.Representation" title="stargate.representation.Representation"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code></a> instance.</td>
 </tr>
 </tbody>
 </table>
 <dl class="docutils">
 <dt>Raise Following exceptions:</dt>
 <dd><ul class="first last simple">
-<li><code class="xref py py-class docutils literal"><span class="pre">InvalidPayload</span></code> if fails to convert payload to JSON.</li>
-<li><code class="xref py py-class docutils literal"><span class="pre">stargate.exception.DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">ValidationError</span></code> if fails to convert payload to JSON.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
 </ul>
 </dd>
 </dl>
@@ -237,15 +237,15 @@ For more information about method and options check <cite>get method</cite></p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pk_id</strong> &#8211; primary key id of resource to be updated.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code> instance.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#stargate.representation.Representation" title="stargate.representation.Representation"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code></a> instance.</td>
 </tr>
 </tbody>
 </table>
 <p>Raise following exceptions:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="xref py py-class docutils literal"><span class="pre">InvalidPayload</span></code> if fails to convert payload to JSON.</li>
-<li><code class="xref py py-class docutils literal"><span class="pre">stargate.exception.DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">ValidationError</span></code> if fails to convert payload to JSON.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
 <li><dl class="first docutils">
 <dt><code class="xref py py-class docutils literal"><span class="pre">MissingData</span></code> if data key is missing either in primary attribute</dt>
 <dd>of <code class="docutils literal"><span class="pre">_embedded</span></code> resource.</dd>
@@ -268,14 +268,14 @@ For more information about method and options check <cite>get method</cite></p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pk_id</strong> &#8211; primary key id of resource to be updated.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code> instance.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><a class="reference internal" href="#stargate.representation.Representation" title="stargate.representation.Representation"><code class="xref py py-class docutils literal"><span class="pre">Representation</span></code></a> instance.</td>
 </tr>
 </tbody>
 </table>
 <p>Raise following exception if operation fail:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="xref py py-class docutils literal"><span class="pre">stargate.exception.DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> If <code class="docutils literal"><span class="pre">session.commit()</span></code> fails.</li>
 </ul>
 </div></blockquote>
 <p>For more information on DELETE method and payload options check <cite>post method docs</cite></p>
@@ -444,6 +444,33 @@ in relation <cite>data</cite> key or primary resource <cite>data</cite> key.</p>
 
 </dd></dl>
 
+<span class="target" id="module-stargate.representation"></span></div>
+<div class="section" id="representation">
+<h2>Representation<a class="headerlink" href="#representation" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="stargate.representation.Representation">
+<em class="property">class </em><code class="descclassname">stargate.representation.</code><code class="descname">Representation</code><span class="sig-paren">(</span><em>code</em>, <em>message=None</em>, <em>content_type=None</em>, <em>headers={}</em><span class="sig-paren">)</span><a class="headerlink" href="#stargate.representation.Representation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Response Representation class. This class is used in view functions to generate appropriate
+response according to client <cite>Accept</cite> Header. Any additional header that needs to be appended to
+response can be pass like {&#8216;meta&#8217;:{&#8220;_HEADERS&#8221;:{&#8220;X_AUTH_KEY&#8221;: &#8220;abcde&#8221;}}}`. This class will pop 
+all key within <cite>_HEADER</cite> key and add them to response object. It also provide <cite>status message</cite>
+according to HTTP status code passed to initilize class object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>code</strong> &#8211; HTTP status code.</li>
+<li><strong>message</strong> &#8211; Status message if any.</li>
+<li><strong>content_type</strong> &#8211; Content Type for response.</li>
+<li><strong>headers</strong> &#8211; Additional Headers.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <span class="target" id="module-stargate.resource_info"></span></div>
 <div class="section" id="global-helper">
 <h2>Global Helper<a class="headerlink" href="#global-helper" title="Permalink to this headline">¶</a></h2>
@@ -505,6 +532,7 @@ importing it.</p>
 <li><a class="reference internal" href="#resource-api-view">Resource API View</a></li>
 <li><a class="reference internal" href="#serialization">Serialization</a></li>
 <li><a class="reference internal" href="#deserialization">Deserialization</a></li>
+<li><a class="reference internal" href="#representation">Representation</a></li>
 <li><a class="reference internal" href="#global-helper">Global Helper</a></li>
 </ul>
 </li>
@@ -517,13 +545,6 @@ importing it.</p>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/devguide.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -545,9 +566,6 @@ importing it.</p>
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
-      |
-      <a href="_sources/devguide.rst.txt"
-          rel="nofollow">Page source</a>
     </div>
 
     

@@ -154,8 +154,8 @@ class ResourceAPI(MethodView):
 		:return: :class:`~stargate.representation.Representation` instance.
 
 		Raise Following exceptions:
-		 - :class:`~stargate.exception.InvalidPayload` if fails to convert payload to JSON. 
-		 - :class:`stargate.exception.DatabaseError` If ``session.commit()`` fails. 
+		 - :class:`~stargate.exception.ValidationError` if fails to convert payload to JSON. 
+		 - :class:`~stargate.exception.DatabaseError` If ``session.commit()`` fails. 
 		
 		For more information on POST method and payload options check `post method docs`
 
@@ -204,8 +204,8 @@ class ResourceAPI(MethodView):
 
 		Raise following exceptions:
 		
-		 - :class:`~stargate.exception.InvalidPayload` if fails to convert payload to JSON. 
-		 - :class:`stargate.exception.DatabaseError` If ``session.commit()`` fails. 
+		 - :class:`~stargate.exception.ValidationError` if fails to convert payload to JSON. 
+		 - :class:`~stargate.exception.DatabaseError` If ``session.commit()`` fails. 
 		 - :class:`~stargate.exception.MissingData` if data key is missing either in primary attribute
 			of ``_embedded`` resource. 
 		 - :class:`~stargate.exception.MissingPrimaryKey` if primary key id is missing.
@@ -304,7 +304,7 @@ class ResourceAPI(MethodView):
 		
 		Raise following exception if operation fail:
 		 
-		 - :class:`stargate.exception.DatabaseError` If ``session.commit()`` fails. 
+		 - :class:`~stargate.exception.DatabaseError` If ``session.commit()`` fails. 
 		 
 		For more information on DELETE method and payload options check `post method docs`
 

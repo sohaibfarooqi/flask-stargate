@@ -35,6 +35,13 @@ Deserialization
 .. autoclass:: Deserializer
 	:members: __call__, _deserialize
 
+.. module:: stargate.representation
+
+Representation
+--------------
+
+.. autoclass:: Representation
+
 .. module:: stargate.resource_info
 
 Global Helper

@@ -17,3 +17,6 @@ before_script:
 
 script: 
   - python -m unittest discover -p "test_*.py"
+  
+after_success:
+- coveralls

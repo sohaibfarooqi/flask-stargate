@@ -33,8 +33,10 @@ Flask-Stargate.
    devguide
 
 
-TODO List
+Todo List
 ---------
+Things to be added in future.
+
    - Authentication/Authorization.
    - Rate limiting.
    - Schema Views.
@@ -51,6 +53,14 @@ Following are some examples of Rest Api frameworks written in Flask:
 
 Credits
 -------
+
+Special thanks to `Flask Restless`_. This code is largely inspired from it. 
+Indeed its a great REST Api example to dive into.
+
+Contribution
+------------
+
+Please open an issue on github or open a new PR.
 
 .. _Flask Restless: https://flask-restless.readthedocs.io/en/stable/
 .. _Flask Api: http://www.flaskapi.org/

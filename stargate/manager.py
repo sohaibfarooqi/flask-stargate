@@ -163,7 +163,7 @@ class Manager():
 		:param exclude: exclude resource fields for :class:`~stargate.serializer.Serializer`. 
 		:param decorators: view decorator functions. 
 		:param primary_key: primary key column. By default `id` will be used
-		:return: :class:`~flask.Flask.Blueprint`
+		:return: :class:`~flask.Blueprint`
 
 		This method register view functions using :class:`~stargate.resource_api.ResourceAPI`
 		and provide `endpoint`, `session`, `model` and `primary key`. It also register endpoint
