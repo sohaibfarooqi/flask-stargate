@@ -47,17 +47,17 @@
   <div class="section" id="guidelines-on-creating-api-endpoints">
 <h1>Guidelines on creating API Endpoints<a class="headerlink" href="#guidelines-on-creating-api-endpoints" title="Permalink to this headline">¶</a></h1>
 <p>To use this project you first need to define all your models and relationships using using
-<cite>Flasks&#8217;</cite> extention <code class="docutils literal"><span class="pre">Flask-Sqlalchemy</span></code>. Check out docs : <a class="reference external" href="http://flask-sqlalchemy.pocoo.org/2.1/">flask_sqlahcemy_docs</a>.</p>
+<cite>Flasks&#8217;</cite> extention <code class="docutils literal"><span class="pre">Flask-Sqlalchemy</span></code>. Check out docs : <a class="reference external" href="http://flask-sqlalchemy.pocoo.org/2.2/">flask_sqlahcemy_docs</a>.</p>
 <p>Lets consider the example in quickstart again. I am going to skip model definition, Flask and Flask-Sqlalchemy initilization</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">ResourceManager</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">stargate</span> <span class="kn">import</span> <span class="n">Manager</span>
 <span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">User</span>
 
-<span class="n">manager</span> <span class="o">=</span> <span class="n">ResourceManager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">db</span><span class="p">)</span>
+<span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">db</span><span class="p">)</span>
 <span class="n">manager</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>First line initilize <code class="docutils literal"><span class="pre">ResourceManager</span></code> instance, which requires <code class="docutils literal"><span class="pre">Flask</span></code> app and
-<code class="docutils literal"><span class="pre">SqlAlchemy</span></code> instance</p>
+<p>First line initilize <a class="reference internal" href="devguide.html#stargate.manager.Manager" title="stargate.manager.Manager"><code class="xref py py-class docutils literal"><span class="pre">Manager</span></code></a> instance, which
+requires <a class="reference external" href="http://flask.pocoo.org/docs/api/#flask.Flask" title="(in Flask v0.12-dev)"><code class="xref py py-class docutils literal"><span class="pre">Flask</span></code></a> app and <a class="reference external" href="http://flask-sqlalchemy.pocoo.org/2.2/api/#flask_sqlalchemy.SQLAlchemy" title="(in Flask-SQLAlchemy v2.2)"><code class="xref py py-class docutils literal"><span class="pre">SQLAlchemy</span></code></a> instance</p>
 <p>Second line exposes HTTP GET method for <code class="docutils literal"><span class="pre">User</span></code> model. If you are running this at your
 localhost you can excess this resource at:
 <code class="docutils literal"><span class="pre">http://localhost:5000/api/user</span></code>.
@@ -163,13 +163,6 @@ will expand the specified resources.</p>
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/usageguide.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -191,9 +184,6 @@ will expand the specified resources.</p>
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
-      |
-      <a href="_sources/usageguide.rst.txt"
-          rel="nofollow">Page source</a>
     </div>
 
     

@@ -1,12 +1,27 @@
 Quickstart
 =============
+ 
+You can also view this example online. ``wsgi.py`` is in root: `wsgi`_, while
+helpers(Models, App setup) resides in app directory : `app`_.
 
-.. literalinclude:: ../../app/quickstart.py
+Main Application Code
+---------------------
+.. literalinclude:: ../../wsgi.py
 	:linenos:
 
-You can also find this example at :file:`/app/quickstart.py`. 
-This example can be views online on : `view it online`_. Further examples can be found in
-the :file:`/app/` directory in the source distribution or `on the web`_
+Model Classes
+-------------
+Register your models with ``Flask-Sqlalchemy``
 
-.. _view it online: https://github.com/sohaibfarooqi/stargate/blob/master/app/quickstart.py
-.. _on the web: https://github.com/sohaibfarooqi/stargate/blob/master/app
+.. literalinclude:: ../../app/models.py
+	:linenos:
+
+Application Setup
+-----------------
+Configure db extention and migrations. Initilize `Flask` application.
+
+.. literalinclude:: ../../app/__init__.py
+	:linenos:
+
+.. _wsgi: https://github.com/sohaibfarooqi/stargate/blob/master/wsgi.py
+.. _app: https://github.com/sohaibfarooqi/stargate/blob/master/app
