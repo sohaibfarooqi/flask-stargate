@@ -21,7 +21,6 @@ class TestRoutes(SimpleTestBase):
 		def test_get_related_instance(self):
 			response = self.client.get('/api/user/1/location/1', headers={"Content-Type": "application/json"})
 			data = json.loads(response.get_data())
-			print(data)
 			self.assertEqual(response._status_code, 200)
 
 		def test_get_related_collection(self):
