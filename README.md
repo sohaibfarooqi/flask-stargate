@@ -1,4 +1,4 @@
-##Stargate 
+##Flask-Stargate 
 [![Build Status](https://travis-ci.org/sohaibfarooqi/stargate.svg?branch=master)](https://travis-ci.org/sohaibfarooqi/stargate)
 
 Stargate let you expost JSON RESTFul APIs against Model resources. This project is under
@@ -8,7 +8,8 @@ tested. Docs for this project will be published soon on github pages.
 This code is largely inspired from [Flask-Restless](https://github.com/jfinkels/flask-restless). It is 
 indeed a great example for someone who wants to learn and understand how RESTFul APIs should be coded.
 
-For quickstart please check [example app](../master/app/quickstart.py). 
+For quickstart please check [example app](../master/wsgi.py). 
+For Documentation check out [Docs](https://sohaibfarooqi.github.io/stargate/).
 
 ###Features
 
