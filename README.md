@@ -1,4 +1,4 @@
-##Stargate 
+##Flask-Stargate 
 [![Build Status](https://travis-ci.org/sohaibfarooqi/stargate.svg?branch=master)](https://travis-ci.org/sohaibfarooqi/stargate)
 
 Stargate let you expost JSON RESTFul APIs against Model resources. This project is under
