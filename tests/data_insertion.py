@@ -80,8 +80,8 @@ def insert_simple_test_data(test_client):
 		user.location_id = location.id
 
 		db.session.add(user)
-		db.session.flush()
 		db.session.commit()
+		db.session.flush()
 
 def insert_filteration_data(test_client):
 		city = City()
@@ -92,6 +92,7 @@ def insert_filteration_data(test_client):
 		user3 = User()
 		user4 = User()
 		user5 = User()
+		user_list = list()
 
 		with test_client.test_request_context():
 			city.title = "Lahore"
@@ -107,6 +108,7 @@ def insert_filteration_data(test_client):
 			location.parent_id = -1
 			location.city_id = city.id
 			db.session.add(location)
+			
 			db.session.commit()
 			db.session.flush()
 
@@ -119,6 +121,7 @@ def insert_filteration_data(test_client):
 			user1.pic_url = "/images/john.jpg"
 			user1.city_id = city.id
 			user1.location_id = location.id
+			
 			db.session.add(user1)
 			db.session.commit()
 			
@@ -131,6 +134,7 @@ def insert_filteration_data(test_client):
 			user2.pic_url = "/images/adam.jpg"
 			user2.city_id = city.id
 			user2.location_id = location.id
+			
 			db.session.add(user2)
 			db.session.commit()
 
@@ -143,6 +147,7 @@ def insert_filteration_data(test_client):
 			user3.pic_url = "/images/wayne.jpg"
 			user3.city_id = city.id
 			user3.location_id = location.id
+			
 			db.session.add(user3)
 			db.session.commit()
 
@@ -155,6 +160,7 @@ def insert_filteration_data(test_client):
 			user4.pic_url = "/images/bin.jpg"
 			user4.city_id = city.id
 			user4.location_id = location.id
+			
 			db.session.add(user4)
 			db.session.commit()
 
@@ -170,4 +176,18 @@ def insert_filteration_data(test_client):
 
 			db.session.add(user5)
 			db.session.commit()
+			
 			db.session.flush()
+			db.session.refresh(user1)
+			db.session.refresh(user2)
+			db.session.refresh(user3)
+			db.session.refresh(user4)
+			db.session.refresh(user5)
+			
+			user_list.append(user1)
+			user_list.append(user2)
+			user_list.append(user3)
+			user_list.append(user4)
+			user_list.append(user5)
+			
+			return user_list

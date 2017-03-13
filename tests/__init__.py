@@ -30,9 +30,9 @@ class TestSetup(unittest.TestCase):
 			#Initilize Manager object
 			self.manager = Manager(self.app, db)
 			#Register resources with Manager instance
-			self.manager.register_resource(User, methods = ['GET', 'POST'])
-			self.manager.register_resource(Location, methods = ['GET', 'POST'])
-			self.manager.register_resource(City, methods = ['GET', 'POST'])
+			self.manager.register_resource(User, methods = ['GET', 'POST', 'PATCH'])
+			self.manager.register_resource(Location, methods = ['GET', 'POST', 'PATCH'])
+			self.manager.register_resource(City, methods = ['GET', 'POST', 'PATCH'])
 
 			with self.app.test_request_context():
 				db.create_all()
@@ -63,7 +63,7 @@ class DescriptiveTestBase(TestSetup):
 	def setUpClass(self):
 		super(DescriptiveTestBase, self).setUpClass()
 		
-		insert_filteration_data(self.app)
+		self.user_list = insert_filteration_data(self.app)
 			
 		@classmethod
 		def tearDownClass(self):

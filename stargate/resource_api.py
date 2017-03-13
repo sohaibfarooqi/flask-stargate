@@ -216,7 +216,6 @@ class ResourceAPI(MethodView):
 		"""
 		try:
 			data = json.loads(request.get_data()) or {}
-		
 		except Exception as exception:
 			raise ValidationError("Unable to decode Request Body : ".format(str(exception)))
 		
@@ -229,7 +228,7 @@ class ResourceAPI(MethodView):
 		all_links = get_relations(self.model)
 		
 		for linkname, link in links.items():
-			
+			print(link)
 			if SerializationConst.DATA not in link:
 				raise MissingData(link)
 
@@ -268,33 +267,32 @@ class ResourceAPI(MethodView):
 					else:
 						raise MissingPrimaryKey(msg="Missing primary key in request")
 
-			#Pop primary resource attributes
-			data = data.pop(SerializationConst.ATTRIBUTES, {})
+		#Pop primary resource attributes
+		data = data.pop(SerializationConst.ATTRIBUTES, {})
+		for field in data:
+			if not has_field(self.model, field):
+				detail = "Model does not have field '{0}'".format(field)
+				raise UnknownField(detail=detail)
 
-			for field in data:
-				if not has_field(self.model, field):
-					detail = "Model does not have field '{0}'".format(field)
-					raise UnknownField(detail=detail)
+		#Parse any datetime field(s)
+		data = dict((k, string_to_datetime(self.model, k, v)) for k, v in data.items())
 
-			#Parse any datetime field(s)
-			data = dict((k, string_to_datetime(self.model, k, v)) for k, v in data.items())
-
-			if data:
-				for field, value in data.items():
-					setattr(primary_resource, field, value)
-			
-			try:
-				self.session.add(primary_resource)
-				self.session.commit()
-			except Exception as e:
-				raise DatabaseError("Unable to update resource: {0}".format(str(e)))
-			
-			#FIXME: How to return proper representation using API response style?
-			serializer = resource_info(ResourceInfoConst.SERIALIZER, self.model)
-			result = serializer(primary_resource)
-			
-			repr = InstanceRepresentation(self.model, pk_id, result, 200)
-			return repr.to_response()
+		if data:
+			for field, value in data.items():
+				setattr(primary_resource, field, value)
+		try:
+			self.session.add(primary_resource)
+			self.session.flush()
+			self.session.commit()
+		except Exception as e:
+			raise DatabaseError("Unable to update resource: {0}".format(str(e)))
+		
+		#FIXME: How to return proper representation using API response style?
+		serializer = resource_info(ResourceInfoConst.SERIALIZER, self.model)
+		result = serializer(primary_resource)
+		
+		repr = InstanceRepresentation(self.model, pk_id, result, 200)
+		return repr.to_response()
 
 	def delete(self, pk_id):
 		"""Delete resource against id provided in path param.
