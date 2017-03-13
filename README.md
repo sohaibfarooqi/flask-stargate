@@ -1,9 +1,9 @@
 ##Flask-Stargate 
 [![Build Status](https://travis-ci.org/sohaibfarooqi/stargate.svg?branch=master)](https://travis-ci.org/sohaibfarooqi/stargate)
 
-Stargate let you expost JSON RESTFul APIs against Model resources. This project is under
-development. Currently `GET` method has test cases written. Remaining view functions are yet to be 
-tested. Docs for this project will be published soon on github pages.
+This project is currently under development. First version will soon be released. Currently flask-stargate 
+has only test for GET and POST endpoints. More tests and features will be added soon. Docs for PATCH and DELETE 
+method will be updated after test completion.
 
 This code is largely inspired from [Flask-Restless](https://github.com/jfinkels/flask-restless). It is 
 indeed a great example for someone who wants to learn and understand how RESTFul APIs should be coded.
