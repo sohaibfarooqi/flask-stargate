@@ -85,6 +85,7 @@ def insert_simple_test_data(test_client):
 
 def insert_filteration_data(test_client):
 		city = City()
+		city2 = City()
 		location = Location()
 		
 		user1 = User()
@@ -99,6 +100,13 @@ def insert_filteration_data(test_client):
 			city.latitude = 72.813
 			city.longitude = 78.1987
 			db.session.add(city)
+			db.session.commit()
+			db.session.flush()
+
+			city2.title = "Faisalabad"
+			city2.latitude = 72.813
+			city2.longitude = 78.1987
+			db.session.add(city2)
 			db.session.commit()
 			db.session.flush()
 

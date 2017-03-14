@@ -228,7 +228,6 @@ class ResourceAPI(MethodView):
 		all_links = get_relations(self.model)
 		
 		for linkname, link in links.items():
-			print(link)
 			if SerializationConst.DATA not in link:
 				raise MissingData(link)
 
@@ -238,7 +237,7 @@ class ResourceAPI(MethodView):
 			#Get the data out of related resource
 			linkage = link[SerializationConst.DATA]
 			related_model = get_related_model(self.model, linkname)
-            
+
             #If TO_MANY append all
 			if is_like_list(primary_resource, linkname):
 
@@ -254,19 +253,20 @@ class ResourceAPI(MethodView):
 			
 			#If TO_ONE
 			else:
-				
 				if linkage is None:
 					newvalue = None
 				else:
 					fk_name = resource_info(ResourceInfoConst.PRIMARY_KEY, related_model)
-					
 					if fk_name in linkage:
 						inst = get_resource(self.session, related_model, linkage[fk_name])
 						newvalue = inst
-						setattr(primary_resource, linkname, newvalue)
 					else:
 						raise MissingPrimaryKey(msg="Missing primary key in request")
 
+			try:
+				setattr(primary_resource, linkname, newvalue)
+			except DatabaseError as e:
+				raise DatabaseError("Unable to update resource: {0}".format(str(e)))
 		#Pop primary resource attributes
 		data = data.pop(SerializationConst.ATTRIBUTES, {})
 		for field in data:
@@ -289,7 +289,7 @@ class ResourceAPI(MethodView):
 		
 		#FIXME: How to return proper representation using API response style?
 		serializer = resource_info(ResourceInfoConst.SERIALIZER, self.model)
-		result = serializer(primary_resource)
+		result = serializer(primary_resource, expand = ','.join(all_links))
 		
 		repr = InstanceRepresentation(self.model, pk_id, result, 200)
 		return repr.to_response()
