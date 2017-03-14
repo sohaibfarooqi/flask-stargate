@@ -9,7 +9,7 @@ This code is largely inspired from [Flask-Restless](https://github.com/jfinkels/
 indeed a great example for someone who wants to learn and understand how RESTFul APIs should be coded.
 
 For quickstart please check [example app](../master/wsgi.py). 
-For Documentation check out [Docs](https://sohaibfarooqi.github.io/stargate/).
+For Documentation check out [Docs](https://sohaibfarooqi.github.io/flask-stargate/).
 
 ###Features
 
