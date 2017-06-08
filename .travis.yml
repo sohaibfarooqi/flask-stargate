@@ -7,6 +7,7 @@ python:
 
 install: 
   - "pip install -r requirements.txt"
+  - "pip install coveralls"
 
 services:
   - postgresql
@@ -16,7 +17,8 @@ before_script:
   - flask db upgrade
 
 script: 
-  - python -m unittest discover -p "test_*.py"
+  - coverage -m unittest discover -p "test_*.py"
+  - coverage report
   
 after_success:
 - coveralls
