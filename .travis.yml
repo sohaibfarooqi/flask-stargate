@@ -17,7 +17,7 @@ before_script:
   - flask db upgrade
 
 script: 
-  - coverage -m unittest discover -p "test_*.py"
+  - coverage run unittest discover -p "test_*.py"
   - coverage report
   
 after_success:
