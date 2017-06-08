@@ -3,7 +3,7 @@ Flask-Stargate
 .. image:: https://travis-ci.org/sohaibfarooqi/flask-stargate.svg?branch=master
     :target: https://travis-ci.org/sohaibfarooqi/flask-stargate 
 .. image:: https://coveralls.io/repos/github/sohaibfarooqi/flask-stargate/badge.svg?branch=master
-:target: https://coveralls.io/github/sohaibfarooqi/flask-stargate?branch=master
+    :target: https://coveralls.io/github/sohaibfarooqi/flask-stargate?branch=master
 
     
 This project is currently under development. First version will soon be released. Currently flask-stargate 
